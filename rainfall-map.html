@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+          content="Real-Time World Rainfall Map — Live precipitation data across every sector of the globe. Error 404 Flood Network.">
+    <title>World Rainfall Map | Error 404 Flood Network</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <link rel="stylesheet" href="rainfall-map.css">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar" id="navbar">
+    <a href="index.html" class="brand">
+        <span>ERROR</span>
+        <b>404</b>
+        <small>FLOOD NETWORK</small>
+    </a>
+    <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="index.html#solution">Solution</a>
+        <a href="index.html#dashboard">Dashboard</a>
+        <a href="rainfall-map.html" class="active">Rainfall Map</a>
+        <a href="index.html#dashboard" class="nav-cta">Live System</a>
+    </nav>
+    <!-- THEME TOGGLE -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle light / dark mode">
+        <span class="theme-icon-sun">☀️</span>
+        <span class="theme-icon-moon">🌙</span>
+    </button>
+</header>
+
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+
+    <div class="header-content">
+        <p class="eyebrow">REAL-TIME &middot; GLOBAL &middot; PRECIPITATION</p>
+        <h1>World Rainfall <span>Monitor</span></h1>
+        <p class="header-sub">
+            Live precipitation data sampled from
+            <strong id="sectorCount">0</strong> global sectors every
+            <strong>60 seconds</strong>. Powered by Open-Meteo API.
+        </p>
+    </div>
+
+    <!-- LIVE STATUS BAR -->
+    <div class="status-bar">
+        <div class="status-item">
+            <em class="pulse-dot green"></em>
+            <span id="statusText">Fetching data&hellip;</span>
+        </div>
+        <div class="status-item">
+            <span class="label">Last Update</span>
+            <strong id="lastUpdate">&mdash;</strong>
+        </div>
+        <div class="status-item">
+            <span class="label">Max Rainfall</span>
+            <strong id="maxRainfall">&mdash; mm/hr</strong>
+        </div>
+        <div class="status-item">
+            <span class="label">Avg Rainfall</span>
+            <strong id="avgRainfall">&mdash; mm/hr</strong>
+        </div>
+        <div class="status-item">
+            <span class="label">High-Risk Sectors</span>
+            <strong id="highRiskCount" class="danger">&mdash;</strong>
+        </div>
+    </div>
+
+</section>
+
+
+<!-- MAIN LAYOUT -->
+<div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <!-- LEGEND -->
+        <div class="panel legend-panel">
+            <h3 class="panel-title">Rainfall Legend</h3>
+            <div class="legend-list">
+                <div class="legend-row"><span class="swatch" style="background:#c8eeff"></span><span>None (0 mm/hr)</span></div>
+                <div class="legend-row"><span class="swatch" style="background:#7dd8ff"></span><span>Light (0.1&ndash;1 mm/hr)</span></div>
+                <div class="legend-row"><span class="swatch" style="background:#29a8e8"></span><span>Moderate (1&ndash;5 mm/hr)</span></div>
+                <div class="legend-row"><span class="swatch" style="background:#0055bb"></span><span>Heavy (5&ndash;15 mm/hr)</span></div>
+                <div class="legend-row"><span class="swatch" style="background:#7700cc"></span><span>Very Heavy (15&ndash;30 mm/hr)</span></div>
+                <div class="legend-row"><span class="swatch" style="background:#cc0000"></span><span>Extreme (&gt;30 mm/hr)</span></div>
+            </div>
+        </div>
+
+        <!-- LAYER CONTROLS -->
+        <div class="panel">
+            <h3 class="panel-title">Map Layers</h3>
+            <div class="layer-btns">
+                <button class="layer-btn active" id="btnRainfall" onclick="setLayer('rainfall')">&#127783; Rainfall</button>
+                <button class="layer-btn" id="btnSatellite" onclick="setLayer('satellite')">&#128752; Satellite</button>
+                <button class="layer-btn" id="btnTopo" onclick="setLayer('topo')">&#127970; Topographic</button>
+            </div>
+        </div>
+
+        <!-- TOP SECTORS -->
+        <div class="panel">
+            <h3 class="panel-title">Top Rainfall Sectors</h3>
+            <div class="sector-list" id="sectorList">
+                <div class="sector-skeleton"></div>
+                <div class="sector-skeleton"></div>
+                <div class="sector-skeleton"></div>
+                <div class="sector-skeleton"></div>
+                <div class="sector-skeleton"></div>
+            </div>
+        </div>
+
+        <!-- FILTER -->
+        <div class="panel">
+            <h3 class="panel-title">Filter Intensity</h3>
+            <div class="filter-btns">
+                <button class="filter-btn active" onclick="applyFilter('all', this)">All</button>
+                <button class="filter-btn" onclick="applyFilter('light', this)">Light</button>
+                <button class="filter-btn" onclick="applyFilter('moderate', this)">Moderate</button>
+                <button class="filter-btn" onclick="applyFilter('heavy', this)">Heavy+</button>
+            </div>
+        </div>
+
+        <!-- REFRESH -->
+        <button class="refresh-btn" id="refreshBtn" onclick="fetchAllData()">
+            &#8635; Refresh Data
+        </button>
+
+    </aside>
+
+    <!-- MAP -->
+    <div class="map-wrapper">
+        <div id="map"></div>
+
+        <!-- LOADING OVERLAY -->
+        <div class="map-loading" id="mapLoading">
+            <div class="loading-inner">
+                <div class="spinner"></div>
+                <p>Loading global rainfall data&hellip;</p>
+                <small id="loadingProgress">Querying sectors&hellip;</small>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- GLOBAL STATS STRIP -->
+<section class="stats-strip">
+    <div class="stat-box">
+        <small>SECTORS MONITORED</small>
+        <strong id="statSectors">&mdash;</strong>
+    </div>
+    <div class="stat-box">
+        <small>CURRENTLY RAINING</small>
+        <strong id="statRaining">&mdash;</strong>
+    </div>
+    <div class="stat-box">
+        <small>HEAVY+ SECTORS</small>
+        <strong id="statHeavy" class="danger">&mdash;</strong>
+    </div>
+    <div class="stat-box">
+        <small>PEAK RAINFALL</small>
+        <strong id="statPeak">&mdash; mm/hr</strong>
+    </div>
+    <div class="stat-box">
+        <small>GLOBAL AVG</small>
+        <strong id="statAvg">&mdash; mm/hr</strong>
+    </div>
+    <div class="stat-box">
+        <small>DATA SOURCE</small>
+        <strong class="src-label">Open-Meteo API</strong>
+    </div>
+</section>
+
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="rainfall-map.js"></script>
+
+</body>
+</html>

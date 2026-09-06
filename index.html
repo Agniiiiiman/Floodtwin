@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+          content="Error 404 - Intelligent Flood Network System for Smart India Hackathon">
+
+    <title>Error 404 | Flood Network</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+
+<header class="navbar" id="navbar">
+
+    <a href="#home" class="brand">
+        <span>ERROR</span>
+        <b>404</b>
+        <small>FLOOD NETWORK</small>
+    </a>
+
+
+    <button class="menu-toggle" id="menuToggle">
+        ☰
+    </button>
+
+
+    <nav class="nav-links" id="navLinks">
+
+        <a href="#home" class="active">
+            Home
+        </a>
+
+        <a href="#solution">
+            Solution
+        </a>
+
+        <a href="#dashboard">
+            Dashboard
+        </a>
+
+        <a href="#architecture">
+            Architecture
+        </a>
+
+        <a href="#team">
+            Team
+        </a>
+
+        <a href="rainfall-map.html">
+            Rainfall Map
+        </a>
+
+        <a href="#dashboard" class="nav-cta">
+            Live System
+        </a>
+
+    </nav>
+
+
+    <!-- THEME TOGGLE -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle light / dark mode">
+        <span class="theme-icon-sun">☀️</span>
+        <span class="theme-icon-moon">🌙</span>
+    </button>
+
+</header>
+
+
+
+<main>
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section class="hero" id="home">
+
+    <div class="rain" id="rain"></div>
+
+    <div class="hero-overlay"></div>
+
+
+    <div class="hero-content reveal">
+
+        <p class="kicker">
+            SMART INDIA HACKATHON · ERROR 404
+        </p>
+
+
+        <h1>
+            Predict floods.
+            <br>
+            <span>Protect cities.</span>
+        </h1>
+
+
+        <p class="hero-copy">
+
+            An intelligent flood network that connects rainfall,
+            drainage, street-level prediction, emergency routing
+            and what-if simulation into one decision-support system.
+
+        </p>
+
+
+        <div class="hero-actions">
+
+            <a href="#solution"
+               class="btn primary">
+
+                Explore Solution
+                <span>→</span>
+
+            </a>
+
+
+            <a href="#dashboard"
+               class="btn ghost">
+
+                View Dashboard
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- LIVE MONITOR -->
+
+    <div class="hero-console reveal">
+
+        <div class="console-head">
+
+            <span>
+                ERROR 404 / FLOOD NETWORK
+            </span>
+
+            <i>
+                <em></em>
+                LIVE
+            </i>
+
+        </div>
+
+
+        <div class="console-grid">
+
+            <div>
+
+                <small>
+                    WATER LEVEL
+                </small>
+
+                <strong id="waterLevel">
+                    0.42<span> m</span>
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <small>
+                    FORECAST
+                </small>
+
+                <strong>
+                    0–3<span> hr</span>
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <small>
+                    NETWORK LOAD
+                </small>
+
+                <strong id="networkLoad">
+                    72<span>%</span>
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="risk-line">
+
+            <span class="risk-dot"></span>
+
+            <span id="riskText">
+                Moderate flood risk
+            </span>
+
+            <span class="risk-time">
+                Updated now
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- HERO STATS -->
+
+    <div class="hero-stats">
+
+        <div>
+            <strong>24/7</strong>
+            <span>Monitoring</span>
+        </div>
+
+        <div>
+            <strong>0–3h</strong>
+            <span>Prediction Window</span>
+        </div>
+
+        <div>
+            <strong>5</strong>
+            <span>Core Modules</span>
+        </div>
+
+        <div>
+            <strong>AI</strong>
+            <span>Decision Support</span>
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     INTRO
+===================================================== -->
+
+<section class="intro section">
+
+    <div class="section-heading reveal">
+
+        <p class="eyebrow">
+            THE PROBLEM
+        </p>
+
+        <h2>
+            Flood response should
+            <br>
+            <span>start before the water rises.</span>
+        </h2>
+
+    </div>
+
+
+    <div class="intro-copy reveal">
+
+        <p>
+
+            Urban flooding is a connected system problem.
+            Rainfall changes runoff, runoff loads drainage
+            infrastructure, overloaded networks create hazardous
+            streets, and those hazards change how people should move.
+
+        </p>
+
+
+        <p>
+
+            Error 404 brings these layers together so authorities
+            can understand what is happening, what is likely to
+            happen next, and what action is safest.
+
+        </p>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     PROPOSED SOLUTION
+===================================================== -->
+
+<section class="solution-section section"
+         id="solution">
+
+
+    <div class="center-heading reveal">
+
+        <p class="eyebrow">
+            PROPOSED SOLUTION
+        </p>
+
+        <h2>
+            From Rainfall to
+            <span>Resilience</span>
+        </h2>
+
+        <p>
+            Five connected capabilities form one intelligent
+            flood network.
+        </p>
+
+    </div>
+
+
+
+    <div class="solution-grid">
+
+
+        <!-- 01 -->
+
+        <article class="solution-card blue reveal">
+
+            <div class="step">
+                01
+            </div>
+
+
+            <h3>
+                Rainfall → Runoff
+            </h3>
+
+
+            <p>
+                Real-time + forecast rainfall
+                <br>
+                → Predicted urban runoff
+            </p>
+
+
+            <div class="visual rain-visual">
+
+                <div class="cloud">
+                    ☁
+                </div>
+
+                <div class="rain-streaks"></div>
+
+
+                <div class="mini-city">
+
+                    <i></i>
+                    <i></i>
+                    <i></i>
+                    <i></i>
+                    <i></i>
+
+                </div>
+
+
+                <div class="water-stream"></div>
+
+            </div>
+
+
+            <div class="card-note">
+
+                Rainfall data becomes a
+                runoff forecast.
+
+            </div>
+
+        </article>
+
+
+
+        <!-- 02 -->
+
+        <article class="solution-card green reveal">
+
+            <div class="step">
+                02
+            </div>
+
+
+            <h3>
+                Drainage Digital Twin
+            </h3>
+
+
+            <p>
+                Drains, pipes & junctions
+                <br>
+                → Load, capacity & overflow detection
+            </p>
+
+
+            <div class="visual pipe-visual">
+
+                <div class="pipe p1"></div>
+                <div class="pipe p2"></div>
+                <div class="pipe p3"></div>
+
+                <div class="node n1"></div>
+                <div class="node n2"></div>
+                <div class="node n3"></div>
+
+
+                <div class="status-box">
+
+                    <b>Load 72%</b>
+                    <br>
+                    Capacity 100%
+                    <br>
+                    Status: Normal
+
+                </div>
+
+            </div>
+
+
+            <div class="card-note">
+
+                A live digital model of
+                the drainage network.
+
+            </div>
+
+        </article>
+
+
+
+        <!-- 03 -->
+
+        <article class="solution-card purple reveal">
+
+            <div class="step">
+                03
+            </div>
+
+
+            <h3>
+                Street-Level Flood Prediction
+            </h3>
+
+
+            <p>
+                0–3 hr forecast
+                <br>
+                → Water depth & street risk
+            </p>
+
+
+            <div class="visual map-visual">
+
+                <div class="map-grid"></div>
+
+                <div class="heat-spot"></div>
+
+                <div class="pin"></div>
+
+
+                <div class="depth-box">
+
+                    Water Depth
+
+                    <b>
+                        0.4 m
+                    </b>
+
+                </div>
+
+
+                <div class="legend">
+
+                    <i></i> Low
+                    <i></i> Moderate
+                    <i></i> High
+
+                </div>
+
+            </div>
+
+
+            <div class="card-note">
+
+                Predict flood depth and
+                street-level risk.
+
+            </div>
+
+        </article>
+
+
+
+        <!-- 04 -->
+
+        <article class="solution-card orange reveal">
+
+            <div class="step">
+                04
+            </div>
+
+
+            <h3>
+                Emergency Safe Routing
+            </h3>
+
+
+            <p>
+                Dynamic flood-safe routes
+                <br>
+                → Avoid hazardous roads
+            </p>
+
+
+            <div class="visual route-visual">
+
+                <div class="roads"></div>
+
+
+                <div class="danger-zone">
+                    !
+                </div>
+
+
+                <div class="safe-route"></div>
+
+
+                <span class="start-pin">
+                    ●
+                </span>
+
+
+                <span class="end-pin">
+                    ●
+                </span>
+
+            </div>
+
+
+            <div class="card-note">
+
+                Route people around
+                hazardous roads.
+
+            </div>
+
+        </article>
+
+
+
+        <!-- 05 -->
+
+        <article class="solution-card cyan reveal">
+
+            <div class="step">
+                05
+            </div>
+
+
+            <h3>
+                What-If Simulation
+            </h3>
+
+
+            <p>
+                “What if a critical drain is blocked?”
+                <br>
+                → Recalculate flood spread & safe routes
+            </p>
+
+
+            <div class="visual scenario-visual">
+
+
+                <div class="scenario">
+
+                    <b>
+                        Normal
+                    </b>
+
+                    <div class="heat normal"></div>
+
+                </div>
+
+
+                <div class="scenario">
+
+                    <b>
+                        Drain Blocked
+                    </b>
+
+                    <div class="heat blocked"></div>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="card-note">
+
+                Test failures before they
+                happen in reality.
+
+            </div>
+
+        </article>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     DASHBOARD
+===================================================== -->
+
+<section class="dashboard-section section"
+         id="dashboard">
+
+
+    <div class="dashboard-copy reveal">
+
+        <p class="eyebrow">
+            FLOOD NETWORK CONTROL ROOM
+        </p>
+
+
+        <h2>
+
+            One view for
+            <br>
+            <span>the whole system.</span>
+
+        </h2>
+
+
+        <p>
+
+            The dashboard combines network status,
+            flood-risk zones, water depth, rainfall
+            conditions and safe routing into an
+            operational interface.
+
+        </p>
+
+
+        <div class="dashboard-actions">
+
+            <button class="btn primary"
+                    id="simulateBtn">
+
+                Run What-If Simulation
+
+            </button>
+
+
+            <button class="btn ghost dark"
+                    id="refreshBtn">
+
+                Refresh Data
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- DASHBOARD UI -->
+
+    <div class="dashboard-ui reveal">
+
+        <div class="dash-top">
+
+            <div>
+
+                <b>
+                    Flood Network
+                </b>
+
+                <span>
+                    Urban Monitoring
+                </span>
+
+            </div>
+
+
+            <label>
+
+                <em></em>
+                SYSTEM ONLINE
+
+            </label>
+
+        </div>
+
+
+
+        <div class="dash-main">
+
+
+            <!-- MAP -->
+
+            <div class="map-panel">
+
+                <div class="map-toolbar">
+
+                    <button class="active">
+                        Risk
+                    </button>
+
+                    <button>
+                        Water Depth
+                    </button>
+
+                    <button>
+                        Drainage
+                    </button>
+
+                </div>
+
+
+                <div class="city-map" id="dashboardMap">
+                    <!-- The map will be rendered here by Leaflet -->
+                    <div class="map-loading-overlay" id="dashboardMapLoading" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(6, 14, 28, 0.8); z-index: 1000; color: #17bdf5; font-size: 14px; flex-direction: column; gap: 10px;">
+                        <div class="spinner" style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #17bdf5; border-radius: 50%; animation: rotateSpin 1s linear infinite;"></div>
+                        Locating you...
+                    </div>
+                </div>
+
+            </div>
+
+
+
+            <!-- METRICS -->
+
+            <aside class="metrics">
+
+
+                <div class="metric-card">
+
+                    <small>
+                        RAINFALL
+                    </small>
+
+                    <strong id="rainfall">
+                        84
+                    </strong>
+
+                    <span>
+                        mm/hr
+                    </span>
+
+                    <div class="meter">
+                        <i style="width:72%"></i>
+                    </div>
+
+                </div>
+
+
+
+                <div class="metric-card">
+
+                    <small>
+                        PEAK WATER DEPTH
+                    </small>
+
+                    <strong id="peakDepth">
+                        0.8
+                    </strong>
+
+                    <span>
+                        m
+                    </span>
+
+                    <div class="meter">
+                        <i style="width:61%"></i>
+                    </div>
+
+                </div>
+
+
+
+                <div class="metric-card">
+
+                    <small>
+                        CRITICAL NODES
+                    </small>
+
+                    <strong id="criticalNodes">
+                        03
+                    </strong>
+
+                    <span class="danger-text">
+                        attention required
+                    </span>
+
+                </div>
+
+
+
+                <div class="metric-card route-card">
+
+                    <small>
+                        SAFE ROUTE
+                    </small>
+
+                    <strong>
+                        AVAILABLE
+                    </strong>
+
+                    <button id="routeBtn">
+                        View Route →
+                    </button>
+
+                </div>
+
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     ARCHITECTURE
+===================================================== -->
+
+<section class="architecture section"
+         id="architecture">
+
+
+    <div class="center-heading reveal">
+
+        <p class="eyebrow">
+            SYSTEM ARCHITECTURE
+        </p>
+
+
+        <h2>
+
+            Data moves.
+            Intelligence
+            <span>acts.</span>
+
+        </h2>
+
+
+        <p>
+
+            A continuous pipeline from sensing
+            to decision support.
+
+        </p>
+
+    </div>
+
+
+
+    <div class="architecture-flow reveal">
+
+
+        <div class="arch-node">
+
+            <small>01</small>
+
+            <strong>
+                Rainfall
+            </strong>
+
+            <span>
+                Real-time + forecast
+            </span>
+
+        </div>
+
+
+        <div class="arch-arrow">
+            →
+        </div>
+
+
+        <div class="arch-node">
+
+            <small>02</small>
+
+            <strong>
+                Runoff Model
+            </strong>
+
+            <span>
+                Urban runoff estimate
+            </span>
+
+        </div>
+
+
+        <div class="arch-arrow">
+            →
+        </div>
+
+
+        <div class="arch-node">
+
+            <small>03</small>
+
+            <strong>
+                Digital Twin
+            </strong>
+
+            <span>
+                Load + capacity
+            </span>
+
+        </div>
+
+
+        <div class="arch-arrow">
+            →
+        </div>
+
+
+        <div class="arch-node">
+
+            <small>04</small>
+
+            <strong>
+                Flood Model
+            </strong>
+
+            <span>
+                Depth + risk
+            </span>
+
+        </div>
+
+
+        <div class="arch-arrow">
+            →
+        </div>
+
+
+        <div class="arch-node">
+
+            <small>05</small>
+
+            <strong>
+                Action
+            </strong>
+
+            <span>
+                Routes + alerts
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     IMPACT
+===================================================== -->
+
+<section class="impact section">
+
+
+    <div class="impact-image reveal"></div>
+
+
+    <div class="impact-copy reveal">
+
+        <p class="eyebrow">
+            WHY IT MATTERS
+        </p>
+
+
+        <h2>
+
+            Move from
+            <br>
+            <span>reactive response</span>
+            <br>
+            to proactive resilience.
+
+        </h2>
+
+
+        <div class="impact-list">
+
+
+            <div>
+
+                <b>01</b>
+
+                <p>
+
+                    <strong>
+                        Earlier warning
+                    </strong>
+
+                    <br>
+
+                    Identify emerging flood risk
+                    before roads become critical.
+
+                </p>
+
+            </div>
+
+
+
+            <div>
+
+                <b>02</b>
+
+                <p>
+
+                    <strong>
+                        Better coordination
+                    </strong>
+
+                    <br>
+
+                    Connect rainfall, drainage
+                    and routing decisions.
+
+                </p>
+
+            </div>
+
+
+
+            <div>
+
+                <b>03</b>
+
+                <p>
+
+                    <strong>
+                        Safer movement
+                    </strong>
+
+                    <br>
+
+                    Continuously update routes
+                    around hazardous roads.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     TEAM
+===================================================== -->
+
+<section class="team section"
+         id="team">
+
+
+    <div class="center-heading reveal">
+
+        <p class="eyebrow">
+            TEAM ERROR 404
+        </p>
+
+
+        <h2>
+
+            Technology with a
+            <span>purpose.</span>
+
+        </h2>
+
+
+        <p>
+            Built for Smart India Hackathon.
+        </p>
+
+    </div>
+
+
+
+    <div class="team-grid reveal">
+
+
+        <div class="team-card">
+
+            <div class="avatar">
+                01
+            </div>
+
+            <strong>
+                Team Member
+            </strong>
+
+            <span>
+                AI / ML
+            </span>
+
+        </div>
+
+
+
+        <div class="team-card">
+
+            <div class="avatar">
+                02
+            </div>
+
+            <strong>
+                Team Member
+            </strong>
+
+            <span>
+                Backend
+            </span>
+
+        </div>
+
+
+
+        <div class="team-card">
+
+            <div class="avatar">
+                03
+            </div>
+
+            <strong>
+                Team Member
+            </strong>
+
+            <span>
+                Frontend
+            </span>
+
+        </div>
+
+
+
+        <div class="team-card">
+
+            <div class="avatar">
+                04
+            </div>
+
+            <strong>
+                Team Member
+            </strong>
+
+            <span>
+                GIS / Data
+            </span>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer>
+
+
+    <div class="footer-brand">
+
+        <a href="#home"
+           class="brand">
+
+            <span>ERROR</span>
+            <b>404</b>
+
+            <small>
+                FLOOD NETWORK
+            </small>
+
+        </a>
+
+
+        <p>
+            Turning data into safer tomorrows.
+        </p>
+
+    </div>
+
+
+
+    <div class="footer-links">
+
+        <a href="#solution">
+            Solution
+        </a>
+
+        <a href="#dashboard">
+            Dashboard
+        </a>
+
+        <a href="#architecture">
+            Architecture
+        </a>
+
+        <a href="#team">
+            Team
+        </a>
+
+    </div>
+
+
+
+    <p class="copyright">
+
+        © 2026 Team Error 404 ·
+        Smart India Hackathon
+
+    </p>
+
+
+</footer>
+
+
+
+<div class="toast" id="toast"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="script.js"></script>
+
+</body>
+</html>
