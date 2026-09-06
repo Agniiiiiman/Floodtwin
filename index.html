@@ -17,7 +17,8 @@
           rel="stylesheet">
 
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -828,13 +829,34 @@
                         SAFE ROUTE
                     </small>
 
-                    <strong>
-                        AVAILABLE
-                    </strong>
+                    <input type="text" id="routeStart" placeholder="Start (lat, lng)" style="width:100%; margin: 5px 0; padding: 5px; color: black;" />
+                    <input type="text" id="routeEnd" placeholder="End (lat, lng)" style="width:100%; margin: 5px 0; padding: 5px; color: black;" />
 
-                    <button id="routeBtn">
-                        View Route →
+                    <button id="routeBtn" style="margin-top: 5px;">
+                        Get Route →
                     </button>
+                    <div id="routeStatus" style="font-size:10px; margin-top:5px; color:#17bdf5;"></div>
+
+                </div>
+
+                <div class="metric-card">
+
+                    <small>
+                        CITIZEN REPORT
+                    </small>
+
+                    <input type="text" id="reportLocation" placeholder="Location (lat, lng)" style="width:100%; margin: 5px 0; padding: 5px; color: black;" />
+                    <select id="reportStatus" style="width:100%; margin: 5px 0; padding: 5px; color: black;">
+                        <option value="flooding">Flooding</option>
+                        <option value="receding">Receding</option>
+                        <option value="clear">Clear</option>
+                    </select>
+                    <input type="text" id="reportDesc" placeholder="Description" style="width:100%; margin: 5px 0; padding: 5px; color: black;" />
+                    
+                    <button id="reportBtn" style="margin-top: 5px; background: #09aef0; color: #031522; padding: 5px 10px; border-radius: 4px;">
+                        Submit Report
+                    </button>
+                    <div id="reportMsg" style="font-size:10px; margin-top:5px; color:#17bdf5;"></div>
 
                 </div>
 
@@ -1269,7 +1291,8 @@
 <div class="toast" id="toast"></div>
 
 <!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 
 <script src="script.js"></script>
 

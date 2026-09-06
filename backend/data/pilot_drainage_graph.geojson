@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [72.82, 18.96]
+      },
+      "properties": {
+        "id": "node_1",
+        "type": "manhole",
+        "capacity": 100
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [72.822, 18.961]
+      },
+      "properties": {
+        "id": "node_2",
+        "type": "manhole",
+        "capacity": 150
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [72.82, 18.96],
+          [72.822, 18.961]
+        ]
+      },
+      "properties": {
+        "id": "pipe_1",
+        "type": "pipe",
+        "capacity": 50
+      }
+    }
+  ]
+}
