@@ -148,9 +148,10 @@
         <!-- LOADING OVERLAY -->
         <div class="map-loading" id="mapLoading">
             <div class="loading-inner">
-                <div class="spinner"></div>
-                <p>Loading global rainfall data&hellip;</p>
+                <div class="spinner" id="loadingSpinner"></div>
+                <p id="loadingMessage">Loading global rainfall data&hellip;</p>
                 <small id="loadingProgress">Querying sectors&hellip;</small>
+                <button class="retry-btn" id="retryBtn" onclick="fetchAllData()" style="display:none">&#8635; Retry</button>
             </div>
         </div>
     </div>
@@ -193,7 +194,8 @@
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="script.js"></script>
+<!-- NOTE: script.js is intentionally NOT loaded here — it declares 'let toastTimer'
+     at module scope which conflicts with rainfall-map.js causing a fatal SyntaxError -->
 <script src="rainfall-map.js"></script>
 
 </body>

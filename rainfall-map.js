@@ -2,6 +2,16 @@
    WORLD RAINFALL MAP — REAL-TIME DATA ENGINE
    Uses Open-Meteo API (free, no API key required)
    Fetches actual current precipitation for ~130 global sectors
+
+   FIX (2026-09-08):
+   - Wrapped in IIFE to avoid 'toastTimer already declared'
+     SyntaxError caused by script.js declaring the same var
+     at global scope.  Both files were loaded on rainfall-map.html.
+   - Multi-location batched fetching (up to 50 coords/request)
+     instead of 130 individual HTTP requests.
+   - Request timeout handling (12 s per batch).
+   - Retry button + error overlay state.
+   - Data timestamp shown in popups and last-update bar.
 ===================================================== */
 
 /* =====================================================
@@ -32,8 +42,8 @@
             localStorage.setItem(STORAGE_KEY, next);
 
             /* Invalidate tile sizes so Leaflet repaints correctly */
-            if (typeof map !== "undefined" && map) {
-                setTimeout(() => map.invalidateSize(), 50);
+            if (window.RainfallMap && window.RainfallMap.map) {
+                setTimeout(() => window.RainfallMap.map.invalidateSize(), 50);
             }
 
         });
@@ -44,6 +54,15 @@
 
 
 "use strict";
+
+
+/* =====================================================
+   MAIN RAINFALL MAP MODULE
+   Wrapped in an IIFE so private state (toastTimer, etc.)
+   does not conflict with script.js globals.
+===================================================== */
+
+window.RainfallMap = (function () {
 
 
 /* ---- GLOBAL SECTOR GRID ---- */
@@ -226,6 +245,7 @@ let currentFilter    = "all";
 let tileLayers       = {};
 let refreshTimer;
 let isLoading        = false;
+let toastTimer;          /* private — no conflict with script.js */
 
 
 /* ---- MAP INIT ---- */
@@ -292,58 +312,99 @@ function rainfallOpacity(mm) {
 }
 
 
-/* ---- FETCH RAINFALL FOR ONE SECTOR ---- */
+/* ---- FETCH WITH TIMEOUT ---- */
 
-async function fetchSectorRainfall(sector) {
+/**
+ * fetch() with a configurable AbortController timeout.
+ * Throws if the server doesn't respond within timeoutMs.
+ */
+function fetchWithTimeout(url, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs || 12000);
+    return fetch(url, { signal: controller.signal })
+        .finally(() => clearTimeout(timer));
+}
+
+
+/* ---- MULTI-LOCATION BATCH FETCH ---- */
+/**
+ * Open-Meteo supports comma-separated lat/lon lists.
+ * Batches of ≤50 keep the URL short and responses fast.
+ * Returns array of { ...sector, rain, dataTime }.
+ */
+const MULTI_BATCH_SIZE = 50;
+
+async function fetchBatchMulti(sectors) {
+    if (sectors.length === 0) return [];
+
+    const lats = sectors.map(s => s.lat).join(",");
+    const lons = sectors.map(s => s.lon).join(",");
+
     const url =
-        `https://api.open-meteo.com/v1/forecast` +
-        `?latitude=${sector.lat}` +
-        `&longitude=${sector.lon}` +
-        `&current=precipitation` +
-        `&timezone=auto` +
-        `&forecast_days=1`;
+        "https://api.open-meteo.com/v1/forecast" +
+        "?latitude=" + lats +
+        "&longitude=" + lons +
+        "&current=precipitation" +
+        "&timezone=auto" +
+        "&forecast_days=1";
 
     try {
-        const res  = await fetch(url);
+        const res  = await fetchWithTimeout(url, 12000);
+        if (!res.ok) throw new Error("HTTP " + res.status);
         const json = await res.json();
-        const rain = json?.current?.precipitation ?? 0;
-        return { ...sector, rain: parseFloat(rain.toFixed(2)) };
-    } catch {
-        return { ...sector, rain: 0 };
+
+        /* Single location → plain object; multiple → array */
+        const results = Array.isArray(json) ? json : [json];
+
+        return sectors.map(function (sector, i) {
+            const r    = results[i] || {};
+            const rain = (r.current && r.current.precipitation != null)
+                ? r.current.precipitation : 0;
+            return Object.assign({}, sector, {
+                rain:     parseFloat(rain.toFixed(2)),
+                dataTime: (r.current && r.current.time) || null
+            });
+        });
+
+    } catch (err) {
+        console.warn("Batch fetch failed (" + sectors.length + " sectors):", err.message);
+        return sectors.map(function (s) {
+            return Object.assign({}, s, { rain: 0, dataTime: null });
+        });
     }
 }
 
 
-/* ---- BATCH FETCH WITH CONCURRENCY LIMIT ---- */
+/* ---- ORCHESTRATE ALL BATCHES ---- */
 
-async function fetchBatch(sectors, batchSize = 10) {
-    const results  = [];
-    const total    = sectors.length;
-    let  completed = 0;
+async function fetchAllSectors() {
+    const total      = SECTORS.length;
+    const allResults = [];
+    let   completed  = 0;
+    let   dataTime   = null;
 
-    const progressEl = document.getElementById("loadingProgress");
-    const progressTrack = document.querySelector(".progress-fill");
+    const progressEl   = document.getElementById("loadingProgress");
+    const progressFill = document.querySelector(".progress-fill");
 
-    for (let i = 0; i < total; i += batchSize) {
+    for (let i = 0; i < total; i += MULTI_BATCH_SIZE) {
 
-        const batch   = sectors.slice(i, i + batchSize);
-        const batchResults = await Promise.all(batch.map(fetchSectorRainfall));
+        const batch       = SECTORS.slice(i, i + MULTI_BATCH_SIZE);
+        const batchResult = await fetchBatchMulti(batch);
 
-        results.push(...batchResults);
+        allResults.push.apply(allResults, batchResult);
         completed += batch.length;
 
-        const pct = Math.round((completed / total) * 100);
+        /* Track first real data timestamp */
+        for (var j = 0; j < batchResult.length; j++) {
+            if (batchResult[j].dataTime) { dataTime = batchResult[j].dataTime; break; }
+        }
 
-        if (progressEl) {
-            progressEl.textContent =
-                `Querying ${completed} / ${total} sectors (${pct}%)`;
-        }
-        if (progressTrack) {
-            progressTrack.style.width = pct + "%";
-        }
+        const pct = Math.round((completed / total) * 100);
+        if (progressEl)   progressEl.textContent = "Queried " + completed + " / " + total + " sectors (" + pct + "%)"; 
+        if (progressFill) progressFill.style.width = pct + "%";
     }
 
-    return results;
+    return { results: allResults, dataTime: dataTime };
 }
 
 
@@ -376,6 +437,10 @@ function drawMarkers(data) {
             fillOpacity: opc,
         });
 
+        const dataTimeRow = sector.dataTime
+            ? `<div class="popup-row"><span class="popup-label">Data time</span><span class="popup-val">${sector.dataTime}</span></div>`
+            : "";
+
         const popupHTML = `
             <div class="rain-popup">
                 <strong>${sector.name}</strong>
@@ -391,6 +456,7 @@ function drawMarkers(data) {
                     <span class="popup-label">Coordinates</span>
                     <span class="popup-val">${sector.lat.toFixed(2)}°, ${sector.lon.toFixed(2)}°</span>
                 </div>
+                ${dataTimeRow}
                 <span class="intensity-badge"
                       style="background:${badge};color:${text};">
                     ${label.toUpperCase()}
@@ -447,7 +513,7 @@ function setLayer(layer) {
 
 /* ---- STATISTICS ---- */
 
-function updateStats(data) {
+function updateStats(data, dataTime) {
 
     const raining = data.filter(d => d.rain > 0);
     const heavy   = data.filter(d => d.rain >= 5);
@@ -461,6 +527,19 @@ function updateStats(data) {
     setEl("maxRainfall",  `${max.toFixed(2)} mm/hr`);
     setEl("avgRainfall",  `${avg.toFixed(2)} mm/hr`);
     setEl("highRiskCount", heavy.length);
+
+    /* Last-update label — prefer API data time over wall clock */
+    const now = new Date();
+    let updateLabel = now.toLocaleTimeString();
+    if (dataTime) {
+        try {
+            const dt = new Date(dataTime.replace("T", " "));
+            if (!isNaN(dt.getTime())) {
+                updateLabel = dt.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) + " (data)";
+            }
+        } catch(_) { /* use wall clock */ }
+    }
+    setEl("lastUpdate", updateLabel);
 
     /* Stats strip */
     setEl("statSectors", data.length);
@@ -510,6 +589,44 @@ function setStatus(msg, dotClass) {
 }
 
 
+/* ---- LOADING OVERLAY HELPERS ---- */
+
+function showLoadingOverlay(msg, progress) {
+    const overlay  = document.getElementById("mapLoading");
+    const spinner  = document.getElementById("loadingSpinner");
+    const msgEl    = document.getElementById("loadingMessage");
+    const retryBtn = document.getElementById("retryBtn");
+    const progressEl = document.getElementById("loadingProgress");
+
+    if (!overlay) return;
+    overlay.classList.remove("hidden");
+    if (spinner)    spinner.style.display = "block";
+    if (msgEl)      msgEl.textContent = msg || "Loading global rainfall data\u2026";
+    if (progressEl) progressEl.textContent = progress || "Querying sectors\u2026";
+    if (retryBtn)   retryBtn.style.display = "none";
+}
+
+function showErrorOverlay(msg) {
+    const overlay  = document.getElementById("mapLoading");
+    const spinner  = document.getElementById("loadingSpinner");
+    const msgEl    = document.getElementById("loadingMessage");
+    const retryBtn = document.getElementById("retryBtn");
+    const progressEl = document.getElementById("loadingProgress");
+
+    if (!overlay) return;
+    overlay.classList.remove("hidden");
+    if (spinner)    spinner.style.display = "none";
+    if (msgEl)      msgEl.textContent = msg || "Rainfall data could not be loaded.";
+    if (progressEl) progressEl.textContent = "Check your internet connection and try again.";
+    if (retryBtn)   retryBtn.style.display = "inline-block";
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById("mapLoading");
+    if (overlay) overlay.classList.add("hidden");
+}
+
+
 /* ---- MAIN FETCH FUNCTION ---- */
 
 async function fetchAllData() {
@@ -524,8 +641,8 @@ async function fetchAllData() {
         btn.innerHTML = "&#8635; Refreshing&hellip;";
     }
 
-    setStatus("Fetching live data…", "green");
-    document.getElementById("mapLoading").classList.remove("hidden");
+    setStatus("Fetching live data\u2026", "green");
+    showLoadingOverlay("Loading global rainfall data\u2026", "Querying sectors\u2026");
 
     /* Inject progress bar if not already there */
     const loadingInner = document.querySelector(".loading-inner");
@@ -533,31 +650,39 @@ async function fetchAllData() {
         const track = document.createElement("div");
         track.className = "progress-track";
         track.innerHTML = `<div class="progress-fill" style="width:0%"></div>`;
-        loadingInner.appendChild(track);
+        /* Insert before retry button */
+        const retryBtn = document.getElementById("retryBtn");
+        if (retryBtn) {
+            loadingInner.insertBefore(track, retryBtn);
+        } else {
+            loadingInner.appendChild(track);
+        }
     }
+
+    /* Reset progress bar */
+    const progressFill = document.querySelector(".progress-fill");
+    if (progressFill) progressFill.style.width = "0%";
 
     try {
 
-        const data = await fetchBatch(SECTORS, 12);
-        sectorData = data;
+        const { results, dataTime } = await fetchAllSectors();
+        sectorData = results;
 
-        drawMarkers(data);
-        updateStats(data);
+        drawMarkers(results);
+        updateStats(results, dataTime);
 
-        const now = new Date();
-        setEl("lastUpdate", now.toLocaleTimeString());
-        setStatus("Live — data up to date", "green");
-        showToast(`Updated ${data.length} global sectors successfully`);
+        setStatus("Live \u2014 data up to date", "green");
+        showToast(`Updated ${results.length} global sectors successfully`);
+        hideLoadingOverlay();
 
     } catch (err) {
 
         console.error("Fetch error:", err);
         setStatus("Error fetching data", "red");
-        showToast("Failed to fetch data — check your connection");
+        showToast("Failed to fetch rainfall data \u2014 check connection");
+        showErrorOverlay("Rainfall data could not be loaded.");
 
     } finally {
-
-        document.getElementById("mapLoading").classList.add("hidden");
 
         if (btn) {
             btn.disabled = false;
@@ -573,7 +698,7 @@ async function fetchAllData() {
 
 function startAutoRefresh() {
     clearInterval(refreshTimer);
-    refreshTimer = setInterval(fetchAllData, 60_000);
+    refreshTimer = setInterval(fetchAllData, 60000);
 }
 
 
@@ -584,7 +709,6 @@ function setEl(id, val) {
     if (el) el.textContent = val;
 }
 
-let toastTimer;
 function showToast(msg) {
     const t = document.getElementById("toast");
     if (!t) return;
@@ -602,3 +726,25 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchAllData();
     startAutoRefresh();
 });
+
+
+/* ---- PUBLIC API (theme toggle + HTML onclick wrappers) ---- */
+return {
+    get map() { return map; },
+    flyTo:       flyTo,
+    setLayer:    setLayer,
+    applyFilter: applyFilter,
+    fetchAllData: fetchAllData,
+};
+
+}()); /* end RainfallMap IIFE */
+
+
+/* ===========================================================
+   GLOBAL WRAPPERS — HTML onclick="setLayer('rainfall')" etc.
+   These must remain global functions on window.
+=========================================================== */
+function setLayer(layer)           { window.RainfallMap.setLayer(layer); }
+function applyFilter(filter, btn)  { window.RainfallMap.applyFilter(filter, btn); }
+function flyTo(lat, lon, name)     { window.RainfallMap.flyTo(lat, lon, name); }
+function fetchAllData()            { window.RainfallMap.fetchAllData(); }

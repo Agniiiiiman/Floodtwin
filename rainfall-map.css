@@ -470,6 +470,28 @@ button { font: inherit; border: 0; cursor: pointer; }
     transition: width .3s ease;
 }
 
+/* Retry button — shown in error state overlay */
+.retry-btn {
+    margin-top: 4px;
+    padding: 9px 22px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #0870d8, #0a5fa8);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid #1688f440;
+    cursor: pointer;
+    transition: .25s;
+}
+.retry-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px #0870d840;
+}
+[data-theme="light"] .retry-btn {
+    background: linear-gradient(135deg, #0870d8, #0a5fa8);
+}
+
+
 
 /* =====================================================
    CUSTOM LEAFLET MARKERS / CIRCLES
