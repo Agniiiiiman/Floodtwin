@@ -11,7 +11,7 @@
 
 (function () {
 
-    const STORAGE_KEY = "e404-theme";
+    const STORAGE_KEY = "floodtwin-theme";
     const html        = document.documentElement;
 
     /* Apply saved or default theme immediately — no flash */

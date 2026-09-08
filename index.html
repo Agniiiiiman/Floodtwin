@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta name="description"
-          content="Error 404 - Intelligent Flood Network System for Smart India Hackathon">
+          content="FloodTwin — Urban Flood Intelligence & Drainage Digital Twin Platform. Real-time municipal decision support, flood risk modeling, what-if simulations and emergency safe routing.">
 
-    <title>Error 404 | Flood Network</title>
+    <title>FloodTwin | Urban Flood Intelligence Platform</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,9 +33,9 @@
 <header class="navbar" id="navbar">
 
     <a href="#home" class="brand">
-        <span>ERROR</span>
-        <b>404</b>
-        <small>FLOOD NETWORK</small>
+        <span>FLOOD</span>
+        <b>TWIN</b>
+        <small>DIGITAL TWIN EOC</small>
     </a>
 
 
@@ -644,27 +644,49 @@
     <div class="dashboard-copy reveal">
 
         <p class="eyebrow">
-            FLOOD NETWORK CONTROL ROOM
+            PREDICT · DIAGNOSE · SIMULATE · RESPOND
         </p>
 
 
         <h2>
 
-            One view for
+            Urban Flood Intelligence &amp;
             <br>
-            <span>the whole system.</span>
+            <span>Digital Twin EOC</span>
 
         </h2>
 
 
         <p>
 
-            The dashboard combines network status,
-            flood-risk zones, water depth, rainfall
-            conditions and safe routing into an
-            operational interface.
+            Real-time urban hydrology command center connecting live rainfall sensing, drainage twin capacity monitoring, 
+            street-level depth risk modeling, dynamic emergency routing, and predictive what-if scenario simulations.
 
         </p>
+
+        <!-- FLOOD DEPTH TIER REFERENCE BAR -->
+        <div class="depth-tiers-bar">
+            <div class="tier-chip tier-safe" title="0-10 cm Water Depth">
+                <span class="dot"></span>
+                <span class="label">Safe</span>
+                <strong>0–10 cm</strong>
+            </div>
+            <div class="tier-chip tier-caution" title="10-20 cm Water Depth">
+                <span class="dot"></span>
+                <span class="label">Caution</span>
+                <strong>10–20 cm</strong>
+            </div>
+            <div class="tier-chip tier-warning" title="20-40 cm Water Depth">
+                <span class="dot"></span>
+                <span class="label">Warning</span>
+                <strong>20–40 cm</strong>
+            </div>
+            <div class="tier-chip tier-critical" title="40+ cm Water Depth">
+                <span class="dot"></span>
+                <span class="label">Critical</span>
+                <strong>40+ cm</strong>
+            </div>
+        </div>
 
 
         <div class="dashboard-actions">
@@ -672,7 +694,7 @@
             <button class="btn primary"
                     id="simulateBtn">
 
-                Run What-If Simulation
+                ⚡ Run What-If Simulation
 
             </button>
 
@@ -680,7 +702,7 @@
             <button class="btn ghost dark"
                     id="refreshBtn">
 
-                Refresh Data
+                🔄 Refresh Telemetry
 
             </button>
 
@@ -696,25 +718,20 @@
 
         <div class="dash-top">
 
-            <div>
-
-                <b>
-                    Flood Network
-                </b>
-
-                <span>
-                    Urban Monitoring
-                </span>
-
+            <div class="dash-title-group">
+                <div class="eoc-badge">
+                    <span class="pulse-indicator green"></span>
+                    <b>EOC COMMAND ACTIVE</b>
+                </div>
+                <h3>FloodTwin Operations Control</h3>
             </div>
 
-
-            <label>
-
-                <em></em>
-                SYSTEM ONLINE
-
-            </label>
+            <div class="dash-system-meta">
+                <span class="meta-item">MODE: <strong>REAL-TIME TWIN</strong></span>
+                <label class="status-pill active-pill">
+                    <em></em> NETWORK ONLINE
+                </label>
+            </div>
 
         </div>
 
@@ -723,32 +740,58 @@
         <div class="dash-main">
 
 
-            <!-- MAP -->
+            <!-- MAP PANEL -->
 
             <div class="map-panel">
 
                 <div class="map-toolbar">
 
-                    <button class="active">
-                        Risk
-                    </button>
+                    <div class="tool-group">
+                        <button class="map-mode-btn active" data-mode="risk">🗺️ Risk Heatmap</button>
+                        <button class="map-mode-btn" data-mode="depth">🌊 Water Depth</button>
+                        <button class="map-mode-btn" data-mode="drainage">🚰 Drainage Twin</button>
+                        <button class="map-mode-btn locate-btn" id="locateMeBtn">📍 Live Location</button>
+                    </div>
 
-                    <button>
-                        Water Depth
-                    </button>
-
-                    <button>
-                        Drainage
-                    </button>
+                    <div class="tool-status" id="mapLayerStatus">Layer: <strong>Flood Risk Heatmap</strong></div>
 
                 </div>
 
 
                 <div class="city-map" id="dashboardMap">
                     <!-- The map will be rendered here by Leaflet -->
-                    <div class="map-loading-overlay" id="dashboardMapLoading" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(6, 14, 28, 0.8); z-index: 1000; color: #17bdf5; font-size: 14px; flex-direction: column; gap: 10px;">
-                        <div class="spinner" style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #17bdf5; border-radius: 50%; animation: rotateSpin 1s linear infinite;"></div>
-                        Locating you...
+                    <div class="map-loading-overlay" id="dashboardMapLoading">
+                        <div class="spinner"></div>
+                        <span>Locating Municipal GIS Grid...</span>
+                    </div>
+                </div>
+
+                <!-- DRAINAGE TWIN OVERLAY HUD -->
+                <div class="map-twin-hud" id="drainageTwinHud">
+                    <div class="hud-header">
+                        <span class="icon">🚰</span>
+                        <div>
+                            <strong>Drainage Network Twin</strong>
+                            <small>8 Junctions · 12 Channels</small>
+                        </div>
+                    </div>
+                    <div class="hud-nodes-grid">
+                        <div class="twin-node-badge status-normal" id="nodeJ1">
+                            <span class="node-id">J-101 (Central)</span>
+                            <span class="node-val">34% LOAD</span>
+                        </div>
+                        <div class="twin-node-badge status-high" id="nodeJ2">
+                            <span class="node-id">J-102 (North Canal)</span>
+                            <span class="node-val">78% LOAD</span>
+                        </div>
+                        <div class="twin-node-badge status-overload" id="nodeJ3">
+                            <span class="node-id">J-103 (Harbor Basin)</span>
+                            <span class="node-val">94% OVERLOAD</span>
+                        </div>
+                        <div class="twin-node-badge status-risk" id="nodeJ4">
+                            <span class="node-id">J-104 (Subway Outflow)</span>
+                            <span class="node-val">FAILURE RISK</span>
+                        </div>
                     </div>
                 </div>
 
@@ -756,59 +799,58 @@
 
 
 
-            <!-- METRICS -->
+            <!-- METRICS & CONTROL SUITE -->
 
             <aside class="metrics">
 
 
+                <!-- CRITICAL FLOOD METRIC 1 -->
+                <div class="metric-card depth-metric-card" id="depthMetricCard">
+                    <div class="card-head">
+                        <small>WATER DEPTH &amp; RISK TIER</small>
+                        <span class="risk-badge warning-bg" id="currentRiskBadge">WARNING</span>
+                    </div>
+                    <div class="card-body-stat">
+                        <strong id="peakDepth">0.34</strong>
+                        <span class="unit">meters</span>
+                    </div>
+                    <div class="depth-bar-wrapper">
+                        <div class="depth-bar-fill warning-fill" id="depthMeterFill" style="width: 45%;"></div>
+                    </div>
+                    <div class="depth-scale-ticks">
+                        <span>0m (Safe)</span>
+                        <span>0.2m</span>
+                        <span>0.4m+ (Crit)</span>
+                    </div>
+                </div>
+
+
+
+                <!-- METRIC 2: RAINFALL -->
                 <div class="metric-card">
 
-                    <small>
-                        RAINFALL
-                    </small>
+                    <div class="card-head">
+                        <small>RAINFALL RATE</small>
+                        <span class="status-tag">Open-Meteo Live</span>
+                    </div>
 
-                    <strong id="rainfall">
-                        84
-                    </strong>
+                    <div class="card-body-stat">
+                        <strong id="rainfall">48.5</strong>
+                        <span class="unit">mm / hr</span>
+                    </div>
 
-                    <span>
-                        mm/hr
-                    </span>
-
-                    <div class="meter">
-                        <i style="width:72%"></i>
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width:68%"></div>
                     </div>
 
                 </div>
 
 
-
+                <!-- METRIC 3: CRITICAL DRAIN NODES -->
                 <div class="metric-card">
 
                     <small>
-                        PEAK WATER DEPTH
-                    </small>
-
-                    <strong id="peakDepth">
-                        0.8
-                    </strong>
-
-                    <span>
-                        m
-                    </span>
-
-                    <div class="meter">
-                        <i style="width:61%"></i>
-                    </div>
-
-                </div>
-
-
-
-                <div class="metric-card">
-
-                    <small>
-                        CRITICAL NODES
+                        CRITICAL JUNCTION NODES
                     </small>
 
                     <strong id="criticalNodes">
@@ -816,47 +858,115 @@
                     </strong>
 
                     <span class="danger-text">
-                        attention required
+                        Attention required at J-103, J-104
                     </span>
 
                 </div>
 
 
+                <!-- WHAT-IF SIMULATION SUITE -->
+                <div class="metric-card sim-card">
+                    <div class="card-head">
+                        <small>WHAT-IF BLOCKAGE SIMULATION</small>
+                        <span class="sim-pill">PREDICTIVE</span>
+                    </div>
+                    <p class="sim-intro">Simulate critical drain blockage to model upstream flood propagation:</p>
+                    
+                    <div class="sim-control-group">
+                        <label for="simNodeSelect">Target Junction Node:</label>
+                        <select id="simNodeSelect" class="form-control">
+                            <option value="J-103">J-103 (Harbor Main Outflow)</option>
+                            <option value="J-102">J-102 (North Canal Sluice)</option>
+                            <option value="J-104">J-104 (Subway Catchment)</option>
+                            <option value="J-101">J-101 (Downtown Arterial)</option>
+                        </select>
+                    </div>
 
+                    <div class="sim-control-group">
+                        <div class="slider-header">
+                            <label for="blockageRange">Blockage Severity:</label>
+                            <span id="blockageVal">75%</span>
+                        </div>
+                        <input type="range" id="blockageRange" min="0" max="100" value="75" step="5" class="sim-slider">
+                    </div>
+
+                    <button class="sim-run-btn" id="runSimulationBtn">
+                        ⚡ Compute Simulation
+                    </button>
+
+                    <!-- BEFORE VS AFTER SIMULATION RESULT COMPARISON -->
+                    <div class="sim-comparison-box hidden" id="simResultsBox">
+                        <div class="comp-title">BEFORE vs AFTER IMPACT</div>
+                        <div class="comp-grid">
+                            <div class="comp-col before">
+                                <span class="lbl">Baseline Depth</span>
+                                <strong id="simBeforeDepth">0.24 m</strong>
+                                <span class="badge warning-bg">Warning</span>
+                            </div>
+                            <div class="comp-arrow">➔</div>
+                            <div class="comp-col after">
+                                <span class="lbl">Predicted Depth</span>
+                                <strong id="simAfterDepth">0.58 m</strong>
+                                <span class="badge critical-bg">Critical</span>
+                            </div>
+                        </div>
+                        <div class="affected-streets">
+                            <span class="lbl">Newly Affected Roads:</span>
+                            <span class="street-tag" id="simStreetTags">MG Road · Sector 4 Subway · Station Flyover</span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- EMERGENCY ROUTE CARD -->
                 <div class="metric-card route-card">
 
-                    <small>
-                        SAFE ROUTE
-                    </small>
+                    <div class="card-head">
+                        <small>EMERGENCY SAFE ROUTING</small>
+                        <span class="route-pill">DYNAMIC GIS</span>
+                    </div>
 
-                    <input type="text" id="routeStart" placeholder="Start (lat, lng)" style="width:100%; margin: 5px 0; padding: 5px; color: black;" />
-                    <input type="text" id="routeEnd" placeholder="End (lat, lng)" style="width:100%; margin: 5px 0; padding: 5px; color: black;" />
+                    <div class="route-inputs">
+                        <div class="input-group">
+                            <span class="input-icon origin-dot">●</span>
+                            <input type="text" id="routeStart" class="form-control" placeholder="Origin (lat, lng)" value="18.96, 72.82">
+                        </div>
+                        <div class="input-group">
+                            <span class="input-icon dest-dot">▲</span>
+                            <input type="text" id="routeEnd" class="form-control" placeholder="Destination (lat, lng)" value="18.98, 72.84">
+                        </div>
+                    </div>
 
-                    <button id="routeBtn" style="margin-top: 5px;">
-                        Get Route →
+                    <button id="routeBtn" class="route-calc-btn">
+                        🛡️ Get Safe Route →
                     </button>
-                    <div id="routeStatus" style="font-size:10px; margin-top:5px; color:#17bdf5;"></div>
+                    <div id="routeStatus" class="route-status-msg"></div>
 
                 </div>
 
-                <div class="metric-card">
+                <!-- CITIZEN INCIDENT REPORTING -->
+                <div class="metric-card report-card">
 
-                    <small>
-                        CITIZEN REPORT
-                    </small>
+                    <div class="card-head">
+                        <small>CITIZEN INCIDENT REPORT</small>
+                        <span class="report-badge">FIELD FEED</span>
+                    </div>
 
-                    <input type="text" id="reportLocation" placeholder="Location (lat, lng)" style="width:100%; margin: 5px 0; padding: 5px; color: black;" />
-                    <select id="reportStatus" style="width:100%; margin: 5px 0; padding: 5px; color: black;">
-                        <option value="flooding">Flooding</option>
-                        <option value="receding">Receding</option>
-                        <option value="clear">Clear</option>
-                    </select>
-                    <input type="text" id="reportDesc" placeholder="Description" style="width:100%; margin: 5px 0; padding: 5px; color: black;" />
-                    
-                    <button id="reportBtn" style="margin-top: 5px; background: #09aef0; color: #031522; padding: 5px 10px; border-radius: 4px;">
-                        Submit Report
-                    </button>
-                    <div id="reportMsg" style="font-size:10px; margin-top:5px; color:#17bdf5;"></div>
+                    <div class="report-form">
+                        <input type="text" id="reportLocation" class="form-control" placeholder="Location (lat, lng)">
+                        <select id="reportStatus" class="form-control">
+                            <option value="flooding">🌊 Severe Flooding (>30cm)</option>
+                            <option value="receding">📉 Water Receding</option>
+                            <option value="clear">✅ Road Clear</option>
+                        </select>
+                        <input type="text" id="reportDesc" class="form-control" placeholder="Incident description...">
+                        
+                        <button id="reportBtn" class="report-submit-btn">
+                            📤 Submit Report
+                        </button>
+                        <div id="reportMsg" class="report-feedback"></div>
+                    </div>
 
                 </div>
 
