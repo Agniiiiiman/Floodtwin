@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
 import { DrainageGeoJSON } from '@/types';
 import { Layers, MapPin, Crosshair, RefreshCw, AlertCircle } from 'lucide-react';
 
@@ -14,114 +15,134 @@ export default function DigitalTwinMap({
   pilotCoords = [18.96, 72.82],
 }: DigitalTwinMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const drainageLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const [isLocating, setIsLocating] = useState(false);
-  const [activeLayer, setActiveLayer] = useState<'standard' | 'satellite' | 'hydrology'>('standard');
 
+  // Initialize Map once
   useEffect(() => {
     if (!mapContainerRef.current) return;
-    if (mapInstanceRef.current) return; // already initialized
 
-    // Import Leaflet dynamically on client
-    import('leaflet').then((L) => {
-      const map = L.map(mapContainerRef.current!, {
-        center: pilotCoords,
-        zoom: 14,
-        zoomControl: false,
-      });
+    // Guard against container already initialized
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
 
-      L.control.zoom({ position: 'bottomright' }).addTo(map);
+    if ((mapContainerRef.current as any)._leaflet_id) {
+      delete (mapContainerRef.current as any)._leaflet_id;
+    }
 
-      // Add OpenStreetMap base tile layer
-      const streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap',
-        maxZoom: 19,
-      }).addTo(map);
-
-      // Add simulated flood risk radius zone
-      const riskZone = L.circle(pilotCoords, {
-        color: '#ef4444',
-        fillColor: '#f43f5e',
-        fillOpacity: 0.25,
-        radius: 1200,
-        weight: 1.5,
-        dashArray: '4, 8',
-      }).addTo(map);
-
-      riskZone.bindPopup(`
-        <div style="padding: 4px; font-family: sans-serif;">
-          <h4 style="font-weight: bold; color: #ef4444; margin-bottom: 2px;">⚠️ High Inundation Risk Sector</h4>
-          <p style="font-size: 11px; margin: 0; color: #cbd5e1;">South Mumbai Pilot Catchment Area. Manning overflow threshold: 50 mm/hr.</p>
-        </div>
-      `);
-
-      // Add Pilot Ward Marker
-      const pilotMarker = L.circleMarker(pilotCoords, {
-        radius: 9,
-        fillColor: '#38bdf8',
-        color: '#ffffff',
-        weight: 2.5,
-        opacity: 1,
-        fillOpacity: 0.9,
-      }).addTo(map);
-
-      pilotMarker.bindPopup(`
-        <div style="padding: 4px; font-family: sans-serif;">
-          <h4 style="font-weight: bold; color: #38bdf8; margin-bottom: 2px;">📍 Pilot Ward Sensor Node</h4>
-          <p style="font-size: 11px; margin: 0; color: #cbd5e1;">Ward A/B • Lat: 18.96, Lon: 72.82</p>
-          <p style="font-size: 10px; color: #38bdf8; margin-top: 4px;">Hydraulic digital twin telemetry active.</p>
-        </div>
-      `);
-
-      // Add GeoJSON drainage pipes if present
-      if (drainageData?.features) {
-        drainageData.features.forEach((feature) => {
-          if (feature.geometry.type === 'LineString') {
-            const coords = feature.geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
-            L.polyline(coords, {
-              color: '#0284c7',
-              weight: 4,
-              opacity: 0.85,
-            }).addTo(map).bindPopup(`
-              <div style="padding: 4px;">
-                <b style="color:#38bdf8">Drainage Pipe: ${feature.properties.id}</b>
-                <div style="font-size: 11px; color: #94a3b8">Capacity: ${feature.properties.capacity} m³/s</div>
-              </div>
-            `);
-          } else if (feature.geometry.type === 'Point') {
-            const [lng, lat] = feature.geometry.coordinates;
-            L.circleMarker([lat, lng], {
-              radius: 6,
-              fillColor: '#10b981',
-              color: '#ffffff',
-              weight: 1.5,
-              fillOpacity: 0.8,
-            }).addTo(map).bindPopup(`
-              <div style="padding: 4px;">
-                <b style="color:#10b981">Manhole Node: ${feature.properties.id}</b>
-                <div style="font-size: 11px; color: #94a3b8">Capacity: ${feature.properties.capacity} L/s</div>
-              </div>
-            `);
-          }
-        });
-      }
-
-      mapInstanceRef.current = map;
-
-      // Invalidate size on mount after CSS layout
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 250);
+    const map = L.map(mapContainerRef.current, {
+      center: pilotCoords,
+      zoom: 14,
+      zoomControl: false,
     });
 
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // Add OpenStreetMap base tile layer
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Add simulated flood risk radius zone
+    const riskZone = L.circle(pilotCoords, {
+      color: '#ef4444',
+      fillColor: '#f43f5e',
+      fillOpacity: 0.25,
+      radius: 1200,
+      weight: 1.5,
+      dashArray: '4, 8',
+    }).addTo(map);
+
+    riskZone.bindPopup(`
+      <div style="padding: 4px; font-family: sans-serif;">
+        <h4 style="font-weight: bold; color: #ef4444; margin-bottom: 2px;">⚠️ High Inundation Risk Sector</h4>
+        <p style="font-size: 11px; margin: 0; color: #cbd5e1;">South Mumbai Pilot Catchment Area. Manning overflow threshold: 50 mm/hr.</p>
+      </div>
+    `);
+
+    // Add Pilot Ward Marker
+    const pilotMarker = L.circleMarker(pilotCoords, {
+      radius: 9,
+      fillColor: '#38bdf8',
+      color: '#ffffff',
+      weight: 2.5,
+      opacity: 1,
+      fillOpacity: 0.9,
+    }).addTo(map);
+
+    pilotMarker.bindPopup(`
+      <div style="padding: 4px; font-family: sans-serif;">
+        <h4 style="font-weight: bold; color: #38bdf8; margin-bottom: 2px;">📍 Pilot Ward Sensor Node</h4>
+        <p style="font-size: 11px; margin: 0; color: #cbd5e1;">Ward A/B • Lat: 18.96, Lon: 72.82</p>
+        <p style="font-size: 10px; color: #38bdf8; margin-top: 4px;">Hydraulic digital twin telemetry active.</p>
+      </div>
+    `);
+
+    // Create a LayerGroup for dynamic drainage features
+    const drainageGroup = L.layerGroup().addTo(map);
+    drainageLayerGroupRef.current = drainageGroup;
+
+    mapInstanceRef.current = map;
+
+    // Resize invalidate timer
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 200);
+
     return () => {
+      clearTimeout(timer);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [pilotCoords, drainageData]);
+  }, []); // Run once on mount
+
+  // Update Drainage Overlays when data changes without re-initializing the entire map
+  useEffect(() => {
+    if (!mapInstanceRef.current || !drainageLayerGroupRef.current) return;
+
+    const group = drainageLayerGroupRef.current;
+    group.clearLayers();
+
+    if (drainageData?.features) {
+      drainageData.features.forEach((feature) => {
+        if (feature.geometry.type === 'LineString') {
+          const coords = feature.geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+          const polyline = L.polyline(coords, {
+            color: '#0284c7',
+            weight: 4,
+            opacity: 0.85,
+          }).bindPopup(`
+            <div style="padding: 4px;">
+              <b style="color:#38bdf8">Drainage Pipe: ${feature.properties.id}</b>
+              <div style="font-size: 11px; color: #94a3b8">Capacity: ${feature.properties.capacity} m³/s</div>
+            </div>
+          `);
+          group.addLayer(polyline);
+        } else if (feature.geometry.type === 'Point') {
+          const [lng, lat] = feature.geometry.coordinates;
+          const marker = L.circleMarker([lat, lng], {
+            radius: 6,
+            fillColor: '#10b981',
+            color: '#ffffff',
+            weight: 1.5,
+            fillOpacity: 0.8,
+          }).bindPopup(`
+            <div style="padding: 4px;">
+              <b style="color:#10b981">Manhole Node: ${feature.properties.id}</b>
+              <div style="font-size: 11px; color: #94a3b8">Capacity: ${feature.properties.capacity} L/s</div>
+            </div>
+          `);
+          group.addLayer(marker);
+        }
+      });
+    }
+  }, [drainageData]);
 
   // Handle Geolocation
   const handleLocateMe = () => {
@@ -135,27 +156,24 @@ export default function DigitalTwinMap({
       (pos) => {
         setIsLocating(false);
         const { latitude, longitude } = pos.coords;
-        setUserLocation([latitude, longitude]);
 
         if (mapInstanceRef.current) {
-          import('leaflet').then((L) => {
-            mapInstanceRef.current.flyTo([latitude, longitude], 15, { duration: 1.5 });
-            
-            const userMarker = L.circleMarker([latitude, longitude], {
-              radius: 8,
-              fillColor: '#f59e0b',
-              color: '#ffffff',
-              weight: 2,
-              fillOpacity: 0.9,
-            }).addTo(mapInstanceRef.current);
+          mapInstanceRef.current.flyTo([latitude, longitude], 15, { duration: 1.5 });
 
-            userMarker.bindPopup(`
-              <div style="padding: 4px;">
-                <b style="color: #f59e0b">📍 Your Location</b>
-                <p style="font-size: 11px; margin: 0; color: #cbd5e1;">Live monitoring zone.</p>
-              </div>
-            `).openPopup();
-          });
+          const userMarker = L.circleMarker([latitude, longitude], {
+            radius: 8,
+            fillColor: '#f59e0b',
+            color: '#ffffff',
+            weight: 2,
+            fillOpacity: 0.9,
+          }).addTo(mapInstanceRef.current);
+
+          userMarker.bindPopup(`
+            <div style="padding: 4px;">
+              <b style="color: #f59e0b">📍 Your Location</b>
+              <p style="font-size: 11px; margin: 0; color: #cbd5e1;">Live monitoring zone.</p>
+            </div>
+          `).openPopup();
         }
       },
       (err) => {
