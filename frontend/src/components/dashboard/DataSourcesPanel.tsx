@@ -18,7 +18,7 @@ export function DataSourcesPanel({ rainfallMode, lastUpdated }: DataSourcesPanel
     { source: 'Drainage network', value: 'Synthetic pilot graph', status: 'SYNTHETIC', qualifier: 'Unverified municipal topology' },
     { source: 'Flood model', value: 'StreetFlood deterministic runoff-capacity model', status: 'UNCALIBRATED', qualifier: 'Indicative risk ranges' },
     { source: 'Citizen reports', value: 'User-generated reports', status: 'USER-GENERATED', qualifier: '2-report corroboration' },
-    { source: 'SUMO traffic', value: 'Traffic simulation extension', status: 'BLOCKED', qualifier: 'Runtime unavailable' },
+    { source: 'SUMO traffic', value: 'Traffic simulation extension', status: 'LOCAL', qualifier: 'Pilot baseline & detour simulation' },
   ];
 
   return (

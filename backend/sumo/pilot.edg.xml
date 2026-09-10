@@ -1,0 +1,8 @@
+<edges xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/edges_file.xsd">
+    <edge id="street_segment_01" from="node_01" to="node_02" priority="2" numLanes="2" speed="13.89"/>
+    <edge id="street_segment_02" from="node_02" to="node_03" priority="2" numLanes="2" speed="13.89"/>
+    <edge id="street_segment_03" from="node_03" to="node_04" priority="2" numLanes="2" speed="13.89"/>
+    <edge id="street_segment_04" from="node_04" to="node_05" priority="2" numLanes="2" speed="13.89"/>
+    <edge id="bypass_edge_01" from="node_02" to="node_bypass" priority="1" numLanes="2" speed="11.11"/>
+    <edge id="bypass_edge_02" from="node_bypass" to="node_04" priority="1" numLanes="2" speed="11.11"/>
+</edges>

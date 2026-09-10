@@ -6,7 +6,7 @@
 - Python 3.11+
 - Docker Desktop (optional)
 - OSRM is optional. Without it, route requests show an honest service-unavailable state.
-- SUMO Traffic Simulation: **BLOCKED** (Runtime unavailable: `sumo`, `netconvert`, `sumo-gui`, and official container images are currently unavailable in this environment; non-blocking for all other platform capabilities).
+- SUMO Traffic Simulation: **VERIFIED** (Runs natively via official `eclipse-sumo` / `sumolib` / `traci` packages; pilot baseline and flood evacuation scenarios tested).
 
 ## Local setup
 

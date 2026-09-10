@@ -1,0 +1,8 @@
+<nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/nodes_file.xsd">
+    <node id="node_01" x="0.0" y="0.0" type="priority"/>
+    <node id="node_02" x="200.0" y="100.0" type="priority"/>
+    <node id="node_03" x="450.0" y="-50.0" type="priority"/>
+    <node id="node_04" x="700.0" y="-200.0" type="priority"/>
+    <node id="node_05" x="1000.0" y="-400.0" type="priority"/>
+    <node id="node_bypass" x="400.0" y="300.0" type="priority"/>
+</nodes>

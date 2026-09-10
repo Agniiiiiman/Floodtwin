@@ -1,0 +1,9 @@
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="standard_car" accel="2.6" decel="4.5" sigma="0.5" length="4.5" minGap="2.5" maxSpeed="13.89"/>
+    
+    <!-- Evacuation detour route avoiding the flooded street_segment_02 low point -->
+    <route id="detour_route" edges="street_segment_01 bypass_edge_01 bypass_edge_02 street_segment_04"/>
+    
+    <!-- Flooded scenario traffic: all 60 vehicles redirected along bypass corridor with speed restrictions due to water accumulation -->
+    <flow id="commuter_flow" route="detour_route" type="standard_car" begin="0" end="600" number="60" departLane="best" departSpeed="max"/>
+</routes>

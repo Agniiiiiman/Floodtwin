@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-09-10T21:29:21.839884+05:30 by Eclipse SUMO netconvert 1.27.1
+<netconvertConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <node-files value="backend\sumo\pilot.nod.xml"/>
+        <edge-files value="backend\sumo\pilot.edg.xml"/>
+    </input>
+
+    <output>
+        <output-file value="backend\sumo\pilot.net.xml"/>
+    </output>
+
+</netconvertConfiguration>
+-->
+
+<net version="1.20" junctionCornerDetail="5" limitTurnSpeed="5.50" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+
+    <location netOffset="0.00,400.00" convBoundary="0.00,0.00,1000.00,700.00" origBoundary="0.00,-400.00,1000.00,300.00" projParameter="!"/>
+
+    <edge id=":node_02_0" function="internal">
+        <lane id=":node_02_0_0" index="0" speed="8.22" length="8.53" shape="197.04,493.15 198.57,493.56 200.42,493.39 202.59,492.66 205.07,491.36"/>
+        <lane id=":node_02_0_1" index="1" speed="9.56" length="11.73" shape="195.61,496.02 197.92,496.71 200.55,496.62 203.48,495.75 206.72,494.10"/>
+    </edge>
+    <edge id=":node_02_2" function="internal">
+        <lane id=":node_02_2_0" index="0" speed="12.50" length="10.60" shape="195.61,496.02 198.77,497.02 201.23,497.12 203.50,497.49 206.08,499.29"/>
+        <lane id=":node_02_2_1" index="1" speed="12.50" length="10.60" shape="195.61,496.02 198.27,497.32 200.06,498.30 201.68,499.52 203.82,501.55"/>
+    </edge>
+    <edge id=":node_03_0" function="internal">
+        <lane id=":node_03_0_0" index="0" speed="13.89" length="0.10" shape="447.53,345.88 447.53,345.88"/>
+        <lane id=":node_03_0_1" index="1" speed="13.89" length="0.10" shape="449.18,348.63 449.18,348.63"/>
+    </edge>
+    <edge id=":node_04_0" function="internal">
+        <lane id=":node_04_0_0" index="0" speed="13.89" length="16.45" shape="684.58,203.65 698.59,195.17"/>
+        <lane id=":node_04_0_1" index="1" speed="13.89" length="16.45" shape="686.23,206.40 700.36,197.84"/>
+    </edge>
+    <edge id=":node_04_2" function="internal">
+        <lane id=":node_04_2_0" index="0" speed="12.50" length="16.56" shape="688.94,209.11 691.29,204.53 692.75,201.18 694.72,198.31 698.59,195.17"/>
+        <lane id=":node_04_2_1" index="1" speed="12.50" length="16.56" shape="691.68,210.75 693.82,206.53 695.09,203.41 696.84,200.74 700.36,197.84"/>
+    </edge>
+    <edge id=":node_bypass_0" function="internal">
+        <lane id=":node_bypass_0_0" index="0" speed="3.91" length="3.07" shape="397.60,690.81 398.30,691.33 398.95,691.46 399.55,691.18 400.10,690.50"/>
+        <lane id=":node_bypass_0_1" index="1" speed="6.09" length="9.22" shape="395.34,693.07 397.43,694.64 399.39,695.01 401.19,694.18 402.85,692.15"/>
+    </edge>
+
+    <edge id="bypass_edge_01" from="node_02" to="node_bypass" priority="1">
+        <lane id="bypass_edge_01_0" index="0" speed="11.11" length="270.85" shape="206.08,499.29 397.60,690.81"/>
+        <lane id="bypass_edge_01_1" index="1" speed="11.11" length="270.85" shape="203.82,501.55 395.34,693.07"/>
+    </edge>
+    <edge id="bypass_edge_02" from="node_bypass" to="node_04" priority="1">
+        <lane id="bypass_edge_02_0" index="0" speed="11.11" length="561.40" shape="400.10,690.50 688.94,209.11"/>
+        <lane id="bypass_edge_02_1" index="1" speed="11.11" length="561.40" shape="402.85,692.15 691.68,210.75"/>
+    </edge>
+    <edge id="street_segment_01" from="node_01" to="node_02" priority="2">
+        <lane id="street_segment_01_0" index="0" speed="13.89" length="217.90" shape="2.15,395.71 197.04,493.15"/>
+        <lane id="street_segment_01_1" index="1" speed="13.89" length="217.90" shape="0.72,398.57 195.61,496.02"/>
+    </edge>
+    <edge id="street_segment_02" from="node_02" to="node_03" priority="2">
+        <lane id="street_segment_02_0" index="0" speed="13.89" length="282.75" shape="205.07,491.36 447.53,345.88"/>
+        <lane id="street_segment_02_1" index="1" speed="13.89" length="282.75" shape="206.72,494.10 449.18,348.63"/>
+    </edge>
+    <edge id="street_segment_03" from="node_03" to="node_04" priority="2">
+        <lane id="street_segment_03_0" index="0" speed="13.89" length="276.45" shape="447.53,345.88 684.58,203.65"/>
+        <lane id="street_segment_03_1" index="1" speed="13.89" length="276.45" shape="449.18,348.63 686.23,206.40"/>
+    </edge>
+    <edge id="street_segment_04" from="node_04" to="node_05" priority="2">
+        <lane id="street_segment_04_0" index="0" speed="13.89" length="359.06" shape="698.59,195.17 997.34,-3.99"/>
+        <lane id="street_segment_04_1" index="1" speed="13.89" length="359.06" shape="700.36,197.84 999.11,-1.33"/>
+    </edge>
+
+    <junction id="node_01" type="dead_end" x="0.00" y="400.00" incLanes="" intLanes="" shape="-0.00,400.00 2.86,394.28"/>
+    <junction id="node_02" type="priority" x="200.00" y="500.00" incLanes="street_segment_01_0 street_segment_01_1" intLanes=":node_02_0_0 :node_02_0_1 :node_02_2_0 :node_02_2_1" shape="202.68,502.68 207.21,498.16 206.56,497.17 206.52,496.71 206.67,496.28 207.01,495.86 207.54,495.48 204.25,489.99 201.51,491.39 200.36,491.78 199.35,491.97 198.48,491.95 197.76,491.72 194.89,497.45 196.70,498.33 198.04,499.00 199.12,499.61 200.12,500.32 201.25,501.29">
+        <request index="0" response="0000" foes="0000" cont="0"/>
+        <request index="1" response="0000" foes="0000" cont="0"/>
+        <request index="2" response="0000" foes="0000" cont="0"/>
+        <request index="3" response="0000" foes="0000" cont="0"/>
+    </junction>
+    <junction id="node_03" type="priority" x="450.00" y="350.00" incLanes="street_segment_02_0 street_segment_02_1" intLanes=":node_03_0_0 :node_03_0_1" shape="450.00,350.00 446.71,344.51 450.00,350.00">
+        <request index="0" response="00" foes="00" cont="0"/>
+        <request index="1" response="00" foes="00" cont="0"/>
+    </junction>
+    <junction id="node_04" type="priority" x="700.00" y="200.00" incLanes="street_segment_03_0 street_segment_03_1 bypass_edge_02_0 bypass_edge_02_1" intLanes=":node_04_0_0 :node_04_0_1 :node_04_2_0 :node_04_2_1" shape="701.25,199.17 697.70,193.84 683.76,202.28 687.05,207.77 687.57,208.28 693.05,211.58 694.56,208.73 695.50,206.44 696.27,204.53 697.22,202.80 698.76,201.08">
+        <request index="0" response="0000" foes="1100" cont="0"/>
+        <request index="1" response="0000" foes="1100" cont="0"/>
+        <request index="2" response="0011" foes="0011" cont="0"/>
+        <request index="3" response="0011" foes="0011" cont="0"/>
+    </junction>
+    <junction id="node_05" type="dead_end" x="1000.00" y="0.00" incLanes="street_segment_04_0 street_segment_04_1" intLanes="" shape="996.45,-5.33 1000.00,0.00"/>
+    <junction id="node_bypass" type="priority" x="400.00" y="700.00" incLanes="bypass_edge_01_0 bypass_edge_01_1" intLanes=":node_bypass_0_0 :node_bypass_0_1" shape="404.22,692.97 398.73,689.68 394.20,694.20 396.09,695.78 397.89,696.64 399.61,696.79 401.23,696.23 402.77,694.96">
+        <request index="0" response="00" foes="00" cont="0"/>
+        <request index="1" response="00" foes="00" cont="0"/>
+    </junction>
+
+    <connection from="bypass_edge_01" to="bypass_edge_02" fromLane="0" toLane="0" via=":node_bypass_0_0" dir="r" state="M"/>
+    <connection from="bypass_edge_01" to="bypass_edge_02" fromLane="1" toLane="1" via=":node_bypass_0_1" dir="r" state="M"/>
+    <connection from="bypass_edge_02" to="street_segment_04" fromLane="0" toLane="0" via=":node_04_2_0" dir="s" state="m"/>
+    <connection from="bypass_edge_02" to="street_segment_04" fromLane="1" toLane="1" via=":node_04_2_1" dir="s" state="m"/>
+    <connection from="street_segment_01" to="street_segment_02" fromLane="0" toLane="0" via=":node_02_0_0" dir="r" state="M"/>
+    <connection from="street_segment_01" to="street_segment_02" fromLane="1" toLane="1" via=":node_02_0_1" dir="r" state="M"/>
+    <connection from="street_segment_01" to="bypass_edge_01" fromLane="1" toLane="0" via=":node_02_2_0" dir="s" state="M"/>
+    <connection from="street_segment_01" to="bypass_edge_01" fromLane="1" toLane="1" via=":node_02_2_1" dir="s" state="M"/>
+    <connection from="street_segment_02" to="street_segment_03" fromLane="0" toLane="0" via=":node_03_0_0" dir="s" state="M"/>
+    <connection from="street_segment_02" to="street_segment_03" fromLane="1" toLane="1" via=":node_03_0_1" dir="s" state="M"/>
+    <connection from="street_segment_03" to="street_segment_04" fromLane="0" toLane="0" via=":node_04_0_0" dir="s" state="M"/>
+    <connection from="street_segment_03" to="street_segment_04" fromLane="1" toLane="1" via=":node_04_0_1" dir="s" state="M"/>
+
+    <connection from=":node_02_0" to="street_segment_02" fromLane="0" toLane="0" dir="r" state="M"/>
+    <connection from=":node_02_0" to="street_segment_02" fromLane="1" toLane="1" dir="r" state="M"/>
+    <connection from=":node_02_2" to="bypass_edge_01" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":node_02_2" to="bypass_edge_01" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":node_03_0" to="street_segment_03" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":node_03_0" to="street_segment_03" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":node_04_0" to="street_segment_04" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":node_04_0" to="street_segment_04" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":node_04_2" to="street_segment_04" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":node_04_2" to="street_segment_04" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":node_bypass_0" to="bypass_edge_02" fromLane="0" toLane="0" dir="r" state="M"/>
+    <connection from=":node_bypass_0" to="bypass_edge_02" fromLane="1" toLane="1" dir="r" state="M"/>
+
+</net>
