@@ -7,6 +7,7 @@ import {
   DrainageGeoJSON,
   DataMode,
   DrainageWhatIfResult,
+  StreetRiskResponse,
 } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -203,5 +204,14 @@ export async function calculateDrainageWhatIf(
     body: JSON.stringify({ node_id: nodeId, scenario, rainfall_mm_hr: rainfallMmHr }),
   });
   if (!res.ok) throw new Error('Drainage digital twin unavailable. Please retry.');
+  return await res.json();
+}
+
+export async function getStreetRisk(
+  wardId = 'pilot_ward',
+  rainfallMmHr = 20
+): Promise<StreetRiskResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/street-risk/${wardId}?rainfall_mm_hr=${rainfallMmHr}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Street risk service unavailable. Please retry.');
   return await res.json();
 }

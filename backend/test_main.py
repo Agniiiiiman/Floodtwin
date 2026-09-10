@@ -161,3 +161,15 @@ def test_rainfall_runoff_coupling_increases_inflow_utilization_and_overflow():
     assert outputs["low"]["overflow_m3s"] == 0
     assert outputs["high"]["overflow_m3s"] > 0
     assert outputs["high"]["surcharge"] is True
+
+
+def test_flagged_street_explanation_contains_model_values():
+    response = client.get("/api/street-risk/pilot_ward?rainfall_mm_hr=20")
+    flagged = next(item for item in response.json()["segments"] if item["risk"] in {"High", "Critical"})
+    explanation = flagged["explanation"]
+    assert f'{flagged["modeled_inflow_m3s"]:.2f}' in explanation
+    assert f'{flagged["estimated_capacity_m3s"]:.2f}' in explanation
+    assert "elevation" in explanation
+    assert "slope" in explanation
+    assert "contributing area" in explanation
+    assert "node_03" in explanation

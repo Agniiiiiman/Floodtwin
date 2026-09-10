@@ -140,7 +140,9 @@ def classify_segment_risk(rainfall_mm_hr: float, properties: dict, capacity_over
         reasons.append("elevated segment with nearby drainage connection")
     explanation = (
         f"Modeled inflow {runoff:.2f} m³/s versus estimated capacity {capacity:.2f} m³/s "
-        f"({utilization:.0f}% hydraulic utilization); {', '.join(reasons)}."
+        f"({utilization:.0f}% hydraulic utilization); elevation {properties['elevation_m']:.1f} m, "
+        f"slope {properties['slope_percent']:.1f}%, contributing area {properties['contributing_area_km2']:.2f} km², "
+        f"{properties['nearest_drainage_node_m']}m from node {STREET_NODE_MAP.get(properties['id'], 'unknown')}; {', '.join(reasons)}."
     )
     return {
         "risk": risk,
@@ -162,6 +164,7 @@ def classify_segment_risk(rainfall_mm_hr: float, properties: dict, capacity_over
             "slope_percent": properties["slope_percent"],
             "nearest_drainage_node_m": properties["nearest_drainage_node_m"],
             "local_depression": properties["local_depression"],
+            "relevant_node_id": STREET_NODE_MAP.get(properties["id"]),
         },
     }
 

@@ -139,3 +139,40 @@ export interface DrainageWhatIfResult {
     estimated_capacity_m3s: number;
   }>;
 }
+
+export interface StreetRiskSegment {
+  id: string;
+  name: string;
+  source: string;
+  geometry: {
+    type: 'LineString';
+    coordinates: Array<[number, number]>;
+  };
+  risk: RiskLevel;
+  indicative_depth_range: string;
+  confidence: string;
+  rainfall_mm_hr: number;
+  runoff_coefficient: number;
+  contributing_area_km2: number;
+  modeled_inflow_m3s: number;
+  estimated_capacity_m3s: number;
+  overflow_m3s: number;
+  surcharge: boolean;
+  explanation: string;
+  geometry_features: {
+    elevation_m: number;
+    slope_percent: number;
+    nearest_drainage_node_m: number;
+    local_depression: boolean;
+    relevant_node_id?: string;
+  };
+}
+
+export interface StreetRiskResponse {
+  ward_id: string;
+  data_mode: DataMode;
+  source: string;
+  calibration_status: string;
+  rainfall_mm_hr: number;
+  segments: StreetRiskSegment[];
+}

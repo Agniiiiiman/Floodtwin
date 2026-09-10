@@ -2,16 +2,18 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { DrainageGeoJSON } from '@/types';
+import { DrainageGeoJSON, StreetRiskResponse } from '@/types';
 import { Layers, MapPin, Crosshair, RefreshCw, AlertCircle } from 'lucide-react';
 
 interface DigitalTwinMapProps {
   drainageData?: DrainageGeoJSON | null;
+  streetRiskData?: StreetRiskResponse | null;
   pilotCoords?: [number, number]; // [lat, lng]
 }
 
 export default function DigitalTwinMap({
   drainageData,
+  streetRiskData,
   pilotCoords = [18.96, 72.82],
 }: DigitalTwinMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -148,6 +150,29 @@ export default function DigitalTwinMap({
       });
     }
   }, [drainageData]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !streetRiskData?.segments) return;
+    const group = drainageLayerGroupRef.current;
+    if (!group) return;
+    streetRiskData.segments.forEach((segment) => {
+      const coords = segment.geometry.coordinates.map(
+        (coordinate): [number, number] => [coordinate[1], coordinate[0]]
+      );
+      const color = segment.risk === 'Critical' ? '#ef4444' : segment.risk === 'High' ? '#f97316' : segment.risk === 'Medium' ? '#f59e0b' : '#10b981';
+      const streetLayer = L.polyline(coords, { color, weight: segment.risk === 'Critical' || segment.risk === 'High' ? 7 : 5, opacity: 0.95 })
+        .bindPopup(`
+          <div style="padding: 4px; max-width: 260px;">
+            <b style="color:${color}">${segment.name}</b>
+            <div style="font-size: 11px; color: #f8fafc; margin-top: 4px;">Risk: ${segment.risk} · Indicative depth: ${segment.indicative_depth_range}</div>
+            <div style="font-size: 11px; color: #cbd5e1;">Confidence: ${segment.confidence}</div>
+            <div style="font-size: 11px; color: #cbd5e1; margin-top: 5px;"><b>Why?</b> ${segment.explanation}</div>
+            <div style="font-size: 10px; color: #fbbf24; margin-top: 5px;">Last updated from synthetic pilot model · uncalibrated_demo</div>
+          </div>
+        `);
+      group.addLayer(streetLayer);
+    });
+  }, [streetRiskData]);
 
   // Handle Geolocation
   const handleLocateMe = () => {

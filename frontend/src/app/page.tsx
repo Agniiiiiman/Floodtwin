@@ -10,8 +10,8 @@ import { CitizenReportSection } from '@/components/dashboard/CitizenReportSectio
 import { SolutionSection } from '@/components/sections/SolutionSection';
 import { ArchitectureSection } from '@/components/sections/ArchitectureSection';
 import { TeamSection } from '@/components/sections/TeamSection';
-import { getFloodForecast, getHealthCheck, getWardDrainage } from '@/lib/api';
-import { DataMode, ForecastResponse, DrainageGeoJSON } from '@/types';
+import { getFloodForecast, getHealthCheck, getStreetRisk, getWardDrainage } from '@/lib/api';
+import { DataMode, ForecastResponse, DrainageGeoJSON, StreetRiskResponse } from '@/types';
 import { Activity, RefreshCw } from 'lucide-react';
 import { DataStatusBadge } from '@/components/dashboard/DataStatusBadge';
 import { DrainageDigitalTwin } from '@/components/dashboard/DrainageDigitalTwin';
@@ -38,17 +38,20 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [dataMode, setDataMode] = useState<DataMode>('offline');
   const [lastUpdated, setLastUpdated] = useState<string>();
+  const [streetRisk, setStreetRisk] = useState<StreetRiskResponse | null>(null);
 
   const loadWardData = useCallback(async () => {
     setLoading(true);
     try {
-      const [health, forecastData, drainageData] = await Promise.all([
+      const [health, forecastData, drainageData, streetRiskData] = await Promise.all([
         getHealthCheck(),
         getFloodForecast(18.96, 72.82),
         getWardDrainage('pilot_ward'),
+        getStreetRisk('pilot_ward', 20),
       ]);
       setForecast(forecastData);
       setDrainage(drainageData);
+      setStreetRisk(streetRiskData);
       setDataMode(health.mode === 'offline' ? 'offline' : forecastData.data_mode ?? health.mode);
       setLastUpdated(forecastData.last_updated ?? health.last_checked);
     } catch (err) {
@@ -118,6 +121,7 @@ export default function HomePage() {
           {/* Interactive Leaflet Digital Twin Map */}
           <DigitalTwinMap
             drainageData={drainage}
+                        streetRiskData={streetRisk}
             pilotCoords={[18.96, 72.82]}
           />
 
