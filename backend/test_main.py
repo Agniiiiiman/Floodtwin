@@ -144,3 +144,20 @@ def test_drainage_what_if_changes_downstream_street_risk():
     blocked_risk = {item["id"]: item["risk"] for item in blocked_data["risk_changes"]}
     assert normal_risk["street_segment_02"] != blocked_risk["street_segment_02"]
     assert blocked_data["downstream_streets_affected"]
+
+
+def test_rainfall_runoff_coupling_increases_inflow_utilization_and_overflow():
+    outputs = {}
+    for label, rainfall in (("low", 5), ("medium", 20), ("high", 80)):
+        response = client.get(f"/api/street-risk/pilot_ward?rainfall_mm_hr={rainfall}")
+        assert response.status_code == 200
+        segment = next(item for item in response.json()["segments"] if item["id"] == "street_segment_02")
+        outputs[label] = segment
+        assert segment["runoff_coefficient"] == 0.85
+        assert segment["contributing_area_km2"] == 0.16
+        assert segment["modeled_inflow_m3s"] > 0
+    assert outputs["low"]["modeled_inflow_m3s"] < outputs["medium"]["modeled_inflow_m3s"] < outputs["high"]["modeled_inflow_m3s"]
+    assert outputs["low"]["hydraulic_utilization_percent"] < outputs["medium"]["hydraulic_utilization_percent"] < outputs["high"]["hydraulic_utilization_percent"]
+    assert outputs["low"]["overflow_m3s"] == 0
+    assert outputs["high"]["overflow_m3s"] > 0
+    assert outputs["high"]["surcharge"] is True
