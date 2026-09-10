@@ -1,4 +1,5 @@
 export type RiskLevel = 'Low' | 'Medium' | 'High' | 'Critical';
+export type DataMode = 'live' | 'demo' | 'offline';
 
 export interface Sector {
   name: string;
@@ -25,6 +26,8 @@ export interface ForecastResponse {
   rainfall_mm_hr: number;
   calibration_status?: string;
   data_source?: string;
+  data_mode?: DataMode;
+  last_updated?: string;
   ward_id?: string;
 }
 
@@ -43,8 +46,15 @@ export interface CorroboratedReportsResponse {
     lng: number;
     status: string;
     desc: string;
+    report_count?: number;
+    corroborated?: boolean;
+    reported_at?: number;
   }>;
   corroboration_required: number;
+  radius_meters?: number;
+  window_minutes?: number;
+  data_mode?: DataMode;
+  last_updated?: string;
 }
 
 export interface RouteRequest {
@@ -55,24 +65,44 @@ export interface RouteRequest {
 }
 
 export interface RouteResponse {
-  route?: any;
+  route?: {
+    routes?: Array<{
+      geometry?: {
+        type: 'LineString';
+        coordinates: Array<[number, number]>;
+      };
+      distance?: number;
+      duration?: number;
+    }>;
+  };
   safe_status?: string;
   safe_duration?: string;
   calibration_status?: string;
   error?: string;
   details?: string;
+  data_mode?: DataMode;
+  distance_meters?: number;
+  duration_seconds?: number;
 }
 
 export interface DrainageFeature {
   type: string;
   geometry: {
     type: 'Point' | 'LineString' | 'Polygon';
-    coordinates: any;
+    coordinates: number[] | Array<[number, number]>;
   };
   properties: {
     id: string;
     type: 'manhole' | 'pipe' | 'sensor' | 'outfall';
     capacity: number;
+    source?: 'synthetic' | 'real' | 'estimated';
+    capacity_unit?: string;
+    elevation_m?: number;
+    slope_percent?: number;
+    diameter_mm?: number;
+    manning_n?: number;
+    from_node?: string;
+    to_node?: string;
     status?: 'normal' | 'congested' | 'overflow';
     current_load?: number;
   };
