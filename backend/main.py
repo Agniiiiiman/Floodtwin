@@ -28,6 +28,17 @@ def load_drainage_data():
 
 pilot_drainage = load_drainage_data()
 
+
+def load_street_segments():
+    path = os.path.join(os.path.dirname(__file__), "data", "pilot_street_segments.geojson")
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return json.load(f)
+    return {"type": "FeatureCollection", "features": []}
+
+
+pilot_street_segments = load_street_segments()
+
 # Citizen Reports Store (in memory for now)
 reports = []
 # Format: {"lat": float, "lng": float, "status": str, "desc": str, "ip": str, "time": float}
@@ -86,6 +97,62 @@ def manning_equation(rainfall_mm_hr: float):
     else:
         excess = ((rainfall_mm_hr - base_capacity) / base_capacity) * 100
         return {"risk": "Critical", "depth_m": "> 0.6", "confidence": "Low", "reason": f"Node 14: inflow exceeds capacity by {excess:.1f}%"}
+
+
+def classify_segment_risk(rainfall_mm_hr: float, properties: dict) -> dict:
+    rainfall_m_per_second = max(0, rainfall_mm_hr) / 1000 / 3600
+    area_m2 = properties["contributing_area_km2"] * 1_000_000
+    runoff = properties["runoff_coefficient"] * rainfall_m_per_second * area_m2
+    capacity = {
+        "street_segment_01": 0.9,
+        "street_segment_02": 0.55,
+        "street_segment_03": 1.1,
+    }.get(properties["id"], 0.75)
+    utilization = (runoff / capacity) * 100 if capacity else 0
+    feature_penalty = 0
+    reasons = []
+    if properties["local_depression"]:
+        feature_penalty += 30
+        reasons.append("local depression")
+    if properties["nearest_drainage_node_m"] > 75:
+        feature_penalty += 20
+        reasons.append(f"{properties['nearest_drainage_node_m']}m from nearest drainage node")
+    if properties["road_width_m"] < 6:
+        feature_penalty += 10
+        reasons.append("narrow road cross-section")
+    adjusted_utilization = utilization + feature_penalty
+    if adjusted_utilization > 140:
+        risk, depth, confidence = "Critical", ">0.6 m", "Low"
+    elif adjusted_utilization > 100:
+        risk, depth, confidence = "High", "0.3–0.6 m", "Medium"
+    elif adjusted_utilization > 60:
+        risk, depth, confidence = "Medium", "0.1–0.3 m", "Medium"
+    else:
+        risk, depth, confidence = "Low", "0.0–0.1 m", "High"
+    if not reasons:
+        reasons.append("elevated segment with nearby drainage connection")
+    explanation = (
+        f"Modeled inflow {runoff:.2f} m³/s versus estimated capacity {capacity:.2f} m³/s "
+        f"({utilization:.0f}% hydraulic utilization); {', '.join(reasons)}."
+    )
+    return {
+        "risk": risk,
+        "indicative_depth_range": depth,
+        "confidence": confidence,
+        "rainfall_mm_hr": rainfall_mm_hr,
+        "modeled_inflow_m3s": round(runoff, 3),
+        "estimated_capacity_m3s": capacity,
+        "hydraulic_utilization_percent": round(utilization, 1),
+        "feature_penalty_points": feature_penalty,
+        "explanation": explanation,
+        "geometry_features": {
+            "road_width_m": properties["road_width_m"],
+            "elevation_m": properties["elevation_m"],
+            "slope_percent": properties["slope_percent"],
+            "nearest_drainage_node_m": properties["nearest_drainage_node_m"],
+            "local_depression": properties["local_depression"],
+        },
+    }
 
 async def get_rainfall_data(lat: float, lng: float):
     # Using Open-Meteo for the live demo for pilot ward
@@ -199,6 +266,27 @@ def get_reports():
 @app.get("/api/drainage/{ward_id}")
 def get_drainage(ward_id: str):
     return pilot_drainage
+
+
+@app.get("/api/street-risk/{ward_id}")
+def get_street_risk(ward_id: str, rainfall_mm_hr: float = 20.0):
+    return {
+        "ward_id": ward_id,
+        "data_mode": "demo",
+        "source": "synthetic pilot street features",
+        "calibration_status": "uncalibrated_demo",
+        "rainfall_mm_hr": rainfall_mm_hr,
+        "segments": [
+            {
+                "id": feature["properties"]["id"],
+                "name": feature["properties"]["name"],
+                "source": feature["properties"]["source"],
+                "geometry": feature["geometry"],
+                **classify_segment_risk(rainfall_mm_hr, feature["properties"]),
+            }
+            for feature in pilot_street_segments["features"]
+        ],
+    }
 
 @app.post("/api/route")
 async def get_route(req: RouteRequest):

@@ -30,6 +30,16 @@ def test_pilot_drainage_graph_is_synthetic_and_has_nodes_and_edges():
     assert any(feature["geometry"]["type"] == "Point" for feature in data["features"])
     assert any(feature["geometry"]["type"] == "LineString" for feature in data["features"])
 
+
+def test_street_risk_features_produce_different_baseline_outputs():
+    response = client.get("/api/street-risk/pilot_ward?rainfall_mm_hr=20")
+    assert response.status_code == 200
+    segments = {segment["id"]: segment for segment in response.json()["segments"]}
+    assert segments["street_segment_01"]["source"] == "synthetic"
+    assert segments["street_segment_01"]["risk"] != segments["street_segment_02"]["risk"]
+    assert segments["street_segment_02"]["geometry_features"]["local_depression"] is True
+    assert segments["street_segment_02"]["feature_penalty_points"] > segments["street_segment_01"]["feature_penalty_points"]
+
 def test_report_corroboration():
     reports.clear()
     
