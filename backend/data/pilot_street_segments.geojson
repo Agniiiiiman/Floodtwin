@@ -1,0 +1,62 @@
+{
+  "type": "FeatureCollection",
+  "name": "South Mumbai pilot street risk segments",
+  "properties": {
+    "ward_id": "pilot_ward",
+    "source": "synthetic",
+    "elevation_source": "synthetic pilot elevations; DEM not available"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8200, 18.9600], [72.8220, 18.9610]] },
+      "properties": {
+        "id": "street_segment_01",
+        "name": "Pilot Road North",
+        "source": "synthetic",
+        "road_class": "secondary",
+        "road_width_m": 8.0,
+        "elevation_m": 7.2,
+        "slope_percent": 0.8,
+        "nearest_drainage_node_m": 18,
+        "local_depression": false,
+        "contributing_area_km2": 0.11,
+        "runoff_coefficient": 0.75
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8245, 18.9595], [72.8270, 18.9580]] },
+      "properties": {
+        "id": "street_segment_02",
+        "name": "Pilot Road Junction Low Point",
+        "source": "synthetic",
+        "road_class": "local",
+        "road_width_m": 5.5,
+        "elevation_m": 5.1,
+        "slope_percent": 0.2,
+        "nearest_drainage_node_m": 92,
+        "local_depression": true,
+        "contributing_area_km2": 0.16,
+        "runoff_coefficient": 0.85
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8270, 18.9580], [72.8300, 18.9560]] },
+      "properties": {
+        "id": "street_segment_03",
+        "name": "Pilot Road Outfall Approach",
+        "source": "synthetic",
+        "road_class": "primary",
+        "road_width_m": 10.0,
+        "elevation_m": 4.4,
+        "slope_percent": 0.5,
+        "nearest_drainage_node_m": 24,
+        "local_depression": false,
+        "contributing_area_km2": 0.09,
+        "runoff_coefficient": 0.7
+      }
+    }
+  ]
+}

@@ -51,7 +51,7 @@ export default function RainfallMapPage() {
   }, [selectedSector]);
 
   useEffect(() => {
-    loadData();
+    const initialLoad = window.setTimeout(() => void loadData(), 0);
 
     // 60-second countdown interval
     const timer = setInterval(() => {
@@ -64,7 +64,10 @@ export default function RainfallMapPage() {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      window.clearTimeout(initialLoad);
+      clearInterval(timer);
+    };
   }, [loadData]);
 
   return (

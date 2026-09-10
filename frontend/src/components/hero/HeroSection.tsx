@@ -28,14 +28,14 @@ export function HeroSection() {
         {/* Top Badge */}
         <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-8 backdrop-blur-md shadow-inner">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span>Smart India Hackathon 2024 • Disaster AI Project</span>
+          <span>Smart India Hackathon 2026 • Urban Flood Risk MVP</span>
         </div>
 
         {/* Main Heading */}
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.1] mb-6">
-          Intelligent Urban{' '}
+          Street-Level{' '}
           <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-            Flood Digital Twin
+            Flood Risk
           </span>{' '}
           & Safe Routing
         </h1>

@@ -46,7 +46,7 @@ export function SolutionSection() {
             <span>Comprehensive Solution</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            How Error 404 Flood Network Transforms Urban Resilience
+            How StreetFlood Translates Rainfall Into Street-Level Decisions
           </h2>
           <p className="text-sm sm:text-base text-slate-400 mt-4 leading-relaxed">
             Combining deterministic physics simulation with real-time meteorological feeds to convert reactive flood management into proactive early-warning response.

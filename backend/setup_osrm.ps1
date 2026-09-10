@@ -1,22 +1,44 @@
 $ErrorActionPreference = "Stop"
 
-Write-Host "Creating OSRM data directory..."
-New-Item -ItemType Directory -Force -Path "osrm_data" | Out-Null
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$dataPath = Join-Path $scriptRoot "osrm_data"
+$osmPath = Join-Path $dataPath "mumbai_pilot.osm"
+$image = "osrm/osrm-backend:latest"
+$containerName = "streetflood-osrm"
 
-Write-Host "Downloading South Mumbai pilot ward OSM data via Overpass..."
-$bbox = "18.89,72.77,19.03,72.85"
-$query = "[out:xml][timeout:90];(node($bbox);<;);out body;"
-$overpass_url = "https://overpass-api.de/api/interpreter"
-Invoke-WebRequest -Uri $overpass_url -Method Post -Body $query -OutFile "osrm_data\mumbai.osm"
+Write-Host "Checking Docker Desktop Linux engine..."
+docker info | Out-Null
+if ($LASTEXITCODE -ne 0) {
+	throw "Docker Desktop is installed but its Linux engine is not running. Start Docker Desktop and retry."
+}
 
-Write-Host "Extracting routing graph..."
-docker run -t -v "$($PWD.Path)\osrm_data:/data" osrm/osrm-backend osrm-extract -p /opt/car.lua /data/mumbai.osm
+New-Item -ItemType Directory -Force -Path $dataPath | Out-Null
+$volumePath = (Resolve-Path $dataPath).Path
 
-Write-Host "Partitioning routing graph..."
-docker run -t -v "$($PWD.Path)\osrm_data:/data" osrm/osrm-backend osrm-partition /data/mumbai.osrm
+if (-not (Test-Path $osmPath)) {
+	Write-Host "Downloading the small South Mumbai pilot road extract from Overpass..."
+	$bbox = "18.89,72.77,19.03,72.85"
+	$query = "[out:xml][timeout:180];way[highway]($bbox);(._;>;);out body;"
+	$overpassUrl = "https://overpass.kumi.systems/api/interpreter"
+	$encodedQuery = [System.Uri]::EscapeDataString($query)
+	Invoke-WebRequest -Uri "${overpassUrl}?data=$encodedQuery" -Method Get -OutFile $osmPath
+}
 
-Write-Host "Customizing routing graph..."
-docker run -t -v "$($PWD.Path)\osrm_data:/data" osrm/osrm-backend osrm-customize /data/mumbai.osrm
+if (-not (Test-Path $osmPath) -or (Get-Item $osmPath).Length -lt 1000) {
+	throw "The pilot OSM extract was not downloaded correctly: $osmPath"
+}
 
-Write-Host "Done! You can run the server with:"
-Write-Host "docker run -d -p 5000:5000 -v `"$($PWD.Path)\osrm_data:/data`" osrm/osrm-backend osrm-routed --algorithm mld /data/mumbai.osrm"
+Write-Host "Pulling the self-hosted OSRM image..."
+docker pull $image
+
+Write-Host "Preparing OSRM routing graph..."
+docker run --rm -v "${volumePath}:/data" $image osrm-extract -p /opt/car.lua /data/mumbai_pilot.osm
+docker run --rm -v "${volumePath}:/data" $image osrm-partition /data/mumbai_pilot.osrm
+docker run --rm -v "${volumePath}:/data" $image osrm-customize /data/mumbai_pilot.osrm
+
+docker rm -f $containerName 2>$null | Out-Null
+Write-Host "Starting local OSRM on Windows port 5000..."
+docker run -d --name $containerName -p 5000:5000 -v "${volumePath}:/data" $image osrm-routed --algorithm mld /data/mumbai_pilot.osrm
+
+Write-Host "OSRM is starting. Verify with:"
+Write-Host "Invoke-WebRequest 'http://127.0.0.1:5000/route/v1/driving/72.82,18.96;72.835,18.975?overview=full&geometries=geojson'"

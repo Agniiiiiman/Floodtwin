@@ -13,20 +13,19 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'dark';
+    return (localStorage.getItem('e404-theme') as Theme) || 'dark';
+  });
 
   useEffect(() => {
-    const saved = (localStorage.getItem('e404-theme') as Theme) || 'dark';
-    setThemeState(saved);
-    document.documentElement.setAttribute('data-theme', saved);
-    if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-    setMounted(true);
-  }, []);
+  }, [theme]);
 
   const setTheme = (nextTheme: Theme) => {
     setThemeState(nextTheme);

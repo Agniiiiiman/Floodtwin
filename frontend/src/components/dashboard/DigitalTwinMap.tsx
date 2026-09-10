@@ -2,16 +2,18 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { DrainageGeoJSON } from '@/types';
+import { DrainageGeoJSON, StreetRiskResponse } from '@/types';
 import { Layers, MapPin, Crosshair, RefreshCw, AlertCircle } from 'lucide-react';
 
 interface DigitalTwinMapProps {
   drainageData?: DrainageGeoJSON | null;
+  streetRiskData?: StreetRiskResponse | null;
   pilotCoords?: [number, number]; // [lat, lng]
 }
 
 export default function DigitalTwinMap({
   drainageData,
+  streetRiskData,
   pilotCoords = [18.96, 72.82],
 }: DigitalTwinMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -29,8 +31,9 @@ export default function DigitalTwinMap({
       mapInstanceRef.current = null;
     }
 
-    if ((mapContainerRef.current as any)._leaflet_id) {
-      delete (mapContainerRef.current as any)._leaflet_id;
+    const leafletContainer = mapContainerRef.current as HTMLDivElement & { _leaflet_id?: number };
+    if (leafletContainer._leaflet_id) {
+      delete leafletContainer._leaflet_id;
     }
 
     const map = L.map(mapContainerRef.current, {
@@ -112,7 +115,9 @@ export default function DigitalTwinMap({
     if (drainageData?.features) {
       drainageData.features.forEach((feature) => {
         if (feature.geometry.type === 'LineString') {
-          const coords = feature.geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+          const coords = (feature.geometry.coordinates as Array<[number, number]>).map(
+            (c): [number, number] => [c[1], c[0]]
+          );
           const polyline = L.polyline(coords, {
             color: '#0284c7',
             weight: 4,
@@ -120,12 +125,13 @@ export default function DigitalTwinMap({
           }).bindPopup(`
             <div style="padding: 4px;">
               <b style="color:#38bdf8">Drainage Pipe: ${feature.properties.id}</b>
-              <div style="font-size: 11px; color: #94a3b8">Capacity: ${feature.properties.capacity} m³/s</div>
+              <div style="font-size: 11px; color: #94a3b8">Capacity: ${feature.properties.capacity} ${feature.properties.capacity_unit || 'm³/s'}</div>
+              <div style="font-size: 10px; color: #fbbf24">Synthetic pilot data</div>
             </div>
           `);
           group.addLayer(polyline);
         } else if (feature.geometry.type === 'Point') {
-          const [lng, lat] = feature.geometry.coordinates;
+          const [lng, lat] = feature.geometry.coordinates as [number, number];
           const marker = L.circleMarker([lat, lng], {
             radius: 6,
             fillColor: '#10b981',
@@ -135,7 +141,8 @@ export default function DigitalTwinMap({
           }).bindPopup(`
             <div style="padding: 4px;">
               <b style="color:#10b981">Manhole Node: ${feature.properties.id}</b>
-              <div style="font-size: 11px; color: #94a3b8">Capacity: ${feature.properties.capacity} L/s</div>
+              <div style="font-size: 11px; color: #94a3b8">Capacity: ${feature.properties.capacity} ${feature.properties.capacity_unit || 'm³/s'}</div>
+              <div style="font-size: 10px; color: #fbbf24">Synthetic pilot data</div>
             </div>
           `);
           group.addLayer(marker);
@@ -143,6 +150,29 @@ export default function DigitalTwinMap({
       });
     }
   }, [drainageData]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !streetRiskData?.segments) return;
+    const group = drainageLayerGroupRef.current;
+    if (!group) return;
+    streetRiskData.segments.forEach((segment) => {
+      const coords = segment.geometry.coordinates.map(
+        (coordinate): [number, number] => [coordinate[1], coordinate[0]]
+      );
+      const color = segment.risk === 'Critical' ? '#ef4444' : segment.risk === 'High' ? '#f97316' : segment.risk === 'Medium' ? '#f59e0b' : '#10b981';
+      const streetLayer = L.polyline(coords, { color, weight: segment.risk === 'Critical' || segment.risk === 'High' ? 7 : 5, opacity: 0.95 })
+        .bindPopup(`
+          <div style="padding: 4px; max-width: 260px;">
+            <b style="color:${color}">${segment.name}</b>
+            <div style="font-size: 11px; color: #f8fafc; margin-top: 4px;">Risk: ${segment.risk} · Indicative depth: ${segment.indicative_depth_range}</div>
+            <div style="font-size: 11px; color: #cbd5e1;">Confidence: ${segment.confidence}</div>
+            <div style="font-size: 11px; color: #cbd5e1; margin-top: 5px;"><b>Why?</b> ${segment.explanation}</div>
+            <div style="font-size: 10px; color: #fbbf24; margin-top: 5px;">Last updated from synthetic pilot model · uncalibrated_demo</div>
+          </div>
+        `);
+      group.addLayer(streetLayer);
+    });
+  }, [streetRiskData]);
 
   // Handle Geolocation
   const handleLocateMe = () => {
@@ -240,6 +270,7 @@ export default function DigitalTwinMap({
           <span className="w-3 h-3 rounded-full bg-rose-500/40 border border-rose-500" />
           <span className="text-slate-300">Surge Zone</span>
         </div>
+        <div className="border-l border-slate-700 pl-4 text-amber-300">Synthetic data</div>
       </div>
     </div>
   );

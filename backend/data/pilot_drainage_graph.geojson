@@ -1,44 +1,58 @@
 {
   "type": "FeatureCollection",
+  "name": "South Mumbai pilot ward synthetic drainage graph",
+  "properties": {
+    "ward_id": "pilot_ward",
+    "source": "synthetic",
+    "backbone": "OSM-aligned pilot road junctions",
+    "elevation_source": "synthetic pilot elevations; DEM not available",
+    "roughness_note": "Concrete storm-drain default Manning n=0.013"
+  },
   "features": [
     {
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [72.82, 18.96]
-      },
-      "properties": {
-        "id": "node_1",
-        "type": "manhole",
-        "capacity": 100
-      }
+      "geometry": { "type": "Point", "coordinates": [72.8200, 18.9600] },
+      "properties": { "id": "node_01", "type": "manhole", "source": "synthetic", "capacity": 4.0, "capacity_unit": "m3/s", "elevation_m": 7.2, "slope_percent": 0.8, "status": "normal", "current_load": 1.8 }
     },
     {
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [72.822, 18.961]
-      },
-      "properties": {
-        "id": "node_2",
-        "type": "manhole",
-        "capacity": 150
-      }
+      "geometry": { "type": "Point", "coordinates": [72.8220, 18.9610] },
+      "properties": { "id": "node_02", "type": "manhole", "source": "synthetic", "capacity": 3.5, "capacity_unit": "m3/s", "elevation_m": 6.8, "slope_percent": 0.7, "status": "normal", "current_load": 2.1 }
     },
     {
       "type": "Feature",
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [72.82, 18.96],
-          [72.822, 18.961]
-        ]
-      },
-      "properties": {
-        "id": "pipe_1",
-        "type": "pipe",
-        "capacity": 50
-      }
+      "geometry": { "type": "Point", "coordinates": [72.8245, 18.9595] },
+      "properties": { "id": "node_03", "type": "manhole", "source": "synthetic", "capacity": 4.0, "capacity_unit": "m3/s", "elevation_m": 5.9, "slope_percent": 0.6, "status": "congested", "current_load": 3.8 }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [72.8270, 18.9580] },
+      "properties": { "id": "node_04", "type": "manhole", "source": "synthetic", "capacity": 5.2, "capacity_unit": "m3/s", "elevation_m": 5.1, "slope_percent": 0.5, "status": "normal", "current_load": 2.7 }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [72.8300, 18.9560] },
+      "properties": { "id": "node_05", "type": "outfall", "source": "synthetic", "capacity": 6.0, "capacity_unit": "m3/s", "elevation_m": 4.4, "slope_percent": 0.4, "status": "normal", "current_load": 3.0 }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8200, 18.9600], [72.8220, 18.9610]] },
+      "properties": { "id": "pipe_01", "type": "pipe", "source": "synthetic", "capacity": 4.0, "capacity_unit": "m3/s", "diameter_mm": 1200, "slope_percent": 0.8, "manning_n": 0.013, "from_node": "node_01", "to_node": "node_02", "status": "normal", "road_alignment": "OSM-aligned synthetic segment" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8220, 18.9610], [72.8245, 18.9595]] },
+      "properties": { "id": "pipe_02", "type": "pipe", "source": "synthetic", "capacity": 3.5, "capacity_unit": "m3/s", "diameter_mm": 1050, "slope_percent": 0.7, "manning_n": 0.013, "from_node": "node_02", "to_node": "node_03", "status": "normal", "road_alignment": "OSM-aligned synthetic segment" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8245, 18.9595], [72.8270, 18.9580]] },
+      "properties": { "id": "pipe_03", "type": "pipe", "source": "synthetic", "capacity": 4.0, "capacity_unit": "m3/s", "diameter_mm": 1200, "slope_percent": 0.6, "manning_n": 0.013, "from_node": "node_03", "to_node": "node_04", "status": "congested", "road_alignment": "OSM-aligned synthetic segment" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8270, 18.9580], [72.8300, 18.9560]] },
+      "properties": { "id": "pipe_04", "type": "pipe", "source": "synthetic", "capacity": 5.2, "capacity_unit": "m3/s", "diameter_mm": 1500, "slope_percent": 0.5, "manning_n": 0.013, "from_node": "node_04", "to_node": "node_05", "status": "normal", "road_alignment": "OSM-aligned synthetic outfall segment" }
     }
   ]
 }

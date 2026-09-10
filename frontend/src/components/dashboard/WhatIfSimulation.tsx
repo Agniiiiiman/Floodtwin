@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sliders, Play, RotateCcw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Sliders, Play, RotateCcw, AlertTriangle } from 'lucide-react';
+import { calculateSwmmOutput } from '@/lib/swmmModel';
 
 export function WhatIfSimulation() {
-  const [rainIntensity, setRainIntensity] = useState<number>(45); // mm/hr
-  const [blockage, setBlockage] = useState<number>(20); // % blockage
+  const [rainIntensity, setRainIntensity] = useState<number>(80); // mm/hr
+  const [blockage, setBlockage] = useState<number>(0); // % blockage
   const [isSimulating, setIsSimulating] = useState(false);
   const [results, setResults] = useState<{
     peakDepth: number;
@@ -22,16 +23,13 @@ export function WhatIfSimulation() {
   const runSimulation = () => {
     setIsSimulating(true);
     setTimeout(() => {
-      // Manning equation deterministic shock calculation
-      // Effective capacity reduced by blockage percentage
-      const effectiveCapacity = 50.0 * (1 - blockage / 100);
-      const excess = Math.max(0, ((rainIntensity - effectiveCapacity) / effectiveCapacity) * 100);
-      
-      const depth = Number((0.05 + (rainIntensity / 80) * 0.7 + (blockage / 100) * 0.45).toFixed(2));
-      const critical = Math.min(18, Math.max(0, Math.round((rainIntensity / 20) + (blockage / 15))));
+      const hydraulicOutput = calculateSwmmOutput(rainIntensity, blockage);
+      const excess = Math.max(0, hydraulicOutput.utilizationPercent - 100);
+      const depth = Number((0.05 + (hydraulicOutput.utilizationPercent / 100) * 0.45).toFixed(2));
+      const critical = Math.min(18, Math.max(0, Math.round(hydraulicOutput.utilizationPercent / 35)));
 
       let status: 'nominal' | 'warning' | 'critical' = 'nominal';
-      if (depth > 0.6 || excess > 40) status = 'critical';
+      if (hydraulicOutput.floodPotential || excess > 40) status = 'critical';
       else if (depth > 0.25 || excess > 10) status = 'warning';
 
       setResults({
@@ -45,7 +43,7 @@ export function WhatIfSimulation() {
   };
 
   const handleReset = () => {
-    setRainIntensity(15);
+    setRainIntensity(80);
     setBlockage(0);
     setResults({
       peakDepth: 0.12,
@@ -54,6 +52,13 @@ export function WhatIfSimulation() {
       excessInflow: 0,
     });
   };
+
+  const hydraulicOutput = calculateSwmmOutput(rainIntensity, blockage);
+  const chartMax = Math.max(
+    hydraulicOutput.runoffGeneratedM3s,
+    hydraulicOutput.effectiveCapacityM3s,
+    6
+  );
 
   return (
     <div className="glass-panel p-6 rounded-2xl border border-sky-500/20 shadow-xl space-y-6">
@@ -67,7 +72,7 @@ export function WhatIfSimulation() {
               What-If Hydraulic Simulation
             </h3>
             <p className="text-xs text-slate-400">
-              Stress-test the South Mumbai drainage network under extreme weather
+              SWMM-inspired pilot drainage response under extreme weather
             </p>
           </div>
         </div>
@@ -99,7 +104,7 @@ export function WhatIfSimulation() {
             className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
           />
           <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-            <span>Drizzle (5 mm/hr)</span>
+            <span>Light rain (5 mm/hr)</span>
             <span>Monsoon Cloudburst (120 mm/hr)</span>
           </div>
         </div>
@@ -133,8 +138,52 @@ export function WhatIfSimulation() {
         className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md flex items-center justify-center space-x-2"
       >
         <Play className={`w-3.5 h-3.5 ${isSimulating ? 'animate-spin' : ''}`} />
-        <span>{isSimulating ? 'Computing Manning Hydraulics...' : 'Recalculate Inundation Model'}</span>
+        <span>{isSimulating ? 'Routing runoff through drainage model...' : 'Run Hydraulic Model'}</span>
       </button>
+
+      <details className="rounded-xl border border-slate-800 bg-slate-950/40 p-3 text-xs text-slate-300">
+        <summary className="cursor-pointer font-semibold text-sky-300">Model assumptions and calculation</summary>
+        <div className="mt-3 space-y-2 leading-relaxed">
+          <p>This is a synthetic SWMM-inspired screening model, not a calibrated EPA SWMM project file.</p>
+          <p>
+            Runoff = rainfall × catchment area × runoff coefficient; drain capacity is reduced by blockage.
+          </p>
+          <p>
+            Pilot assumptions: {hydraulicOutput.catchmentAreaKm2} km² catchment, runoff coefficient {hydraulicOutput.runoffCoefficient}, and a {hydraulicOutput.drainCapacityM3s.toFixed(1)} m³/s synthetic drain.
+          </p>
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center justify-between"><span>Runoff generated</span><span>{hydraulicOutput.runoffGeneratedM3s.toFixed(1)} m³/s</span></div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-800"><div className="h-full bg-sky-400" style={{ width: `${(hydraulicOutput.runoffGeneratedM3s / chartMax) * 100}%` }} /></div>
+            <div className="flex items-center justify-between"><span>Effective drain capacity</span><span>{hydraulicOutput.effectiveCapacityM3s.toFixed(1)} m³/s</span></div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-800"><div className="h-full bg-emerald-400" style={{ width: `${(hydraulicOutput.effectiveCapacityM3s / chartMax) * 100}%` }} /></div>
+            <div className="flex items-center justify-between"><span>Excess inflow</span><span>{Math.max(0, hydraulicOutput.runoffGeneratedM3s - hydraulicOutput.effectiveCapacityM3s).toFixed(1)} m³/s</span></div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-800"><div className="h-full bg-rose-400" style={{ width: `${(Math.max(0, hydraulicOutput.runoffGeneratedM3s - hydraulicOutput.effectiveCapacityM3s) / chartMax) * 100}%` }} /></div>
+          </div>
+        </div>
+      </details>
+
+      <div className={`rounded-xl border p-4 ${hydraulicOutput.floodPotential ? 'border-rose-500/40 bg-rose-950/20' : 'border-emerald-500/30 bg-emerald-950/20'}`}>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
+            {hydraulicOutput.floodPotential ? <AlertTriangle className="h-4 w-4 text-rose-400" /> : <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />}
+            <span>Hydraulic output chain</span>
+          </div>
+          <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-1 text-[10px] text-sky-300">EPA SWMM-inspired</span>
+        </div>
+        <div className="grid gap-2 text-xs text-slate-300 sm:grid-cols-2">
+          <div>Rainfall <strong className="text-white">{hydraulicOutput.rainfallMmHr} mm/hr</strong></div>
+          <div>Runoff generated <strong className="text-sky-300">{hydraulicOutput.runoffGeneratedM3s.toFixed(1)} m³/s</strong></div>
+          <div>Drain receives <strong className="text-sky-300">{hydraulicOutput.runoffGeneratedM3s.toFixed(1)} m³/s</strong></div>
+          <div>Drain capacity <strong className="text-emerald-300">{hydraulicOutput.effectiveCapacityM3s.toFixed(1)} m³/s</strong></div>
+          <div>Utilization <strong className={hydraulicOutput.surcharge ? 'text-rose-300' : 'text-emerald-300'}>{hydraulicOutput.utilizationPercent.toFixed(0)}%</strong></div>
+          <div>Indicative depth <strong className="text-amber-300">{hydraulicOutput.indicativeDepthRange}</strong></div>
+        </div>
+        <div className="mt-3 space-y-1 border-t border-white/10 pt-3 text-xs">
+          <div className={hydraulicOutput.surcharge ? 'text-rose-300' : 'text-emerald-300'}>{hydraulicOutput.surcharge ? '⚠ Drain surcharge' : '✓ Drain remains within capacity'}</div>
+          <div className="text-slate-300">{hydraulicOutput.surcharge ? `Water accumulates at junction: ${hydraulicOutput.accumulatedWaterM3.toFixed(0)} m³ over 15 minutes` : 'No junction accumulation in this scenario'}</div>
+          <div className={hydraulicOutput.floodPotential ? 'font-semibold text-rose-300' : 'text-emerald-300'}>{hydraulicOutput.floodPotential ? '🌊 Potential flooding' : '✓ No flood potential at this screening threshold'}</div>
+        </div>
+      </div>
 
       {/* Simulation Output Cards */}
       <div className="grid grid-cols-2 gap-3 pt-2">
