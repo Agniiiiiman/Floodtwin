@@ -1,53 +1,110 @@
-# StreetFlood Deployment
+# StreetFlood Deployment & Reproducibility Guide
 
-## Requirements
+## 1. System Requirements
 
-- Node.js 20+
-- Python 3.11+
-- Docker Desktop (optional)
-- OSRM is optional. Without it, route requests show an honest service-unavailable state.
-- SUMO Traffic Simulation: **VERIFIED** (Runs natively via official `eclipse-sumo` / `sumolib` / `traci` packages; pilot baseline and flood evacuation scenarios tested).
+- **Operating System**: Windows 10/11 (PowerShell 5.1+ or PowerShell 7+)
+- **Runtime Dependencies**:
+  - Node.js 20+ and npm 10+
+  - Python 3.11+
+  - Docker Desktop for Windows (with WSL2 Linux engine enabled)
 
-## Local setup
+---
+
+## 2. Environment Configuration
+
+Copy the example environment file:
 
 ```powershell
 Copy-Item .env.example .env
+```
+
+Key environment variables:
+- `NEXT_PUBLIC_API_URL`: URL where the browser connects to FastAPI (default: `http://localhost:8000`).
+- `FRONTEND_URL`: URL of the Next.js web application (default: `http://localhost:3000`).
+- `BACKEND_PORT`: Port for FastAPI backend service (default: `8000`).
+- `OSRM_BACKEND_URL`: URL for local OSRM routing container (default: `http://localhost:5000`).
+
+---
+
+## 3. Local Installation
+
+### A. Frontend Setup
+```powershell
 Push-Location frontend
 npm ci
 Pop-Location
-pip install -r backend/requirements.txt
 ```
 
-## Run the backend
+### B. Backend Setup
+```powershell
+pip install -r backend/requirements.txt
+pip install eclipse-sumo sumolib traci
+```
 
+---
+
+## 4. Running Services
+
+### A. Start the Backend Service
+In Terminal 1:
 ```powershell
 python -m uvicorn backend.main:app --reload --port 8000
 ```
+Verify health: `http://localhost:8000/api/health`
 
-## Run the frontend
-
-In a second terminal:
-
+### B. Start the Frontend Application
+In Terminal 2:
 ```powershell
 Push-Location frontend
 npm run dev
+Pop-Location
 ```
+Open `http://localhost:3000` in your browser.
 
-Open `http://localhost:3000`.
+### C. (Optional) Start Local OSRM Routing
+If Docker Desktop is running:
+```powershell
+.\backend\setup_osrm.ps1
+```
+*Note: If OSRM is not running, `/api/route` returns an honest HTTP 503 Service Unavailable state and does not hallucinate fake routes.*
 
-Set `NEXT_PUBLIC_API_URL` in `.env` when the FastAPI service is hosted elsewhere. The browser must be able to reach that URL.
+### D. Run SUMO Traffic Simulation
+Run the native SUMO simulation pipeline on the pilot network:
+```powershell
+python backend/sumo/run_sumo_simulation.py
+```
+This executes both normal baseline and flood-detour scenarios, extracting real travel time and congestion metrics.
 
-## Docker Compose
+---
 
+## 5. Docker Compose Deployment
+
+To spin up the multi-container stack:
 ```powershell
 docker compose up --build
 ```
+Compose runs the Next.js frontend on port `3000` and the FastAPI backend on port `8000`.
 
-Open `http://localhost:3000`. Compose runs the Next.js frontend and FastAPI backend. PostgreSQL/PostGIS and OSRM are intentionally not bundled because this repository does not currently contain a persistent database model or a portable OSRM dataset.
+---
 
-## Troubleshooting
+## 6. Testing & Quality Verification
 
-- `DEMO MODE` means the frontend could not obtain backend forecast/report data and is showing explicitly labelled fallback data.
-- `OFFLINE` means the health check failed. Check that port 8000 is reachable from the browser.
-- Route errors are expected when OSRM is not running. Start OSRM separately and set `OSRM_BACKEND_URL` for the backend.
-- If Next.js reports multiple lockfiles, run commands from `frontend/`; the root legacy static app has no package manifest.
+Run all automated unit tests:
+```powershell
+# Run backend tests
+python -m pytest backend/test_main.py backend/test_sumo.py -v
+
+# Run frontend build validation
+Push-Location frontend
+npm run build
+Pop-Location
+```
+
+---
+
+## 7. Troubleshooting
+
+- **DEMO MODE badge**: The frontend is displaying synthetic demo fallback data because the backend is reachable but in fallback mode.
+- **OFFLINE badge**: FastAPI is unreachable on port 8000. Check backend terminal logs and CORS settings.
+- **Route Service Unavailable**: Local OSRM container is not started. Start it via `.\backend\setup_osrm.ps1` or view the honest unavailable state in the UI.
+- **SUMO PATH warning**: Ensure `AppData\Roaming\Python\Python313\Scripts` is on your PATH or run simulations via the provided `run_sumo_simulation.py` runner which resolves the path automatically.

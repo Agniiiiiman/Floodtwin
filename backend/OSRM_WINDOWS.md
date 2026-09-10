@@ -60,6 +60,7 @@ Open `http://localhost:3000`, scroll to Safe Route, and submit a pilot route.
 - **FastAPI returns 503:** Test port 5000 directly first. FastAPI intentionally reports route service unavailable when local OSRM cannot be reached.
 - **Frontend cannot reach FastAPI:** Confirm `NEXT_PUBLIC_API_URL` points to the browser-reachable FastAPI URL and that port 8000 is open.
 
-## Current limitation
+## Flood-Aware Routing Status
 
-Normal local OSRM routing is working. Flood-aware avoidance of High/Critical segments is not yet implemented: `/api/route` currently returns the local OSRM route and does not apply live flood-risk penalties or closures.
+- **Normal Local OSRM**: Verified with local OSM pilot bbox.
+- **Flood-Aware Avoidance**: Active (`/api/route`). When rainfall generates High or Critical flood risk on street segments (such as the Pilot Road Junction Low Point), the router actively filters candidate paths to avoid inundated segments and returns a verified flood-safe alternative route.
