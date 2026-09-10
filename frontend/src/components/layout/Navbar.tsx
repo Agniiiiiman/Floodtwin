@@ -34,13 +34,14 @@ export function Navbar() {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Digital Twin', href: '/#dashboard' },
-    { name: 'Rainfall Map', href: '/rainfall-map' },
-    { name: 'Safe Route', href: '/#safe-route' },
-    { name: 'Community Reports', href: '/#reports' },
-    { name: 'Solution', href: '/#solution' },
-    { name: 'Architecture', href: '/#architecture' },
-    { name: 'Team', href: '/#team' },
+    { name: 'Digital Twin', href: '/digital-twin' },
+    { name: 'Simulation', href: '/simulation' },
+    { name: 'Safe Route', href: '/safe-route' },
+    { name: 'Rainfall Radar', href: '/rainfall-map' },
+    { name: 'Citizen Reports', href: '/reports' },
+    { name: 'Solution', href: '/solution' },
+    { name: 'Architecture', href: '/architecture' },
+    { name: 'Team', href: '/team' },
   ];
 
   return (

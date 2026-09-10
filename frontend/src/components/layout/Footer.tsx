@@ -40,8 +40,13 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link href="/#dashboard" className="hover:text-sky-300 transition-colors">
+                <Link href="/digital-twin" className="hover:text-sky-300 transition-colors">
                   Digital Twin Ward Map
+                </Link>
+              </li>
+              <li>
+                <Link href="/simulation" className="hover:text-sky-300 transition-colors">
+                  What-If Hydraulic Simulation
                 </Link>
               </li>
               <li>
@@ -50,18 +55,28 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/#safe-route" className="hover:text-sky-300 transition-colors">
+                <Link href="/safe-route" className="hover:text-sky-300 transition-colors">
                   Safe Route Navigator
                 </Link>
               </li>
               <li>
-                <Link href="/#reports" className="hover:text-sky-300 transition-colors">
-                  Community Flood Reporting
+                <Link href="/reports" className="hover:text-sky-300 transition-colors">
+                  Citizen Flood Reporting
                 </Link>
               </li>
               <li>
-                <Link href="/#solution" className="hover:text-sky-300 transition-colors">
+                <Link href="/solution" className="hover:text-sky-300 transition-colors">
                   Hydraulic Manning Modeling
+                </Link>
+              </li>
+              <li>
+                <Link href="/architecture" className="hover:text-sky-300 transition-colors">
+                  System Architecture
+                </Link>
+              </li>
+              <li>
+                <Link href="/team" className="hover:text-sky-300 transition-colors">
+                  SIH Team Error 404
                 </Link>
               </li>
             </ul>
