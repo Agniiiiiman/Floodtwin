@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { WhatIfSimulation } from '@/components/dashboard/WhatIfSimulation';
+import { DrainageDigitalTwin } from '@/components/dashboard/DrainageDigitalTwin';
 import { Cpu, ArrowRight, Activity, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,7 +26,8 @@ export default function SimulationPage() {
       </div>
 
       {/* Main Simulation Component in a wide, dedicated layout */}
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-8">
+        <DrainageDigitalTwin />
         <WhatIfSimulation />
       </div>
 
