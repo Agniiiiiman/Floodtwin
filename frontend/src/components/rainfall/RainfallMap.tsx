@@ -30,8 +30,9 @@ export default function RainfallMap({
       mapInstanceRef.current = null;
     }
 
-    if ((mapContainerRef.current as any)._leaflet_id) {
-      delete (mapContainerRef.current as any)._leaflet_id;
+    const leafletContainer = mapContainerRef.current as HTMLDivElement & { _leaflet_id?: number };
+    if (leafletContainer._leaflet_id) {
+      delete leafletContainer._leaflet_id;
     }
 
     const map = L.map(mapContainerRef.current, {

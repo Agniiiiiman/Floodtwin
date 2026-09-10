@@ -60,11 +60,11 @@ export function Navbar() {
             </div>
             <div className="flex flex-col">
               <div className="flex items-center space-x-1 font-extrabold tracking-wider text-lg">
-                <span className="text-sky-400">ERROR</span>
-                <span className="text-white font-black">404</span>
+                <span className="text-sky-400">STREET</span>
+                <span className="text-white font-black">FLOOD</span>
               </div>
               <span className="text-[10px] tracking-widest uppercase font-semibold text-sky-300/80 -mt-1">
-                Flood Network
+                Urban Risk Layer
               </span>
             </div>
           </Link>

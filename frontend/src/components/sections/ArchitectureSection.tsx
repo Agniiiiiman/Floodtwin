@@ -31,7 +31,7 @@ export function ArchitectureSection() {
       num: '05',
       title: 'Next.js Interface',
       desc: 'Interactive Leaflet digital twin maps, what-if sliders, and crowdsourced reporting interface.',
-      badge: 'Next.js 15 + React',
+      badge: 'Next.js 16 + React',
     },
   ];
 

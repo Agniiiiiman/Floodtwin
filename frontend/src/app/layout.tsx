@@ -12,9 +12,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Error 404 | Flood Network - Intelligent Urban Flood Digital Twin',
+  title: 'StreetFlood | Street-Level Urban Flood Risk',
   description:
-    'Real-time urban flood monitoring, hydraulic digital twin simulation, OSRM emergency route planning, and global precipitation radar for Smart India Hackathon.',
+    'Explainable street-level urban flood risk, indicative depth ranges, safe routing, and citizen corroboration for Smart India Hackathon 2026.',
   keywords: [
     'Flood Digital Twin',
     'Urban Flood Management',

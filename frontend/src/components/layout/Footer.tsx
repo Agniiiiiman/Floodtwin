@@ -15,11 +15,11 @@ export function Footer() {
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center space-x-1 font-extrabold tracking-wider text-base">
-                  <span className="text-sky-400">ERROR</span>
-                  <span className="text-white font-black">404</span>
+                  <span className="text-sky-400">STREET</span>
+                  <span className="text-white font-black">FLOOD</span>
                 </div>
                 <span className="text-[9px] tracking-widest uppercase font-semibold text-sky-300/80 -mt-0.5">
-                  Flood Network
+                  Urban Risk Layer
                 </span>
               </div>
             </div>
@@ -73,11 +73,11 @@ export function Footer() {
               Smart India Hackathon
             </h4>
             <p className="text-xs text-slate-400 mb-3">
-              Team Error 404 • Problem Statement: Intelligent Urban Flood Management & Rescue Corridor Routing.
+              StreetFlood • Smart India Hackathon 2026 • Street-level flood risk translation.
             </p>
             <div className="flex items-center space-x-3 pt-1">
               <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-300 font-mono">
-                SIH 2024
+                SIH 2026
               </span>
               <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[11px] text-emerald-400 font-mono">
                 Prototype v2.0
@@ -88,9 +88,9 @@ export function Footer() {
 
         {/* Bottom copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 space-y-4 sm:space-y-0">
-          <p>© {new Date().getFullYear()} Error 404 Flood Network. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} StreetFlood. All rights reserved.</p>
           <div className="flex items-center space-x-6">
-            <span>Built with Next.js 15, Leaflet & FastAPI</span>
+            <span>Built with Next.js 16, Leaflet & FastAPI</span>
             <span className="text-slate-400">|</span>
             <span className="text-sky-400/90 font-medium">Urban Disaster Resilience Engine</span>
           </div>

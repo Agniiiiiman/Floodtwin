@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      OSRM_BACKEND_URL: ${OSRM_BACKEND_URL:-http://host.docker.internal:5000}
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"

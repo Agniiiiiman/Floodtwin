@@ -41,7 +41,7 @@ export function TeamSection() {
             Team Error 404
           </h2>
           <p className="text-sm sm:text-base text-slate-400 mt-4 leading-relaxed">
-            Smart India Hackathon 2024 • Developing cutting-edge civic disaster resilience technology.
+            Smart India Hackathon 2026 • Explainable civic disaster resilience technology.
           </p>
         </div>
 
