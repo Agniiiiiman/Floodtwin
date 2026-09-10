@@ -111,9 +111,12 @@ export function LiveMetrics({ data, loading, onRefresh }: LiveMetricsProps) {
             </span>
             <span className="text-sm font-medium text-sky-400">m</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-2 flex items-center space-x-1">
-            <TrendingUp className="w-3 h-3 text-sky-400" />
-            <span>Manning street inundation estimate</span>
+          <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
+            <div className="flex items-center space-x-1">
+              <TrendingUp className="w-3 h-3 text-sky-400" />
+              <span>Manning street inundation estimate</span>
+            </div>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">UNCALIBRATED</span>
           </div>
         </div>
 
@@ -138,6 +141,10 @@ export function LiveMetrics({ data, loading, onRefresh }: LiveMetricsProps) {
               style={{ width: `${networkLoad}%` }}
             />
           </div>
+          <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
+            <span>Synthetic drainage load</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-300 font-mono">ESTIMATED</span>
+          </div>
         </div>
 
         {/* Metric 3: Live Rainfall Intensity */}
@@ -152,8 +159,9 @@ export function LiveMetrics({ data, loading, onRefresh }: LiveMetricsProps) {
             </span>
             <span className="text-sm font-medium text-blue-400">mm/hr</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-2">
-            Source: Open-Meteo Satellite Sync
+          <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
+            <span>Open-Meteo Satellite Sync</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-emerald-300 font-mono">LIVE / DEMO</span>
           </div>
         </div>
       </div>
