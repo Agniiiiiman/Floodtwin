@@ -113,7 +113,88 @@ export default function HomePage() {
       {/* 1. Hero Section with Atmospheric Rain */}
       <HeroSection />
 
-      {/* 2. Platform Subsystems Modular Hub */}
+      {/* 2. 10-Second Operational Decision Matrix */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="glass-panel p-6 sm:p-8 rounded-2xl border border-sky-500/30 shadow-xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+            <div>
+              <span className="text-[10px] uppercase font-mono px-2.5 py-1 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-bold">
+                10-Second Executive Briefing
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-white mt-2">
+                Urban Flood Intelligence Decision Matrix
+              </h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400">Pilot Ward: South Mumbai A/B</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Q1: WHERE */}
+            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div className="text-[10px] font-mono uppercase text-rose-400 font-bold mb-1">1. WHERE IS FLOODING?</div>
+                <div className="text-sm font-bold text-white mb-1">Pilot Road Junction</div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Low-point depression at 5.1m elevation with 92m distance to nearest drain.
+                </p>
+              </div>
+              <Link href="/digital-twin" className="mt-3 text-xs text-sky-400 font-semibold hover:text-sky-300">View Map →</Link>
+            </div>
+
+            {/* Q2: WHY */}
+            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div className="text-[10px] font-mono uppercase text-amber-400 font-bold mb-1">2. WHY? (PHYSICS)</div>
+                <div className="text-sm font-bold text-white mb-1">Inflow &gt; Capacity</div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Catchment runoff $Q = C \cdot i \cdot A$ generates 0.89 m³/s vs 0.55 m³/s capacity (162% load).
+                </p>
+              </div>
+              <Link href="/solution" className="mt-3 text-xs text-amber-400 font-semibold hover:text-amber-300">Methodology →</Link>
+            </div>
+
+            {/* Q3: WHICH ROAD TO AVOID */}
+            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div className="text-[10px] font-mono uppercase text-emerald-400 font-bold mb-1">3. WHICH ROAD TO AVOID?</div>
+                <div className="text-sm font-bold text-white mb-1">Auto-Detour Active</div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Low-point segment avoided; OSRM routes 1435m detour with 0 flood risk.
+                </p>
+              </div>
+              <Link href="/safe-route" className="mt-3 text-xs text-emerald-400 font-semibold hover:text-emerald-300">Safe Route →</Link>
+            </div>
+
+            {/* Q4: DRAINAGE BLOCKAGE */}
+            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div className="text-[10px] font-mono uppercase text-blue-400 font-bold mb-1">4. IF DRAIN IS BLOCKED?</div>
+                <div className="text-sm font-bold text-white mb-1">What-If Surcharge</div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  90% blockage cuts capacity to 0.2 m³/s, triggering downstream junction overflow.
+                </p>
+              </div>
+              <Link href="/simulation" className="mt-3 text-xs text-blue-400 font-semibold hover:text-blue-300">Run What-If →</Link>
+            </div>
+
+            {/* Q5: RAINFALL SURGE */}
+            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div className="text-[10px] font-mono uppercase text-purple-400 font-bold mb-1">5. IF RAIN INCREASES?</div>
+                <div className="text-sm font-bold text-white mb-1">Dynamic Escalation</div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Intensity scaled from 5 to 80 mm/hr propagates hydraulic utilization from 28% to 180%.
+                </p>
+              </div>
+              <Link href="/rainfall-map" className="mt-3 text-xs text-purple-400 font-semibold hover:text-purple-300">Rain Radar →</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Platform Subsystems Modular Hub */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
