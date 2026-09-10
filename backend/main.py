@@ -7,6 +7,7 @@ import math
 import os
 from typing import List, Optional
 import time
+import uuid
 
 app = FastAPI(title="StreetFlood API")
 
@@ -46,8 +47,11 @@ reports = []
 class ReportModel(BaseModel):
     lat: float
     lng: float
-    status: str
-    desc: str
+    severity: str = "Moderate"
+    text: str = ""
+    image_url: Optional[str] = None
+    status: str = "submitted"
+    desc: Optional[str] = None
 
 class RouteRequest(BaseModel):
     start_lat: float
@@ -309,13 +313,17 @@ def submit_report(report: ReportModel, request: Request):
     if recent:
         return {"status": "error", "message": "Rate limited. Try again later."}
     
+    report_time = time.time()
     reports.append({
+        "id": str(uuid.uuid4()),
         "lat": report.lat,
         "lng": report.lng,
+        "severity": report.severity,
+        "text": report.text or report.desc or "",
+        "image_url": report.image_url,
         "status": report.status,
-        "desc": report.desc,
         "ip": client_ip,
-        "time": time.time()
+        "time": report_time,
     })
     nearby_count = len(nearby_recent_reports(reports[-1], time.time()))
     corroborated = nearby_count >= 2
@@ -328,6 +336,8 @@ def submit_report(report: ReportModel, request: Request):
         ),
         "report_count": nearby_count,
         "corroborated": corroborated,
+        "report_id": reports[-1]["id"],
+        "reported_at": report_time,
     }
 
 @app.get("/api/reports")
@@ -345,8 +355,11 @@ def get_reports():
             {
                 "lat": report["lat"],
                 "lng": report["lng"],
-                "status": report["status"],
-                "desc": report["desc"],
+                    "id": report.get("id", "legacy-" + str(report["time"])),
+                    "severity": report.get("severity", report.get("status", "Moderate")),
+                    "text": report.get("text", report.get("desc", "")),
+                    "image_url": report.get("image_url"),
+                    "status": report.get("status", "submitted"),
                 "report_count": nearby_count,
                 "corroborated": nearby_count >= 2,
                 "reported_at": report["time"],

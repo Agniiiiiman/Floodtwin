@@ -34,8 +34,11 @@ export interface ForecastResponse {
 export interface ReportModel {
   lat: number;
   lng: number;
-  status: string; // e.g. "Low", "Moderate", "Severe", "Inaccessible"
-  desc: string;
+  severity?: string;
+  text?: string;
+  image_url?: string;
+  status?: string;
+  desc?: string;
   ip?: string;
   time?: number;
 }
@@ -46,6 +49,10 @@ export interface CorroboratedReportsResponse {
     lng: number;
     status: string;
     desc: string;
+    id?: string;
+    severity?: string;
+    text?: string;
+    image_url?: string;
     report_count?: number;
     corroborated?: boolean;
     reported_at?: number;

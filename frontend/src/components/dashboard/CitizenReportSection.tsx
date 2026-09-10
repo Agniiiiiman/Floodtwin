@@ -14,21 +14,24 @@ export function CitizenReportSection() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [reportsData, setReportsData] = useState<CorroboratedReportsResponse | null>(null);
   const [isLoadingReports, setIsLoadingReports] = useState(true);
+  const [reportsError, setReportsError] = useState<string | null>(null);
 
   const fetchReports = async () => {
     setIsLoadingReports(true);
+    setReportsError(null);
     try {
       const data = await getCorroboratedReports();
       setReportsData(data);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      setReportsError('Reports service unavailable. Retry to load recent incidents.');
     } finally {
       setIsLoadingReports(false);
     }
   };
 
   useEffect(() => {
-    fetchReports();
+    const initialLoad = window.setTimeout(() => void fetchReports(), 0);
+    return () => window.clearTimeout(initialLoad);
   }, []);
 
   const handleUseGPS = () => {
@@ -38,7 +41,7 @@ export function CitizenReportSection() {
           setLat(pos.coords.latitude.toFixed(4));
           setLng(pos.coords.longitude.toFixed(4));
         },
-        (err) => console.warn(err)
+        () => setFeedback('Location permission was unavailable. Enter coordinates manually.')
       );
     }
   };
@@ -58,8 +61,8 @@ export function CitizenReportSection() {
       });
       setFeedback(res.message);
       setDesc('');
-      fetchReports();
-    } catch (err) {
+      await fetchReports();
+    } catch {
       setFeedback('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -78,13 +81,13 @@ export function CitizenReportSection() {
               Crowdsourced Flood Reporting Mesh
             </h3>
             <p className="text-xs text-slate-400">
-              Community ground truth validation with 2-source corroboration filter
+              Citizen corroboration requires 2 reports within 50m and 30 minutes
             </p>
           </div>
         </div>
 
         <span className="text-[10px] uppercase font-mono px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
-          Anti-Spam Filter
+          CITIZEN CORROBORATION
         </span>
       </div>
 
@@ -92,7 +95,7 @@ export function CitizenReportSection() {
         {/* Left: Report Submission Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-slate-300">
+            <label htmlFor="incident-lat" className="text-xs font-semibold text-slate-300">
               INCIDENT LOCATION
             </label>
             <button
@@ -107,7 +110,9 @@ export function CitizenReportSection() {
 
           <div className="grid grid-cols-2 gap-2">
             <input
-              type="text"
+              id="incident-lat"
+              type="number"
+              step="any"
               value={lat}
               onChange={(e) => setLat(e.target.value)}
               placeholder="Latitude"
@@ -115,7 +120,9 @@ export function CitizenReportSection() {
               required
             />
             <input
-              type="text"
+              id="incident-lng"
+              type="number"
+              step="any"
               value={lng}
               onChange={(e) => setLng(e.target.value)}
               placeholder="Longitude"
@@ -125,10 +132,11 @@ export function CitizenReportSection() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">
+            <label htmlFor="incident-status" className="text-xs font-semibold text-slate-300 block mb-1">
               OBSERVED WATERLOGGING SEVERITY
             </label>
             <select
+              id="incident-status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:border-sky-500 focus:outline-none"
@@ -141,10 +149,11 @@ export function CitizenReportSection() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">
+            <label htmlFor="incident-description" className="text-xs font-semibold text-slate-300 block mb-1">
               DESCRIPTION & LANDMARKS
             </label>
             <textarea
+              id="incident-description"
               rows={3}
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
@@ -175,7 +184,7 @@ export function CitizenReportSection() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-300 uppercase tracking-wide">
-              Corroborated Ground Truth
+              Citizen Corroboration
             </span>
             <span className="text-[11px] text-slate-400 flex items-center space-x-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
@@ -183,17 +192,27 @@ export function CitizenReportSection() {
             </span>
           </div>
 
-          <div className="space-y-2.5 max-h-[290px] overflow-y-auto pr-1">
-            {reportsData?.reports && reportsData.reports.length > 0 ? (
+          <div className="space-y-2.5 max-h-[290px] overflow-y-auto pr-1" aria-live="polite">
+            {isLoadingReports ? (
+              <div className="p-8 text-center text-slate-400 text-xs border border-dashed border-slate-800 rounded-xl">Loading reports...</div>
+            ) : reportsError ? (
+              <div className="p-4 text-center text-rose-300 text-xs border border-dashed border-rose-500/30 rounded-xl space-y-2">
+                <p>{reportsError}</p>
+                <button type="button" onClick={fetchReports} className="text-sky-300 hover:text-white">Retry</button>
+              </div>
+            ) : reportsData?.reports && reportsData.reports.length > 0 ? (
               reportsData.reports.map((r, i) => (
                 <div
                   key={i}
-                  className="p-3 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 transition-colors"
+                  className={`p-3 rounded-xl bg-slate-900/70 border ${r.corroborated ? 'border-rose-500/40' : 'border-amber-500/30'} hover:border-slate-700 transition-colors`}
                 >
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="font-bold text-white flex items-center space-x-1.5">
                       <span className={`w-2 h-2 rounded-full ${r.status === 'Severe' ? 'bg-rose-500' : 'bg-amber-500'}`} />
                       <span>{r.status} Severity</span>
+                    </span>
+                    <span className={`text-[10px] font-semibold ${r.corroborated ? 'text-rose-300' : 'text-amber-300'}`}>
+                      {r.corroborated ? 'Confirmed by 2 reports' : `Waiting for corroboration (${r.report_count ?? 1}/2)`}
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">
                       {r.lat.toFixed(3)}, {r.lng.toFixed(3)}

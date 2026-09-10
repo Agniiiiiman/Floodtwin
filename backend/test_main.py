@@ -44,12 +44,15 @@ def test_report_corroboration():
     reports.clear()
     
     # 1 report
-    client.post("/api/report", json={"lat": 18.96, "lng": 72.82, "status": "flooding", "desc": "1"})
+    first = client.post("/api/report", json={"lat": 18.96, "lng": 72.82, "severity": "Severe", "text": "1"})
+    assert first.json()["report_id"]
+    assert first.json()["message"] == "Waiting for corroboration (1/2)."
     
     # The first report is visible but not confirmed.
     response = client.get("/api/reports")
     assert response.json()["reports"][0]["report_count"] == 1
     assert response.json()["reports"][0]["corroborated"] is False
+    assert response.json()["reports"][0]["severity"] == "Severe"
     
     # 2nd report, different IP (simulate)
     # The client uses same IP by default, wait, I need to clear the rate limit check
@@ -67,6 +70,18 @@ def test_report_corroboration():
     
     response = client.get("/api/reports")
     assert len(response.json()["reports"]) >= 2
+    assert all(report["corroborated"] for report in response.json()["reports"])
+
+
+def test_nearby_second_report_confirms_with_actual_message():
+    reports.clear()
+    now = time.time()
+    reports.extend([
+        {"id": "r1", "lat": 18.96, "lng": 72.82, "severity": "Severe", "text": "1", "image_url": None, "status": "submitted", "ip": "a", "time": now},
+        {"id": "r2", "lat": 18.9601, "lng": 72.82, "severity": "Severe", "text": "2", "image_url": None, "status": "submitted", "ip": "b", "time": now},
+    ])
+    response = client.get("/api/reports")
+    assert all(report["report_count"] == 2 for report in response.json()["reports"])
     assert all(report["corroborated"] for report in response.json()["reports"])
 
 def test_routing():
