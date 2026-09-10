@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import httpx
@@ -44,6 +44,33 @@ class RouteRequest(BaseModel):
     end_lat: float
     end_lng: float
 
+
+CORROBORATION_RADIUS_METERS = 50.0
+CORROBORATION_WINDOW_SECONDS = 30 * 60
+
+
+def distance_meters(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Return the great-circle distance between two coordinates."""
+    earth_radius = 6_371_000
+    lat1_rad, lat2_rad = math.radians(lat1), math.radians(lat2)
+    delta_lat = math.radians(lat2 - lat1)
+    delta_lng = math.radians(lng2 - lng1)
+    haversine = (
+        math.sin(delta_lat / 2) ** 2
+        + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lng / 2) ** 2
+    )
+    return 2 * earth_radius * math.asin(math.sqrt(haversine))
+
+
+def nearby_recent_reports(report: dict, current_time: float) -> list[dict]:
+    return [
+        other
+        for other in reports
+        if current_time - other["time"] <= CORROBORATION_WINDOW_SECONDS
+        and distance_meters(report["lat"], report["lng"], other["lat"], other["lng"])
+        <= CORROBORATION_RADIUS_METERS
+    ]
+
 def manning_equation(rainfall_mm_hr: float):
     # Deterministic capacity-overflow model utilizing Manning's equation for pipe flow 
     # and simple runoff coefficients.
@@ -67,20 +94,30 @@ async def get_rainfall_data(lat: float, lng: float):
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=5.0)
             data = resp.json()
-            return data.get("current", {}).get("precipitation", 0.0)
+            return data.get("current", {}).get("precipitation", 0.0), "live"
     except Exception:
-        return 0.0
+        return 0.0, "demo"
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "system": "StreetFlood Backend v1", "calibration_status": "uncalibrated_demo"}
+    return {
+        "status": "ok",
+        "mode": "live",
+        "system": "StreetFlood Backend v1",
+        "calibration_status": "uncalibrated_demo",
+    }
 
 @app.get("/api/forecast")
 async def get_forecast(lat: float, lng: float):
-    rain = await get_rainfall_data(lat, lng)
+    rain, data_mode = await get_rainfall_data(lat, lng)
     model_output = manning_equation(rain)
     model_output["calibration_status"] = "uncalibrated_demo"
-    model_output["data_source"] = "Open-Meteo (current precipitation)"
+    model_output["data_mode"] = data_mode
+    model_output["data_source"] = (
+        "Open-Meteo (current precipitation)"
+        if data_mode == "live"
+        else "Synthetic fallback precipitation"
+    )
     model_output["rainfall_mm_hr"] = rain
     return model_output
 
@@ -88,11 +125,16 @@ async def get_forecast(lat: float, lng: float):
 async def get_ward_forecast(ward_id: str):
     # Mocking center of pilot ward (Mumbai: 18.96, 72.82)
     lat, lng = 18.96, 72.82
-    rain = await get_rainfall_data(lat, lng)
+    rain, data_mode = await get_rainfall_data(lat, lng)
     model_output = manning_equation(rain)
     model_output["ward_id"] = ward_id
     model_output["calibration_status"] = "uncalibrated_demo"
-    model_output["data_source"] = "Open-Meteo (current precipitation)"
+    model_output["data_mode"] = data_mode
+    model_output["data_source"] = (
+        "Open-Meteo (current precipitation)"
+        if data_mode == "live"
+        else "Synthetic fallback precipitation"
+    )
     return model_output
 
 @app.post("/api/report")
@@ -111,37 +153,48 @@ def submit_report(report: ReportModel, request: Request):
         "ip": client_ip,
         "time": time.time()
     })
-    return {"status": "success", "message": "Report submitted."}
+    nearby_count = len(nearby_recent_reports(reports[-1], time.time()))
+    corroborated = nearby_count >= 2
+    return {
+        "status": "success",
+        "message": (
+            "Flooding confirmed at this location."
+            if corroborated
+            else f"Waiting for corroboration ({nearby_count}/2)."
+        ),
+        "report_count": nearby_count,
+        "corroborated": corroborated,
+    }
 
 @app.get("/api/reports")
 def get_reports():
-    # Corroboration logic: only return reports if there are >= 2 reports near the same location (within ~500m) in the last hour
     current_time = time.time()
-    valid_reports = []
-    
-    for r in reports:
-        if current_time - r["time"] > 3600:
-            continue # ignore older than 1 hr
-        
-        # count nearby recent reports
-        nearby_count = 0
-        for other in reports:
-            if current_time - other["time"] > 3600:
-                continue
-            # basic distance approximation (0.005 deg ~ 500m)
-            dist = math.sqrt((r["lat"] - other["lat"])**2 + (r["lng"] - other["lng"])**2)
-            if dist < 0.005:
-                nearby_count += 1
-        
-        if nearby_count >= 2:
-            valid_reports.append({
-                "lat": r["lat"],
-                "lng": r["lng"],
-                "status": r["status"],
-                "desc": r["desc"]
-            })
-    
-    return {"reports": valid_reports, "corroboration_required": 2}
+    recent_reports = [
+        report
+        for report in reports
+        if current_time - report["time"] <= CORROBORATION_WINDOW_SECONDS
+    ]
+    report_view = []
+    for report in recent_reports:
+        nearby_count = len(nearby_recent_reports(report, current_time))
+        report_view.append(
+            {
+                "lat": report["lat"],
+                "lng": report["lng"],
+                "status": report["status"],
+                "desc": report["desc"],
+                "report_count": nearby_count,
+                "corroborated": nearby_count >= 2,
+                "reported_at": report["time"],
+            }
+        )
+
+    return {
+        "reports": report_view,
+        "corroboration_required": 2,
+        "radius_meters": CORROBORATION_RADIUS_METERS,
+        "window_minutes": 30,
+    }
 
 @app.get("/api/drainage/{ward_id}")
 def get_drainage(ward_id: str):
@@ -149,9 +202,8 @@ def get_drainage(ward_id: str):
 
 @app.post("/api/route")
 async def get_route(req: RouteRequest):
-    # Using local OSRM instance.
-    # Assuming OSRM is running on localhost:5000
-    osrm_url = f"http://localhost:5000/route/v1/driving/{req.start_lng},{req.start_lat};{req.end_lng},{req.end_lat}?overview=full&geometries=geojson"
+    osrm_base_url = os.getenv("OSRM_BACKEND_URL", "http://localhost:5000").rstrip("/")
+    osrm_url = f"{osrm_base_url}/route/v1/driving/{req.start_lng},{req.start_lat};{req.end_lng},{req.end_lat}?overview=full&geometries=geojson"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(osrm_url, timeout=5.0)
@@ -159,12 +211,13 @@ async def get_route(req: RouteRequest):
                 data = resp.json()
                 return {
                     "route": data,
-                    "safe_status": "Avoided high/critical risk segments",
-                    "safe_duration": "safe for approximately 30 minutes (uncalibrated_demo)",
+                    "safe_status": "Route calculated; verify conditions before departure.",
+                    "safe_duration": "Safe for approximately 30 minutes under current conditions; conditions can change as rainfall evolves.",
                     "calibration_status": "uncalibrated_demo"
                 }
-            else:
-                return {"error": "OSRM routing failed", "details": resp.text}
-    except Exception as e:
-        return {"error": "Failed to connect to local OSRM", "details": str(e)}
+            raise HTTPException(status_code=503, detail="Route service unavailable")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=503, detail="Route service unavailable")
 
