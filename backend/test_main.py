@@ -105,3 +105,20 @@ def test_reports_older_than_30_minutes_are_not_corroborated():
 
     response = client.get("/api/reports")
     assert all(report["report_count"] == 1 for report in response.json()["reports"])
+
+
+def test_live_risk_changes_selected_route():
+    request = {
+        "start_lat": 18.9610,
+        "start_lng": 72.8220,
+        "end_lat": 18.9560,
+        "end_lng": 72.8300,
+    }
+    clear_weather_route = client.post("/api/route", json={**request, "rainfall_mm_hr": 0})
+    flood_event_route = client.post("/api/route", json={**request, "rainfall_mm_hr": 20})
+    assert clear_weather_route.status_code == 200
+    assert flood_event_route.status_code == 200
+    clear_distance = clear_weather_route.json()["route"]["routes"][0]["distance"]
+    flood_distance = flood_event_route.json()["route"]["routes"][0]["distance"]
+    assert clear_distance != flood_distance
+    assert "Pilot Road Junction Low Point" in flood_event_route.json()["avoided_segments"]

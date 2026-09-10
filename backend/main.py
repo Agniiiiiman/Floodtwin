@@ -54,6 +54,7 @@ class RouteRequest(BaseModel):
     start_lng: float
     end_lat: float
     end_lng: float
+    rainfall_mm_hr: Optional[float] = None
 
 
 CORROBORATION_RADIUS_METERS = 50.0
@@ -153,6 +154,31 @@ def classify_segment_risk(rainfall_mm_hr: float, properties: dict) -> dict:
             "local_depression": properties["local_depression"],
         },
     }
+
+
+def route_near_segment(route_coordinates: list, segment_coordinates: list, threshold_meters: float = 80) -> bool:
+    """Use a local equirectangular distance check to identify avoided street segments."""
+    for route_lng, route_lat in route_coordinates:
+        for segment_lng, segment_lat in segment_coordinates:
+            distance = math.sqrt(
+                ((route_lng - segment_lng) * 105_000) ** 2
+                + ((route_lat - segment_lat) * 111_000) ** 2
+            )
+            if distance <= threshold_meters:
+                return True
+    return False
+
+
+def live_segment_risks(rainfall_mm_hr: float) -> list[dict]:
+    return [
+        {
+            "id": feature["properties"]["id"],
+            "name": feature["properties"]["name"],
+            "risk": classify_segment_risk(rainfall_mm_hr, feature["properties"])["risk"],
+            "geometry": feature["geometry"],
+        }
+        for feature in pilot_street_segments["features"]
+    ]
 
 async def get_rainfall_data(lat: float, lng: float):
     # Using Open-Meteo for the live demo for pilot ward
@@ -291,17 +317,40 @@ def get_street_risk(ward_id: str, rainfall_mm_hr: float = 20.0):
 @app.post("/api/route")
 async def get_route(req: RouteRequest):
     osrm_base_url = os.getenv("OSRM_BACKEND_URL", "http://localhost:5000").rstrip("/")
-    osrm_url = f"{osrm_base_url}/route/v1/driving/{req.start_lng},{req.start_lat};{req.end_lng},{req.end_lat}?overview=full&geometries=geojson"
+    if req.rainfall_mm_hr is None:
+        rainfall_mm_hr, rainfall_mode = await get_rainfall_data(req.start_lat, req.start_lng)
+    else:
+        rainfall_mm_hr, rainfall_mode = req.rainfall_mm_hr, "demo"
+    high_risk_segments = [
+        segment for segment in live_segment_risks(rainfall_mm_hr)
+        if segment["risk"] in {"High", "Critical"}
+    ]
+    osrm_url = f"{osrm_base_url}/route/v1/driving/{req.start_lng},{req.start_lat};{req.end_lng},{req.end_lat}?overview=full&geometries=geojson&alternatives=true"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(osrm_url, timeout=5.0)
             if resp.status_code == 200:
                 data = resp.json()
+                candidates = data.get("routes", [])
+                safe_candidates = [
+                    route for route in candidates
+                    if not any(
+                        route_near_segment(route.get("geometry", {}).get("coordinates", []), segment["geometry"]["coordinates"])
+                        for segment in high_risk_segments
+                    )
+                ]
+                if not safe_candidates:
+                    raise HTTPException(status_code=503, detail="No flood-safe local OSRM route available")
+                selected_route = min(safe_candidates, key=lambda route: route.get("duration", float("inf")))
+                avoided = [segment["name"] for segment in high_risk_segments]
                 return {
-                    "route": data,
-                    "safe_status": "Route calculated; verify conditions before departure.",
+                    "route": {**data, "routes": [selected_route]},
+                    "safe_status": "Route calculated with live flood-risk exclusions; verify conditions before departure.",
                     "safe_duration": "Safe for approximately 30 minutes under current conditions; conditions can change as rainfall evolves.",
-                    "calibration_status": "uncalibrated_demo"
+                    "calibration_status": "uncalibrated_demo",
+                    "rainfall_mm_hr": rainfall_mm_hr,
+                    "rainfall_mode": rainfall_mode,
+                    "avoided_segments": avoided,
                 }
             raise HTTPException(status_code=503, detail="Route service unavailable")
     except HTTPException:

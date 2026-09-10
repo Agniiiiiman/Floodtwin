@@ -83,6 +83,9 @@ export interface RouteResponse {
   data_mode?: DataMode;
   distance_meters?: number;
   duration_seconds?: number;
+  rainfall_mm_hr?: number;
+  rainfall_mode?: DataMode;
+  avoided_segments?: string[];
 }
 
 export interface DrainageFeature {

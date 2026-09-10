@@ -1,9 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { calculateSafeRoute } from '@/lib/api';
 import { RouteResponse } from '@/types';
 import { Navigation, Compass, AlertTriangle, CheckCircle2, ShieldAlert, ArrowRight } from 'lucide-react';
+
+const SafeRouteMap = dynamic(
+  () => import('./SafeRouteMap').then((module) => module.SafeRouteMap),
+  { ssr: false }
+);
 
 export function SafeRoutePlanner() {
   const [startLat, setStartLat] = useState('18.9600');
@@ -12,20 +18,27 @@ export function SafeRoutePlanner() {
   const [endLng, setEndLng] = useState('72.8350');
   const [isLoading, setIsLoading] = useState(false);
   const [routeResult, setRouteResult] = useState<RouteResponse | null>(null);
+  const [routeError, setRouteError] = useState<string | null>(null);
 
   const handleCalculateRoute = async (e: React.FormEvent) => {
     e.preventDefault();
+    setRouteError(null);
+    setRouteResult(null);
     setIsLoading(true);
     try {
+      const coordinates = [startLat, startLng, endLat, endLng].map(Number);
+      if (coordinates.some((value) => !Number.isFinite(value))) {
+        throw new Error('Enter valid numeric coordinates for both locations.');
+      }
       const res = await calculateSafeRoute({
-        start_lat: parseFloat(startLat),
-        start_lng: parseFloat(startLng),
-        end_lat: parseFloat(endLat),
-        end_lng: parseFloat(endLng),
+        start_lat: coordinates[0],
+        start_lng: coordinates[1],
+        end_lat: coordinates[2],
+        end_lng: coordinates[3],
       });
       setRouteResult(res);
     } catch (err) {
-      console.error(err);
+      setRouteError(err instanceof Error ? err.message : 'Route service unavailable. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -158,8 +171,41 @@ export function SafeRoutePlanner() {
             {routeResult.safe_status}
           </p>
           <div className="text-[11px] text-emerald-400/90 font-mono">
-            ⏱️ {routeResult.safe_duration}
+            {routeResult.safe_duration}
           </div>
+          <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
+            <span>Distance: {routeResult.route?.routes?.[0]?.distance ? `${(routeResult.route.routes[0].distance / 1000).toFixed(1)} km` : 'Unavailable'}</span>
+            <span>ETA: {routeResult.route?.routes?.[0]?.duration ? `${Math.ceil(routeResult.route.routes[0].duration / 60)} min` : 'Unavailable'}</span>
+          </div>
+          {routeResult.avoided_segments && routeResult.avoided_segments.length > 0 && (
+            <div className="rounded-lg border border-rose-500/25 bg-rose-950/20 p-2 text-[11px] text-rose-200">
+              Avoided live high-risk segments: {routeResult.avoided_segments.join(', ')}
+            </div>
+          )}
+          <SafeRouteMap
+            routeResult={routeResult}
+            origin={[Number(startLat), Number(startLng)]}
+            destination={[Number(endLat), Number(endLng)]}
+          />
+          <p className="text-[10px] text-slate-400">
+            Green line shows the returned route. Flood-segment avoidance is only available when the backend supplies risk overlays.
+          </p>
+        </div>
+      )}
+
+      {routeError && (
+        <div className="p-4 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-3" role="alert">
+          <div className="flex items-center gap-2 text-rose-300 text-xs font-semibold">
+            <AlertTriangle className="w-4 h-4" />
+            <span>{routeError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setRouteError(null)}
+            className="text-xs text-sky-300 hover:text-white"
+          >
+            Dismiss and retry
+          </button>
         </div>
       )}
     </div>
