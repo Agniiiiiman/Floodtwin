@@ -3,8 +3,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { LiveMetrics } from '@/components/dashboard/LiveMetrics';
-import { getFloodForecast, getWardDrainage } from '@/lib/api';
-import { ForecastResponse, DrainageGeoJSON } from '@/types';
+import { DataSourcesPanel } from '@/components/dashboard/DataSourcesPanel';
+import { DataStatusBadge } from '@/components/dashboard/DataStatusBadge';
+import { getFloodForecast, getWardDrainage, getHealthCheck } from '@/lib/api';
+import { ForecastResponse, DrainageGeoJSON, DataMode } from '@/types';
 import { Activity, RefreshCw, Layers, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -27,19 +29,23 @@ const DigitalTwinMap = dynamic(
 export default function DigitalTwinPage() {
   const [forecast, setForecast] = useState<ForecastResponse | null>(null);
   const [drainage, setDrainage] = useState<DrainageGeoJSON | null>(null);
+  const [backendMode, setBackendMode] = useState<DataMode>('live');
   const [loading, setLoading] = useState(true);
 
   const loadWardData = useCallback(async () => {
     setLoading(true);
     try {
-      const [forecastData, drainageData] = await Promise.all([
+      const [forecastData, drainageData, health] = await Promise.all([
         getFloodForecast(18.96, 72.82),
         getWardDrainage('pilot_ward'),
+        getHealthCheck(),
       ]);
       setForecast(forecastData);
       setDrainage(drainageData);
+      setBackendMode(health.mode);
     } catch (err) {
       console.error('Error fetching ward telemetry:', err);
+      setBackendMode('offline');
     } finally {
       setLoading(false);
     }
@@ -56,9 +62,12 @@ export default function DigitalTwinPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
-            <Activity className="w-3.5 h-3.5" />
-            <span>Real-Time Hydraulic Operations</span>
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold uppercase tracking-wider">
+              <Activity className="w-3.5 h-3.5" />
+              <span>Real-Time Hydraulic Operations</span>
+            </div>
+            <DataStatusBadge mode={backendMode} lastUpdated={forecast?.last_updated} />
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
             South Mumbai Pilot Ward Digital Twin
@@ -107,6 +116,12 @@ export default function DigitalTwinPage() {
           pilotCoords={[18.96, 72.82]}
         />
       </div>
+
+      {/* Data Sources & Provenance Panel */}
+      <DataSourcesPanel
+        rainfallMode={backendMode}
+        lastUpdated={forecast?.last_updated}
+      />
 
       {/* Quick Navigation Footer */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-slate-800">
