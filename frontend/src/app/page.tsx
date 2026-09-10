@@ -10,9 +10,11 @@ import { CitizenReportSection } from '@/components/dashboard/CitizenReportSectio
 import { SolutionSection } from '@/components/sections/SolutionSection';
 import { ArchitectureSection } from '@/components/sections/ArchitectureSection';
 import { TeamSection } from '@/components/sections/TeamSection';
-import { getFloodForecast, getWardDrainage } from '@/lib/api';
-import { ForecastResponse, DrainageGeoJSON } from '@/types';
-import { Activity, RefreshCw, Layers, ShieldCheck, MapPin } from 'lucide-react';
+import { getFloodForecast, getHealthCheck, getWardDrainage } from '@/lib/api';
+import { DataMode, ForecastResponse, DrainageGeoJSON } from '@/types';
+import { Activity, RefreshCw } from 'lucide-react';
+import { DataStatusBadge } from '@/components/dashboard/DataStatusBadge';
+import { DrainageDigitalTwin } from '@/components/dashboard/DrainageDigitalTwin';
 
 // Dynamic import for Digital Twin Map
 const DigitalTwinMap = dynamic(
@@ -34,16 +36,21 @@ export default function HomePage() {
   const [forecast, setForecast] = useState<ForecastResponse | null>(null);
   const [drainage, setDrainage] = useState<DrainageGeoJSON | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dataMode, setDataMode] = useState<DataMode>('offline');
+  const [lastUpdated, setLastUpdated] = useState<string>();
 
   const loadWardData = useCallback(async () => {
     setLoading(true);
     try {
-      const [forecastData, drainageData] = await Promise.all([
+      const [health, forecastData, drainageData] = await Promise.all([
+        getHealthCheck(),
         getFloodForecast(18.96, 72.82),
         getWardDrainage('pilot_ward'),
       ]);
       setForecast(forecastData);
       setDrainage(drainageData);
+      setDataMode(health.mode === 'offline' ? 'offline' : forecastData.data_mode ?? health.mode);
+      setLastUpdated(forecastData.last_updated ?? health.last_checked);
     } catch (err) {
       console.error('Error fetching ward telemetry:', err);
     } finally {
@@ -52,11 +59,14 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    loadWardData();
+    const initialLoad = window.setTimeout(() => void loadWardData(), 0);
 
     // Poll live telemetry every 30 seconds
     const interval = setInterval(loadWardData, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      window.clearTimeout(initialLoad);
+      clearInterval(interval);
+    };
   }, [loadWardData]);
 
   return (
@@ -70,17 +80,18 @@ export default function HomePage() {
           <div>
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
               <Activity className="w-3.5 h-3.5" />
-              <span>Real-Time Hydraulic Operations</span>
+              <span>Street-Level Flood Risk Operations</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               South Mumbai Pilot Ward Digital Twin
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-2xl">
-              Live Manning equation solver simulating subterranean drainage flow, pipe saturation, and surface water inundation in Ward A/B.
+              Indicative risk classification for Ward A/B using rainfall, pilot drainage data, and a transparent runoff-capacity model.
             </p>
           </div>
 
           <div className="flex items-center space-x-3">
+            <DataStatusBadge mode={dataMode} lastUpdated={lastUpdated} />
             <div className="text-right hidden sm:block">
               <div className="text-[10px] text-slate-400 uppercase font-mono">PILOT COORDINATES</div>
               <div className="text-xs text-sky-400 font-mono font-semibold">18.96° N, 72.82° E</div>
@@ -109,6 +120,21 @@ export default function HomePage() {
             drainageData={drainage}
             pilotCoords={[18.96, 72.82]}
           />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="glass-panel rounded-xl p-3 border border-sky-500/15">
+              <div className="text-slate-400">Rainfall</div>
+              <div className="text-white font-semibold mt-1">{forecast?.data_source ?? 'Waiting for data'}</div>
+            </div>
+            <div className="glass-panel rounded-xl p-3 border border-sky-500/15">
+              <div className="text-slate-400">Drainage network</div>
+              <div className="text-amber-300 font-semibold mt-1">Synthetic pilot topology</div>
+            </div>
+            <div className="glass-panel rounded-xl p-3 border border-sky-500/15">
+              <div className="text-slate-400">Flood risk</div>
+              <div className="text-sky-300 font-semibold mt-1">Model-generated, indicative ranges</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -118,6 +144,10 @@ export default function HomePage() {
           <WhatIfSimulation />
           <SafeRoutePlanner />
         </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <DrainageDigitalTwin />
       </section>
 
       {/* 4. Citizen Crowdsourced Reporting */}

@@ -57,6 +57,12 @@ class RouteRequest(BaseModel):
     rainfall_mm_hr: Optional[float] = None
 
 
+class DrainageWhatIfRequest(BaseModel):
+    node_id: str
+    scenario: str = "NORMAL"
+    rainfall_mm_hr: float = 20.0
+
+
 CORROBORATION_RADIUS_METERS = 50.0
 CORROBORATION_WINDOW_SECONDS = 30 * 60
 
@@ -100,11 +106,11 @@ def manning_equation(rainfall_mm_hr: float):
         return {"risk": "Critical", "depth_m": "> 0.6", "confidence": "Low", "reason": f"Node 14: inflow exceeds capacity by {excess:.1f}%"}
 
 
-def classify_segment_risk(rainfall_mm_hr: float, properties: dict) -> dict:
+def classify_segment_risk(rainfall_mm_hr: float, properties: dict, capacity_override: Optional[float] = None) -> dict:
     rainfall_m_per_second = max(0, rainfall_mm_hr) / 1000 / 3600
     area_m2 = properties["contributing_area_km2"] * 1_000_000
     runoff = properties["runoff_coefficient"] * rainfall_m_per_second * area_m2
-    capacity = {
+    capacity = capacity_override if capacity_override is not None else {
         "street_segment_01": 0.9,
         "street_segment_02": 0.55,
         "street_segment_03": 1.1,
@@ -153,6 +159,64 @@ def classify_segment_risk(rainfall_mm_hr: float, properties: dict) -> dict:
             "nearest_drainage_node_m": properties["nearest_drainage_node_m"],
             "local_depression": properties["local_depression"],
         },
+    }
+
+
+STREET_NODE_MAP = {
+    "street_segment_01": "node_02",
+    "street_segment_02": "node_03",
+    "street_segment_03": "node_04",
+}
+
+
+def get_drainage_node(node_id: str) -> dict:
+    for feature in pilot_drainage["features"]:
+        if feature["geometry"]["type"] == "Point" and feature["properties"]["id"] == node_id:
+            return feature["properties"]
+    raise HTTPException(status_code=404, detail=f"Drainage node not found: {node_id}")
+
+
+def drainage_what_if(request: DrainageWhatIfRequest) -> dict:
+    node = get_drainage_node(request.node_id)
+    scenario = request.scenario.upper()
+    scenario_factors = {"NORMAL": 1.0, "BLOCKED": 0.05, "50% CAPACITY": 0.5, "SEVERE RAINFALL": 1.0}
+    if scenario not in scenario_factors:
+        raise HTTPException(status_code=400, detail="Scenario must be NORMAL, BLOCKED, 50% CAPACITY, or SEVERE RAINFALL")
+    rainfall = 80.0 if scenario == "SEVERE RAINFALL" else max(0, request.rainfall_mm_hr)
+    original_capacity = float(node["capacity"])
+    modified_capacity = original_capacity * scenario_factors[scenario]
+    connected_segments = [
+        feature for feature in pilot_street_segments["features"]
+        if STREET_NODE_MAP.get(feature["properties"]["id"]) == request.node_id
+    ]
+    segment_outputs = []
+    node_inflow = 0.0
+    for feature in connected_segments:
+        base_output = classify_segment_risk(rainfall, feature["properties"])
+        node_inflow += base_output["modeled_inflow_m3s"]
+        base_capacity = base_output["estimated_capacity_m3s"]
+        ratio = modified_capacity / original_capacity if original_capacity else 0
+        output = classify_segment_risk(rainfall, feature["properties"], base_capacity * ratio)
+        output["id"] = feature["properties"]["id"]
+        output["name"] = feature["properties"]["name"]
+        output["node_id"] = request.node_id
+        segment_outputs.append(output)
+    overflow = max(0.0, node_inflow - modified_capacity)
+    utilization = (node_inflow / modified_capacity * 100) if modified_capacity else 0
+    return {
+        "node_id": request.node_id,
+        "scenario": scenario,
+        "rainfall_mm_hr": rainfall,
+        "source": "synthetic pilot drainage graph",
+        "calibration_status": "uncalibrated_demo",
+        "original_capacity_m3s": original_capacity,
+        "modified_capacity_m3s": round(modified_capacity, 3),
+        "inflow_m3s": round(node_inflow, 3),
+        "utilization_percent": round(utilization, 1),
+        "overflow_m3s": round(overflow, 3),
+        "surcharge": overflow > 0,
+        "downstream_streets_affected": [output["name"] for output in segment_outputs],
+        "risk_changes": segment_outputs,
     }
 
 
@@ -313,6 +377,11 @@ def get_street_risk(ward_id: str, rainfall_mm_hr: float = 20.0):
             for feature in pilot_street_segments["features"]
         ],
     }
+
+
+@app.post("/api/drainage/what-if")
+def drainage_what_if_endpoint(request: DrainageWhatIfRequest):
+    return drainage_what_if(request)
 
 @app.post("/api/route")
 async def get_route(req: RouteRequest):

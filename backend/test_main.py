@@ -122,3 +122,25 @@ def test_live_risk_changes_selected_route():
     flood_distance = flood_event_route.json()["route"]["routes"][0]["distance"]
     assert clear_distance != flood_distance
     assert "Pilot Road Junction Low Point" in flood_event_route.json()["avoided_segments"]
+
+
+def test_drainage_what_if_changes_downstream_street_risk():
+    normal = client.post(
+        "/api/drainage/what-if",
+        json={"node_id": "node_03", "scenario": "NORMAL", "rainfall_mm_hr": 10},
+    )
+    blocked = client.post(
+        "/api/drainage/what-if",
+        json={"node_id": "node_03", "scenario": "BLOCKED", "rainfall_mm_hr": 10},
+    )
+    assert normal.status_code == 200
+    assert blocked.status_code == 200
+    normal_data = normal.json()
+    blocked_data = blocked.json()
+    assert blocked_data["modified_capacity_m3s"] < normal_data["modified_capacity_m3s"]
+    assert blocked_data["utilization_percent"] > normal_data["utilization_percent"]
+    assert blocked_data["overflow_m3s"] > normal_data["overflow_m3s"]
+    normal_risk = {item["id"]: item["risk"] for item in normal_data["risk_changes"]}
+    blocked_risk = {item["id"]: item["risk"] for item in blocked_data["risk_changes"]}
+    assert normal_risk["street_segment_02"] != blocked_risk["street_segment_02"]
+    assert blocked_data["downstream_streets_affected"]

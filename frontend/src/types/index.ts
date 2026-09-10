@@ -115,3 +115,27 @@ export interface DrainageGeoJSON {
   type: 'FeatureCollection';
   features: DrainageFeature[];
 }
+
+export interface DrainageWhatIfResult {
+  node_id: string;
+  scenario: string;
+  rainfall_mm_hr: number;
+  source: string;
+  calibration_status: string;
+  original_capacity_m3s: number;
+  modified_capacity_m3s: number;
+  inflow_m3s: number;
+  utilization_percent: number;
+  overflow_m3s: number;
+  surcharge: boolean;
+  downstream_streets_affected: string[];
+  risk_changes: Array<{
+    id: string;
+    name: string;
+    risk: RiskLevel;
+    explanation: string;
+    indicative_depth_range: string;
+    modeled_inflow_m3s: number;
+    estimated_capacity_m3s: number;
+  }>;
+}
