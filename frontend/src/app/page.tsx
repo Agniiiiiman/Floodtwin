@@ -15,6 +15,7 @@ import { DataMode, ForecastResponse, DrainageGeoJSON, StreetRiskResponse } from 
 import { Activity, RefreshCw } from 'lucide-react';
 import { DataStatusBadge } from '@/components/dashboard/DataStatusBadge';
 import { DrainageDigitalTwin } from '@/components/dashboard/DrainageDigitalTwin';
+import { DataSourcesPanel } from '@/components/dashboard/DataSourcesPanel';
 
 // Dynamic import for Digital Twin Map
 const DigitalTwinMap = dynamic(
@@ -152,6 +153,10 @@ export default function HomePage() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <DrainageDigitalTwin />
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <DataSourcesPanel rainfallMode={dataMode} lastUpdated={lastUpdated} />
       </section>
 
       {/* 4. Citizen Crowdsourced Reporting */}
