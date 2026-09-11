@@ -1,851 +1,290 @@
 # 🌊 FloodTwin
 
-### Real-Time Urban Flood Intelligence & Drainage Digital Twin
+### Real-Time Urban Flood Intelligence, Drainage Digital Twin & AI Safe Route Engine
 
-> **Predict floods. Protect cities.**
+[![Next.js](https://img.shields.io/badge/Next.js-16.3.4-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.8-blue?style=flat-square&logo=react)](https://react.dev/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Leaflet](https://img.shields.io/badge/Leaflet-1.9.4-199900?style=flat-square&logo=leaflet)](https://leafletjs.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-FloodTwin is an urban flood intelligence and decision-support platform designed to connect **rainfall monitoring, flood-risk assessment, drainage-network intelligence, street-level prediction, emergency routing, and what-if analysis** into a unified operational interface.
+> **"Predict floods before streets submerge. Protect cities through real-time drainage physics and emergency navigation."**
 
-The project is designed around the idea that urban flood response should begin **before water reaches critical levels** — by combining environmental data with infrastructure and location intelligence.
+**FloodTwin** is an end-to-end urban flood intelligence and emergency decision-support platform. It bridges the gap between environmental weather telemetry, subterranean drainage network physics, street-level inundation risk, and real-time emergency routing into a unified, high-contrast operational command interface.
+
+---
+
+## 📌 Table of Contents
+
+- [🚨 Why FloodTwin?](#-why-floodtwin)
+- [🧠 System Architecture & Data Flow](#-system-architecture--data-flow)
+- [✨ 6 Core Operational Modules](#-6-core-operational-modules)
+  - [1. 🌐 Unified Operations Command (`/`)](#1--unified-operations-command-)
+  - [2. 🚰 Subterranean Drainage Digital Twin (`/digital-twin`)](#2--subterranean-drainage-digital-twin-digital-twin)
+  - [3. ⚡ What-If Hydraulic Sandbox (`/simulation`)](#3--what-if-hydraulic-sandbox-simulation)
+  - [4. 🛡️ AI Emergency Safe Route Planner (`/safe-route`)](#4-️-ai-emergency-safe-route-planner-safe-route)
+  - [5. 🌧️ Global Rainfall Radar & Sector Monitor (`/rainfall-map`)](#5-️-global-rainfall-radar--sector-monitor-rainfall-map)
+  - [6. 📡 Citizen Incident Verification Portal (`/reports`)](#6--citizen-incident-verification-portal-reports)
+- [🛠️ Technology Stack](#️-technology-stack)
+- [🔌 REST API Specification](#-rest-api-specification)
+- [🚀 Quickstart & Local Setup](#-quickstart--local-setup)
+  - [Prerequisites](#prerequisites)
+  - [1. Backend Setup (FastAPI)](#1-backend-setup-fastapi)
+  - [2. Frontend Setup (Next.js 16)](#2-frontend-setup-nextjs-16)
+  - [3. Docker Compose (Full Stack)](#3-docker-compose-full-stack)
+- [⚙️ Environment Variables](#️-environment-variables)
+- [🌓 High-Contrast Dual Theme System](#-high-contrast-dual-theme-system)
+- [📄 License & Disclaimer](#-license--disclaimer)
 
 ---
 
 ## 🚨 Why FloodTwin?
 
-Urban flooding is not an isolated rainfall problem.
+Urban flooding is not merely a heavy-rainfall problem—it is a **cascading infrastructure failure**:
 
-Rainfall affects runoff.
-Runoff puts pressure on drainage infrastructure.
-Overloaded drainage systems create hazardous streets.
-Hazardous streets affect how citizens and emergency responders should move.
-
-FloodTwin attempts to bring these connected layers into a single system so that flood conditions can be **observed, interpreted, and acted upon from one interface**.
-
----
-
-# ✨ Core Capabilities
-
-FloodTwin currently contains several connected interface and data components.
-
-| Capability                         | Description                                                                 |
-| ---------------------------------- | --------------------------------------------------------------------------- |
-| 🌧️ **Rainfall Monitoring**        | Real-time precipitation visualization across a global sector grid           |
-| 🗺️ **Interactive Maps**           | Leaflet-based geographic visualization                                      |
-| 🚰 **Drainage Digital Twin UI**    | Visualization of drainage nodes, loads, capacities and failure-risk states  |
-| 🌊 **Flood Risk Monitoring**       | Water-depth monitoring with risk tiers                                      |
-| 🔮 **Flood Forecasting Interface** | 0–3 hour flood prediction workflow                                          |
-| ⚡ **What-If Simulation**           | Interface for modelling critical drainage blockage scenarios                |
-| 🛡️ **Emergency Routing**          | Flood-aware routing concept for safer movement                              |
-| 📡 **Incident Intelligence**       | Citizen incident-feed concept for combining ground reports with system data |
-| 🔐 **Authentication UI**           | Sign-in and account creation interfaces                                     |
-| 🌓 **Theme System**                | Persistent dark/light operational themes                                    |
-| 📱 **Responsive UI**               | Mobile navigation and responsive layouts                                    |
-
-The landing page describes the platform as five connected core modules, while the broader interface also includes a citizen incident-feed component.
-
----
-
-# 🧠 System Concept
-
-FloodTwin follows a connected flood-intelligence pipeline:
-
-```text
-                ┌─────────────────────┐
-                │   Rainfall / Weather │
-                │        Data          │
-                └──────────┬──────────┘
-                           │
-                           ▼
-                ┌─────────────────────┐
-                │ Rainfall → Runoff    │
-                │     Analysis         │
-                └──────────┬──────────┘
-                           │
-                           ▼
-                ┌─────────────────────┐
-                │ Drainage Digital Twin│
-                │ Pipes / Nodes / Load │
-                └──────────┬──────────┘
-                           │
-                           ▼
-                ┌─────────────────────┐
-                │ Flood Risk & Water   │
-                │ Depth Assessment      │
-                └──────────┬──────────┘
-                           │
-                 ┌─────────┴─────────┐
-                 ▼                   ▼
-        ┌─────────────────┐  ┌─────────────────┐
-        │ Emergency Safe  │  │ What-If          │
-        │ Routing         │  │ Simulation       │
-        └─────────────────┘  └─────────────────┘
+```
+🌧️ Heavy Precipitation (Open-Meteo Radar)
+    └── 💧 Runoff exceeds surface absorption capacity
+         └── 🚰 Subterranean drainage nodes surcharge & backflow
+              └── 🌊 Street-level water depth rises to critical thresholds (>0.40m)
+                   └── 🚗 Essential transit & emergency corridors become impassable
 ```
 
-The project interface explicitly presents a pipeline from rainfall sensing through runoff, drainage, prediction and emergency decision-making.
+Traditional municipal systems monitor rain gauges and dispatch rescue teams **reactively**. FloodTwin provides **proactive decision support**:
+1. **Hydraulic Physics Modeling**: Computes pipe capacities and nodal overflow via Manning's formula.
+2. **Predictive Street Inundation**: Identifies localized depressions and drainage proximity penalties before water ponds.
+3. **Dynamic Hazard Exclusion Routing**: Computes OSRM driving paths that proactively bypass submerged segments.
+4. **Multi-Source Corroboration**: Pairs live satellite rainfall telemetry with ground-truth citizen incident reports.
 
 ---
 
-# 🌧️ 1. Real-Time Rainfall Monitoring
-
-FloodTwin includes a dedicated **World Rainfall Monitor**.
-
-The rainfall page uses:
-
-* **Leaflet.js**
-* **Open-Meteo API**
-* Geographic sector sampling
-* Rainfall intensity classification
-* Interactive map markers
-* Rainfall labels
-* Last-update information
-* Maximum rainfall
-* Average rainfall
-* High-risk sector counts
-* Rainfall filters
-* Multiple map layers
-
-The rainfall monitor describes precipitation data being sampled across global sectors at 60-second intervals through Open-Meteo.
-
-### Rainfall intensity
-
-The interface classifies rainfall into:
+## 🧠 System Architecture & Data Flow
 
 ```text
-None          0 mm/hr
-Light         0.1–1 mm/hr
-Moderate      1–5 mm/hr
-Heavy         5–15 mm/hr
-Very Heavy    15–30 mm/hr
-Extreme       >30 mm/hr
-```
-
-These categories are represented directly in the rainfall map UI.
-
----
-
-# 🗺️ 2. Interactive Geographic Intelligence
-
-The project uses **Leaflet** for geographic visualization.
-
-The main dashboard uses OpenStreetMap tiles, while the rainfall monitor provides multiple map-layer controls including:
-
-* 🌧️ Rainfall
-* 🛰️ Satellite
-* 🏔️ Topographic
-
-The rainfall engine also uses batched requests rather than making one HTTP request per sector, with batches of up to 50 coordinates and request timeout handling.
-
----
-
-# 🚰 3. Drainage Digital Twin
-
-One of FloodTwin's central concepts is a digital representation of an urban drainage network.
-
-The dashboard represents:
-
-```text
-Drainage Pipes
-      ↓
-Junction Nodes
-      ↓
-Network Load
-      ↓
-Capacity
-      ↓
-Overflow / Failure Risk
-```
-
-The interface includes drainage nodes such as:
-
-```text
-J-103 — Harbor Basin
-94% OVERLOAD
-
-J-104 — Subway Outflow
-FAILURE RISK
-```
-
-It also presents drainage capacity and load information directly within the dashboard.
-
----
-
-# 🌊 4. Water Depth & Flood Risk
-
-FloodTwin uses a water-depth-based risk tier system.
-
-The current UI defines:
-
-|   Water Depth | Risk Tier   |
-| ------------: | ----------- |
-|    `0–0.10 m` | 🟢 SAFE     |
-| `0.10–0.20 m` | 🟡 CAUTION  |
-| `0.20–0.40 m` | 🟠 WARNING  |
-|     `>0.40 m` | 🔴 CRITICAL |
-
-This logic is implemented in the dashboard JavaScript.
-
-The dashboard displays:
-
-* Current water depth
-* Current risk tier
-* Depth meter
-* Peak depth
-* Rainfall rate
-* Critical junction nodes
-
-For example, the dashboard contains a water-depth/risk card and rainfall-rate card connected to live UI elements.
-
----
-
-# 🔮 5. Street-Level Flood Prediction
-
-FloodTwin is designed around a **0–3 hour prediction window**.
-
-The intended workflow is:
-
-```text
-Current Rainfall
-      +
-Weather Forecast
-      +
-Drainage State
-      ↓
-Flood Prediction
-      ↓
-Street-Level Water Depth
-      ↓
-Risk Classification
-```
-
-The interface describes this module as predicting water depth and street risk within a 0–3 hour window.
-
-> **Implementation note:** The repository currently contains the prediction interface and frontend integration. Production-grade city-scale hydrological/ML forecasting should be treated as an ongoing development area rather than assumed to be fully implemented.
-
----
-
-# ⚡ 6. What-If Flood Simulation
-
-FloodTwin includes a **What-If Simulation** interface for testing drainage failures.
-
-Example scenario:
-
-> **What if a critical drain becomes blocked?**
-
-The dashboard provides a simulation section specifically for modelling critical drain blockage and upstream flood propagation.
-
-Conceptually:
-
-```text
-Normal Drainage
-       │
-       ▼
- Block Critical Node
-       │
-       ▼
-Recalculate Network
-       │
-       ▼
-Flood Propagation
-       │
-       ▼
-Identify Affected Areas
-```
-
-This provides a foundation for future infrastructure-risk and disaster-response simulation.
-
----
-
-# 🛡️ 7. Emergency Safe Routing
-
-FloodTwin incorporates the concept of **flood-aware navigation**.
-
-Instead of treating a road network as static:
-
-```text
-Road A ───────────── Road B
-```
-
-the system can conceptually treat roads as dynamic assets whose safety changes with flood conditions:
-
-```text
-Road A ── SAFE ── Road B
-             │
-             ├── Flooded
-             │
-             └── REROUTE
-```
-
-The platform describes emergency routing as continuously rerouting citizens and first responders around hazardous roads.
-
-This is particularly important for future expansion into **street-by-street rescue planning**.
-
----
-
-# 📡 8. Citizen Incident Intelligence
-
-The platform also defines a citizen incident-feed concept.
-
-Ground-level reports can provide information that fixed infrastructure may not immediately capture:
-
-```text
-Citizen Report
-      +
-Sensor / Weather Data
-      +
-Map Location
-      ↓
-Unified Situational Picture
-```
-
-The landing interface describes crowdsourced flood reports being merged with sensor information.
-
----
-
-# 🔐 9. Authentication Interface
-
-The project includes dedicated:
-
-* `login.html`
-* `signup.html`
-
-pages.
-
-The login interface is branded as access to FloodTwin's municipal decision-support environment.
-
-The signup interface similarly provides account creation for the FloodTwin platform.
-
-> Authentication backend implementation should be considered separately from the frontend authentication screens.
-
----
-
-# 🌓 10. Dark / Light Operational Modes
-
-FloodTwin supports two visual modes:
-
-### 🌙 Dark EOC Mode
-
-Designed around an Emergency Operations Center aesthetic.
-
-### ☀️ Light Municipal Command Mode
-
-Designed around a cleaner municipal dashboard presentation.
-
-The selected theme is persisted using `localStorage`, allowing the user's preference to remain across page loads.
-
-The same theme state is also used by the rainfall-map interface.
-
----
-
-# 🏗️ Project Structure
-
-```text
-FloodTwin/
-│
-├── index.html
-│       └── Main flood intelligence dashboard
-│
-├── landing.html
-│       └── Product / project landing page
-│
-├── login.html
-│       └── Sign-in interface
-│
-├── signup.html
-│       └── Account creation interface
-│
-├── rainfall-map.html
-│       └── Global rainfall monitoring interface
-│
-├── style.css
-│       └── Main FloodTwin design system
-│
-├── script.js
-│       └── Main dashboard interactions and live-data UI
-│
-├── rainfall-map.css
-│       └── Rainfall monitor styling
-│
-├── rainfall-map.js
-│       └── Rainfall data engine and map interactions
-│
-├── .env.example
-│       └── Environment configuration template
-│
-└── .gitignore
-        └── Git exclusions
-```
-
-The repository's `.gitignore` excludes items such as Python environments, Node modules, `.env`, and OSRM data caches.
-
----
-
-# 🧰 Technology Stack
-
-## Frontend
-
-* HTML5
-* CSS3
-* JavaScript
-* Responsive CSS
-* CSS animations
-* Intersection Observer API
-* Browser Local Storage
-
-## Mapping
-
-* [Leaflet.js](https://leafletjs.com/)
-* [OpenStreetMap](https://www.openstreetmap.org/)
-* Satellite / topographic map layers
-
-Leaflet 1.9.4 is loaded by the mapping interfaces.
-
-## Weather Data
-
-* [Open-Meteo](https://open-meteo.com/)
-
-The rainfall engine is explicitly implemented around Open-Meteo and does not require an API key for its weather-data requests.
-
-## Backend Integration
-
-The dashboard currently contains frontend integration with a local forecast endpoint:
-
-```text
-GET /api/forecast?lat=18.96&lng=72.82
-```
-
-The frontend consumes returned fields including:
-
-```text
-depth_m
-risk
-rainfall_mm_hr
-```
-
-and maps them into the dashboard's water-depth, network-load and rainfall displays.
-
----
-
-# 🔄 Data Flow
-
-The current architecture can be represented as:
-
-```text
-             WEATHER DATA
-                  │
-                  ▼
-        ┌───────────────────┐
-        │  Rainfall Engine  │
-        └─────────┬─────────┘
-                  │
-          ┌───────┴────────┐
-          ▼                ▼
-   Rainfall Map      Flood Dashboard
-          │                │
-          │        ┌───────┴────────┐
-          │        ▼                ▼
-          │   Water Depth      Drainage State
-          │        │                │
-          │        └───────┬────────┘
-          │                ▼
-          │        Risk Assessment
-          │                │
-          └────────┬───────┘
-                   ▼
-          Decision Support
-             /         \
-            ▼           ▼
-       Safe Routing   What-If
-                     Simulation
+                                  ┌──────────────────────────────┐
+                                  │      Open-Meteo Weather      │
+                                  │    Real-Time Precipitation   │
+                                  └──────────────┬───────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────┐       ┌──────────────────────────────┐       ┌─────────────────────────┐
+│  Citizen Ground Reports │ ────► │       FastAPI Backend        │ ◄──── │ Municipal Drainage SWMM │
+│  (Crowdsourced Incidents)│       │  Hydraulic Calculation Engine│       │ (GeoJSON Node Topologies)│
+└─────────────────────────┘       └──────────────┬───────────────┘       └─────────────────────────┘
+                                                 │
+                   ┌─────────────────────────────┼─────────────────────────────┐
+                   ▼                             ▼                             ▼
+       ┌───────────────────────┐     ┌───────────────────────┐     ┌───────────────────────┐
+       │   Manning's Equation  │     │   OSRM Safe Routing   │     │ Spatial Corroboration │
+       │ Pipe Capacity/Overflow│     │ Hazard Area Exclusion │     │  2-Report Consensus   │
+       └───────────┬───────────┘     └───────────┬───────────┘     └───────────┬───────────┘
+                   │                             │                             │
+                   └─────────────────────────────┼─────────────────────────────┘
+                                                 │
+                                                 ▼
+                                  ┌──────────────────────────────┐
+                                  │   Next.js 16 App Router UI   │
+                                  │   Tailwind CSS v4 + Leaflet  │
+                                  └──────────────────────────────┘
+                                                 │
+         ┌───────────────┬───────────────────────┼───────────────────────┬───────────────┐
+         ▼               ▼                       ▼                       ▼               ▼
+   /digital-twin    /simulation             /safe-route            /rainfall-map     /reports
+  (Pipe Mesh &     (What-If Node          (Landmark Navigation     (130+ Global     (Verified Ground
+   Surcharge)       Blockages)             & Avoidance Engine)      Radar Grid)      Incident Feed)
 ```
 
 ---
 
-# 🌍 Rainfall Data Engine
+## ✨ 6 Core Operational Modules
 
-The rainfall map samples predefined geographic sectors.
+### 1. 🌐 Unified Operations Command (`/`)
+- Real-time sensor mesh status summary across active pilot wards (e.g. South Mumbai Wards A/B).
+- Immediate telemetry indicators for average precipitation, high-risk junction alerts, and flood depth tier.
+- Quick navigation gateways to all simulation and operational dispatch subsystems.
 
-The JavaScript implementation includes extensive coverage across India and major global locations.
+### 2. 🚰 Subterranean Drainage Digital Twin (`/digital-twin`)
+- High-density subterranean pipe and junction node interactive network graph.
+- Real-time hydraulic load utilization percentages ($Q / Q_{\text{capacity}}$).
+- Identifies critical bottleneck junctions (`J-103 Harbor Basin`, `J-104 Subway Outflow`) under surcharge stress.
 
-Instead of sending an individual HTTP request for every location, the system batches coordinates:
+### 3. ⚡ What-If Hydraulic Sandbox (`/simulation`)
+- Stress-test urban resilience by simulating single or multi-point infrastructure failures:
+  - `NORMAL`: Standard operating capacity.
+  - `50% CAPACITY`: Partial blockage (silt/debris accumulation).
+  - `BLOCKED`: Complete conduit failure (95% capacity reduction).
+  - `SEVERE RAINFALL`: Extreme storm event (80 mm/hr burst).
+- Live recalculation of upstream backflow and street surcharge using Manning's equation.
 
-```text
-Sector Grid
-    ↓
-Batch locations
-    ↓
-Open-Meteo request
-    ↓
-Receive precipitation
-    ↓
-Process rainfall intensity
-    ↓
-Render map markers
-```
+### 4. 🛡️ AI Emergency Safe Route Planner (`/safe-route`)
+- **Place-to-Place Navigation**: Choose from preset prominent Mumbai landmarks (Gateway of India, Colaba Causeway, Nariman Point, Marine Drive, Chhatrapati Shivaji Terminus, Dadar, etc.) or select custom coordinates.
+- **Submerged Hazard Avoidance**: Automatically calculates high-risk and critical flood segments and excludes them from the OSRM path solver.
+- **Route Comparison Metrics**: Side-by-side comparison of standard shortest routes versus flood-safe detour corridors, including travel time, safety validity window (e.g., safe for 30 mins), and avoided hazard zones.
+- **Clean Interactive Map**: Crisp OpenStreetMap Leaflet visualization with custom start/end pins, detour polyline geometry, and hazard radius overlays.
 
-The implementation also includes request staggering to reduce the possibility of HTTP rate limiting.
+### 5. 🌧️ Global Rainfall Radar & Sector Monitor (`/rainfall-map`)
+- Live precipitation tracking across 130+ global sectors sampled every 60 seconds with an active countdown ticker.
+- Categorized intensity tiers:
+  - 🟢 **None**: `0.0 mm/hr`
+  - 🔵 **Light**: `0.1 – 1.0 mm/hr`
+  - 🟡 **Moderate**: `1.0 – 5.0 mm/hr`
+  - 🟠 **Heavy**: `5.0 – 15.0 mm/hr`
+  - 🔴 **Very Heavy**: `15.0 – 30.0 mm/hr`
+  - 🟣 **Extreme**: `> 30.0 mm/hr`
+- Multi-layer map visualizer (Standard OSM, Satellite view, Topographic terrain) with instant sector search and filter sidebar.
 
----
-
-# 🧪 Fallback Weather Behaviour
-
-The rainfall engine contains fallback logic for cases where Open-Meteo returns no usable precipitation data or is rate-limited.
-
-In that situation, the frontend generates dynamically changing rainfall values based on:
-
-* Geographic location
-* Time bucket
-* Deterministic pseudo-random values
-* Regional rainfall classifications
-
-The implementation explicitly identifies this as a fallback mechanism.
-
-> **Important:** These fallback values should not be interpreted as authoritative meteorological measurements.
-
----
-
-# 📊 Dashboard
-
-The main dashboard acts as the operational control surface.
-
-It brings together:
-
-```text
-┌─────────────────────────────────────────────┐
-│              FLOODTWIN EOC                  │
-├───────────────────────┬─────────────────────┤
-│                       │                     │
-│   Interactive Map     │  Water Depth       │
-│                       │  Rainfall          │
-│   Flood / Drainage    │  Risk Tier         │
-│   Visualization       │  Critical Nodes    │
-│                       │  Simulation        │
-│                       │                     │
-└───────────────────────┴─────────────────────┘
-```
-
-The dashboard contains dedicated metric cards for water depth, rainfall rate, critical drainage junctions and the blockage simulation suite.
+### 6. 📡 Citizen Incident Verification Portal (`/reports`)
+- Crowdsourced flood incident submission portal allowing citizens to report ground-level water logging, severity, and photo verification.
+- **Consensus Corroboration Engine**: Automatically corroborates reports when $\ge 2$ independent reports are filed within a **50-meter radius** and **30-minute time window**.
+- Built-in client rate limiting and deduplication.
 
 ---
 
-# 🚀 Running the Project
+## 🛠️ Technology Stack
 
-## 1. Clone the repository
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend Framework** | [Next.js 16](https://nextjs.org/) (App Router, Turbopack) & [React 19](https://react.dev/) |
+| **Styling & Design** | [Tailwind CSS v4](https://tailwindcss.com/), CSS Custom Properties (Theme Engine), Lucide React |
+| **Geospatial Mapping** | [Leaflet.js 1.9.4](https://leafletjs.com/), OpenStreetMap, React Leaflet wrapper patterns |
+| **Backend Framework** | [FastAPI](https://fastapi.tiangolo.com/) (Python 3.11+), [Uvicorn](https://www.uvicorn.org/), [Pydantic v2](https://docs.pydantic.dev/) |
+| **HTTP & Async I/O** | [HTTPX](https://www.python-httpx.org/) (Async Open-Meteo & OSRM requests) |
+| **Hydraulic Physics** | Manning's Open Channel Flow Formula ($Q = \frac{1}{n} A R^{2/3} S^{1/2}$) |
+| **Routing Engine** | [OSRM](http://project-osrm.org/) (Open Source Routing Machine) / Dockerized local instance |
+| **Containerization** | Docker & Docker Compose |
+
+---
+
+## 🔌 REST API Specification
+
+The FastAPI backend exposes the following endpoints (default base URL: `http://localhost:8000`):
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | Returns backend health status and system calibration metadata. |
+| `GET` | `/api/forecast?lat={lat}&lng={lng}` | Fetches real-time precipitation from Open-Meteo and computes water depth risk. |
+| `GET` | `/api/forecast/ward/{ward_id}` | Returns hydrological forecast for a designated municipal ward. |
+| `GET` | `/api/drainage/{ward_id}` | Returns the GeoJSON network of subterranean drainage conduits and junctions. |
+| `GET` | `/api/street-risk/{ward_id}` | Computes hydraulic utilization, slope, and elevation risk for street segments. |
+| `POST` | `/api/drainage/what-if` | Simulates node blockage scenarios and returns surcharge propagation. |
+| `POST` | `/api/route` | Computes flood-safe driving routes with live hazardous street avoidance. |
+| `POST` | `/api/report` | Submits a citizen flood report and evaluates local corroboration consensus. |
+| `GET` | `/api/reports` | Returns all active incident reports with corroboration status. |
+
+### Example Safe Route Request
 
 ```bash
-git clone https://github.com/Agniiiiiman/Floodtwin.git
-cd Floodtwin
+curl -X POST "http://localhost:8000/api/route" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "start_lat": 18.9220,
+       "start_lng": 72.8347,
+       "end_lat": 18.9400,
+       "end_lng": 72.8350,
+       "rainfall_mm_hr": 25.0
+     }'
 ```
 
-## 2. Open the frontend
+---
 
-For the static frontend pages, you can serve the repository using a local HTTP server.
+## 🚀 Quickstart & Local Setup
 
-For example:
+### Prerequisites
+- **Node.js**: `v20.x` or higher
+- **Python**: `v3.11` or higher
+- **Git**
+
+---
+
+### 1. Backend Setup (FastAPI)
 
 ```bash
-python -m http.server 5500
+# Navigate to the backend directory
+cd backend
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+# macOS / Linux:
+# source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the FastAPI development server
+uvicorn main:app --reload --port 8000
 ```
 
-Then open:
-
-```text
-http://localhost:5500/
-```
+The API will be accessible at `http://localhost:8000` and the interactive OpenAPI documentation at `http://localhost:8000/docs`.
 
 ---
 
-## 3. Dashboard backend
-
-The main dashboard currently expects a local forecast service at:
-
-```text
-http://localhost:8000/api/forecast
-```
-
-If the backend is not running, portions of the dashboard that depend on this endpoint will not receive live backend forecast data.
-
----
-
-# ⚙️ Configuration
-
-A `.env.example` file is included in the repository.
-
-Do **not** commit actual secrets:
-
-```text
-.env
-```
-
-is explicitly excluded through `.gitignore`.
-
----
-
-# 📍 Current Implementation Status
-
-The project is actively evolving. To avoid overstating the system, capabilities should be viewed in the following categories.
-
-## ✅ Currently Implemented
-
-* Main FloodTwin dashboard UI
-* Flood-risk visualization
-* Water-depth risk tiers
-* Rainfall monitoring interface
-* Interactive Leaflet maps
-* Open-Meteo rainfall integration
-* Global rainfall sector grid
-* Batched rainfall requests
-* Rainfall classification
-* Rainfall map layers
-* Dark/light theme switching
-* Persistent theme preference
-* Responsive navigation
-* Landing page
-* Login UI
-* Signup UI
-* What-if simulation interface
-* Drainage digital-twin visualization
-* Backend forecast API integration from the dashboard
-
----
-
-## 🟡 In Development / Requires Backend & Model Integration
-
-* Production-grade hydrological modelling
-* City-scale rainfall → runoff modelling
-* Real municipal drainage-network ingestion
-* Production street-level flood forecasting
-* Robust sensor integration
-* Production authentication
-* Persistent user/account backend
-* Real-time municipal data pipelines
-* Operational emergency routing
-* Production-grade rescue planning
-
----
-
-## 🔭 Planned / Future Direction
-
-### Street-by-Street Rescue Planning
-
-One of the major directions for FloodTwin is moving beyond simply showing flooded locations.
-
-The objective is to generate an actionable rescue plan for:
-
-```text
-Every street
-Every junction
-Every affected location
-Every evacuation corridor
-```
-
-A future system could combine:
-
-```text
-Flood Depth
-     +
-Road Accessibility
-     +
-Drainage Condition
-     +
-Population / Critical Locations
-     +
-Emergency Vehicle Access
-     +
-Safe Corridors
-     ↓
-Dynamic Rescue Plan
-```
-
-This would transform FloodTwin from a **flood monitoring interface** into a more comprehensive **urban flood response planning system**.
-
----
-
-# 🧩 Design Philosophy
-
-FloodTwin follows an **Emergency Operations Center (EOC)** visual language.
-
-The interface uses:
-
-* Dark navy operational dashboards
-* High-contrast risk indicators
-* Blue/cyan system accents
-* Clear metric cards
-* Map-centric visualization
-* Persistent system status
-* Animated rainfall effects
-* Responsive layouts
-
-The shared design system defines explicit semantic states for:
-
-```text
-SAFE
-CAUTION
-WARNING
-CRITICAL
-EMERGENCY
-```
-
-alongside system colors for interactive and neutral states.
-
----
-
-# 🎯 Project Goals
-
-FloodTwin aims to help answer five critical questions during an urban flood:
-
-### 01 — What is happening?
-
-Monitor rainfall, water depth and infrastructure conditions.
-
-### 02 — Where is the risk?
-
-Locate dangerous streets, junctions and flood-prone areas.
-
-### 03 — What happens next?
-
-Use forecasting and simulation to anticipate flood progression.
-
-### 04 — What should we do?
-
-Support safer routing and emergency decision-making.
-
-### 05 — What if something fails?
-
-Simulate infrastructure failures before they become real emergencies.
-
----
-
-# 🏙️ Potential Users
-
-FloodTwin is primarily designed around municipal and emergency-response use cases, including:
-
-* Municipal authorities
-* Emergency Operations Centers
-* Disaster-management teams
-* Urban planners
-* Drainage departments
-* First responders
-* Infrastructure operators
-* Researchers
-* Smart-city programs
-
----
-
-# 🔬 Hackathon Context
-
-FloodTwin was developed in the context of **Smart India Hackathon** and is presented as an urban flood intelligence / drainage digital-twin solution.
-
-The interface identifies the project with the Smart India Hackathon context and the “Error 404 / Flood Network” branding.
-
----
-
-# 🛣️ Roadmap
-
-```text
-                    FLOODTWIN ROADMAP
-
-                         CURRENT
-                            │
-                            ▼
-                 ┌────────────────────┐
-                 │ Flood Intelligence  │
-                 │ Dashboard           │
-                 └─────────┬──────────┘
-                           │
-             ┌─────────────┼─────────────┐
-             ▼             ▼             ▼
-        Rainfall       Drainage       Flood Risk
-        Monitoring     Digital Twin   Prediction
-             │             │             │
-             └─────────────┼─────────────┘
-                           ▼
-                    WHAT-IF ENGINE
-                           │
-                           ▼
-                  SAFE ROUTING ENGINE
-                           │
-                           ▼
-                 STREET-LEVEL RESPONSE
-                           │
-                           ▼
-                 🚨 RESCUE PLANNING
-                           │
-                           ▼
-              CITY-SCALE DIGITAL TWIN
-```
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome.
-
-If you want to contribute:
+### 2. Frontend Setup (Next.js 16)
 
 ```bash
-# Fork the repository
+# Open a new terminal and navigate to the frontend directory
+cd frontend
 
-# Create a feature branch
-git checkout -b feature/your-feature
+# Install Node modules
+npm install
 
-# Make your changes
-
-# Commit
-git commit -m "Add your feature"
-
-# Push
-git push origin feature/your-feature
+# Start the Next.js development server with Turbopack
+npm run dev
 ```
 
-Then open a Pull Request.
+The web application will be accessible at `http://localhost:3000`.
 
 ---
 
-# ⚠️ Important Disclaimer
+### 3. Docker Compose (Full Stack)
 
-FloodTwin is a research / development project and should **not be treated as a certified emergency-warning or life-safety system**.
+To spin up both the FastAPI backend and Next.js frontend with a single command:
 
-Weather data, simulated values, predictions and routing recommendations may contain errors or uncertainty.
-
-Any real-world deployment should include:
-
-* Validated hydrological models
-* Official meteorological data
-* Verified drainage-network data
-* Field sensors
-* Disaster-management protocols
-* Human emergency-operator oversight
-* Extensive validation and testing
-
----
-
-# 📜 License
-
-Add the project's intended open-source license here.
-
-For example:
-
-```text
-MIT License
+```bash
+docker-compose up --build
 ```
 
-if the repository is intended to be released under MIT.
+---
+
+## ⚙️ Environment Variables
+
+Copy `.env.example` to create your local `.env` files if required:
+
+```env
+# Frontend Environment
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Backend Environment
+FRONTEND_URL=http://localhost:3000
+BACKEND_PORT=8000
+OSRM_BACKEND_URL=http://localhost:5000
+```
+
+> **Note**: Open-Meteo weather requests work out-of-the-box without requiring an API key.
 
 ---
 
-# 👥 Team
+## 🌓 High-Contrast Dual Theme System
 
-**FloodTwin — Error 404 / Flood Network**
+FloodTwin is designed for maximum legibility under high-stress emergency operational scenarios:
 
-Built for intelligent, proactive and data-driven urban flood management.
+| Mode | Theme Aesthetic | Intended Context |
+| :--- | :--- | :--- |
+| 🌙 **Dark EOC Mode** | Deep navy `#0a0f1d`, glowing cyan accents, high-contrast badges | Emergency Operations Centers, low-light control rooms |
+| ☀️ **Light Municipal Mode** | Clean slate white `#ffffff`, deep `#0f172a` text, high-contrast borders | Municipal offices, desktop management, daylight field operations |
 
----
-
-## 🌊 FloodTwin
-
-> **Don't wait for the flood to arrive.
-> Understand it before it happens.**
-
-**Rainfall → Runoff → Drainage → Flood Risk → Routing → Response**
+Theme preferences are persisted in `localStorage` and synchronized across all operational pages.
 
 ---
+
+## 📄 License & Disclaimer
+
+### Academic & Research Disclaimer
+FloodTwin is an urban flood intelligence research and decision-support prototype. Live predictions, Manning simulations, and routing advice are calibrated on pilot ward topologies and public meteorological data. It should be used in conjunction with official municipal alerts and disaster management protocols during active emergencies.
+
+### License
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
