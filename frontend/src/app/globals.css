@@ -81,13 +81,14 @@ body {
 [data-theme="light"] h5,
 [data-theme="light"] h6,
 [data-theme="light"] strong,
-[data-theme="light"] b,
-[data-theme="light"] .text-white {
+[data-theme="light"] b {
   color: #0f172a !important;
 }
 
-[data-theme="light"] p,
-[data-theme="light"] span:not([class*="text-sky-"]):not([class*="text-emerald-"]):not([class*="text-amber-"]):not([class*="text-rose-"]):not([class*="text-purple-"]):not([class*="text-blue-"]),
+[data-theme="light"] p {
+  color: #334155 !important;
+}
+
 [data-theme="light"] .text-slate-100,
 [data-theme="light"] .text-slate-200,
 [data-theme="light"] .text-slate-300 {
@@ -103,28 +104,40 @@ body {
 }
 
 /* 
-   LIGHT THEME: Remove all dark grey backgrounds from inner cards,
-   boxes, buttons, and coordinates panels
+   LIGHT THEME: Action Buttons & Filled Gradients KEEP WHITE TEXT
+*/
+[data-theme="light"] button.bg-gradient-to-r,
+[data-theme="light"] button[type="submit"],
+[data-theme="light"] a.bg-gradient-to-r,
+[data-theme="light"] .bg-sky-500.text-white,
+[data-theme="light"] .bg-emerald-600.text-white,
+[data-theme="light"] button.bg-sky-500,
+[data-theme="light"] a.bg-sky-500 {
+  color: #ffffff !important;
+}
+
+[data-theme="light"] button.bg-gradient-to-r *,
+[data-theme="light"] button[type="submit"] *,
+[data-theme="light"] a.bg-gradient-to-r * {
+  color: #ffffff !important;
+}
+
+/* 
+   LIGHT THEME: Card Backgrounds & Inputs
 */
 [data-theme="light"] [class*="bg-slate-900"],
 [data-theme="light"] [class*="bg-slate-950"],
 [data-theme="light"] [class*="bg-slate-800"] {
-  background-color: #f8fafc !important;
+  background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
 }
 
-/* Hover states for buttons & cards in Light Mode */
+/* Hover states for interactive items */
 [data-theme="light"] [class*="bg-slate-900"]:hover,
 [data-theme="light"] [class*="bg-slate-950"]:hover,
 [data-theme="light"] [class*="bg-slate-800"]:hover {
-  background-color: #f1f5f9 !important;
+  background-color: #f8fafc !important;
   border-color: #94a3b8 !important;
-}
-
-/* Selected item state in lists */
-[data-theme="light"] [class*="bg-sky-500/20"] {
-  background-color: #e0f2fe !important;
-  border-color: #38bdf8 !important;
 }
 
 [data-theme="light"] [class*="border-slate-800"],
@@ -133,20 +146,13 @@ body {
   border-color: #cbd5e1 !important;
 }
 
-/* Gradients in Light Theme */
-[data-theme="light"] .bg-gradient-to-br.from-slate-900\/90,
-[data-theme="light"] .bg-gradient-to-r.from-slate-950,
-[data-theme="light"] .bg-gradient-to-tr.from-slate-950 {
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%) !important;
-}
-
 /* Header & Navigation */
 header {
   z-index: 9999 !important;
 }
 
 [data-theme="light"] header.glass-panel {
-  background: rgba(255, 255, 255, 0.94) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
   border-bottom: 1px solid #cbd5e1 !important;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
 }
@@ -165,7 +171,7 @@ header {
   background-color: #ffffff !important;
 }
 
-/* Form Inputs, Sliders, and Details in Light Mode */
+/* Form Inputs, Selects, Details in Light Mode */
 [data-theme="light"] input:not([type="range"]),
 [data-theme="light"] select,
 [data-theme="light"] textarea {
@@ -193,22 +199,47 @@ header {
   color: #0284c7 !important;
 }
 
-/* Tables in Light Mode */
-[data-theme="light"] thead {
-  border-bottom-color: #cbd5e1 !important;
-  background-color: #f8fafc !important;
+/* High Contrast Accent Colors for Light Mode */
+[data-theme="light"] .text-sky-400,
+[data-theme="light"] .text-sky-300,
+[data-theme="light"] .text-sky-500,
+[data-theme="light"] .text-sky-600 {
+  color: #0369a1 !important;
 }
 
-[data-theme="light"] thead th {
-  color: #475569 !important;
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-emerald-300,
+[data-theme="light"] .text-emerald-500,
+[data-theme="light"] .text-emerald-600 {
+  color: #047857 !important;
 }
 
-[data-theme="light"] tbody tr {
-  border-bottom-color: #e2e8f0 !important;
+[data-theme="light"] .text-amber-400,
+[data-theme="light"] .text-amber-300,
+[data-theme="light"] .text-amber-500,
+[data-theme="light"] .text-amber-600 {
+  color: #b45309 !important;
 }
 
-[data-theme="light"] tbody td {
-  color: #334155 !important;
+[data-theme="light"] .text-rose-400,
+[data-theme="light"] .text-rose-300,
+[data-theme="light"] .text-rose-500,
+[data-theme="light"] .text-rose-600 {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .text-purple-400,
+[data-theme="light"] .text-purple-300,
+[data-theme="light"] .text-purple-500,
+[data-theme="light"] .text-purple-600 {
+  color: #7e22ce !important;
+}
+
+[data-theme="light"] .text-blue-400,
+[data-theme="light"] .text-blue-300,
+[data-theme="light"] .text-blue-500,
+[data-theme="light"] .text-blue-600 {
+  color: #1d4ed8 !important;
 }
 
 /* Status Banners in Light Mode */
@@ -239,61 +270,6 @@ header {
 [data-theme="light"] .bg-purple-500\/10 {
   background-color: #faf5ff !important;
   border-color: #e9d5ff !important;
-}
-
-/* High Contrast Accent Badges & Action Buttons */
-[data-theme="light"] .text-sky-400,
-[data-theme="light"] .text-sky-300,
-[data-theme="light"] .text-sky-500 {
-  color: #0284c7 !important;
-  font-weight: 600;
-}
-
-[data-theme="light"] a[class*="text-sky-"],
-[data-theme="light"] button[class*="text-sky-"],
-[data-theme="light"] a[class*="border-sky-500"],
-[data-theme="light"] button[class*="border-sky-500"] {
-  color: #0369a1 !important;
-  border-color: #7dd3fc !important;
-  background-color: #f0f9ff !important;
-  font-weight: 600;
-}
-
-[data-theme="light"] a[class*="text-sky-"]:hover,
-[data-theme="light"] button[class*="text-sky-"]:hover {
-  color: #0c4a6e !important;
-  background-color: #e0f2fe !important;
-  border-color: #38bdf8 !important;
-}
-
-[data-theme="light"] .text-emerald-400,
-[data-theme="light"] .text-emerald-300 {
-  color: #047857 !important;
-  font-weight: 600;
-}
-
-[data-theme="light"] .text-amber-400,
-[data-theme="light"] .text-amber-300 {
-  color: #b45309 !important;
-  font-weight: 600;
-}
-
-[data-theme="light"] .text-rose-400,
-[data-theme="light"] .text-rose-300 {
-  color: #dc2626 !important;
-  font-weight: 600;
-}
-
-[data-theme="light"] .text-purple-400,
-[data-theme="light"] .text-purple-300 {
-  color: #7c3aed !important;
-  font-weight: 600;
-}
-
-[data-theme="light"] .text-blue-400,
-[data-theme="light"] .text-blue-300 {
-  color: #1d4ed8 !important;
-  font-weight: 600;
 }
 
 /* Footer in Light Mode */
