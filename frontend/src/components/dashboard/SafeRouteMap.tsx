@@ -59,10 +59,10 @@ export function SafeRouteMap({
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      // CartoDB Voyager / OSM tile layer (crisp and modern in both light & dark)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      // Clean OpenStreetMap tile layer without any watermark
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd',
+        attribution: '&copy; OpenStreetMap contributors',
       }).addTo(map);
 
       mapRef.current = map;
