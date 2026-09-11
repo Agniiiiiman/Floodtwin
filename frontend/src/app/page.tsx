@@ -84,39 +84,6 @@ const subsystems = [
     badgeText: 'Corroborated Reports',
     badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   },
-  {
-    title: 'Hydraulic Methodology',
-    tagline: 'Scientific Formulation & Pillars',
-    description: 'In-depth breakdown of the 3-layer architecture, open-channel flow mathematical principles, and municipal urban resilience framework.',
-    href: '/solution',
-    icon: Layers,
-    color: 'teal',
-    accentBorder: 'hover:border-teal-500/50',
-    badgeText: 'Hydraulic Principles',
-    badgeColor: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-  },
-  {
-    title: 'System Architecture',
-    tagline: 'Distributed Data Flow Pipeline',
-    description: 'Detailed technical diagram and stack overview spanning Open-Meteo feeds, FastAPI asynchronous computing, and Leaflet rendering.',
-    href: '/architecture',
-    icon: Layers2,
-    color: 'cyan',
-    accentBorder: 'hover:border-cyan-500/50',
-    badgeText: 'Full-Stack Pipeline',
-    badgeColor: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  },
-  {
-    title: 'Team Error 404',
-    tagline: 'SIH 2026 Innovators',
-    description: 'Meet the engineering and research team behind the Error 404 Urban Flood Digital Twin & Emergency Routing platform.',
-    href: '/team',
-    icon: Users,
-    color: 'indigo',
-    accentBorder: 'hover:border-indigo-500/50',
-    badgeText: 'Smart India Hackathon',
-    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-  },
 ];
 
 const mockLiveReports = [
@@ -397,7 +364,7 @@ export default function HomePage() {
                   Catchment runoff $Q = C \cdot i \cdot A$ generates 0.89 m³/s vs 0.55 m³/s capacity (162% load).
                 </p>
               </div>
-              <Link href="/solution" className="mt-3 text-xs text-amber-400 font-semibold hover:text-amber-300">Methodology →</Link>
+              <Link href="/simulation" className="mt-3 text-xs text-amber-400 font-semibold hover:text-amber-300">Run Physics Model →</Link>
             </div>
 
             {/* Q3: WHICH ROAD TO AVOID */}
@@ -716,16 +683,16 @@ export default function HomePage() {
             </div>
             <div className="flex flex-wrap gap-3 shrink-0">
               <Link
-                href="/signup"
+                href="/digital-twin"
                 className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs sm:text-sm font-semibold tracking-wide shadow-lg shadow-sky-500/30 hover:scale-105 transition-all"
               >
-                Create Free Account
+                Launch Ward Digital Twin
               </Link>
               <Link
-                href="/login"
+                href="/safe-route"
                 className="px-6 py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 text-xs sm:text-sm font-semibold tracking-wide transition-all"
               >
-                Sign In to Terminal
+                Open Route Planner
               </Link>
             </div>
           </div>

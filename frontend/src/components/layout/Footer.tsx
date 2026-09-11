@@ -33,91 +33,59 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 2: Navigation */}
+          {/* Col 2: Core Platform Navigation */}
           <div>
             <h4 className="text-white font-semibold text-xs tracking-wider uppercase mb-4 text-sky-400">
-              Platform
+              Core Modules
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link href="/dashboard" className="hover:text-sky-300 transition-colors font-semibold text-sky-400">
-                  Command Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/digital-twin" className="hover:text-sky-300 transition-colors">
-                  Digital Twin Ward Map
-                </Link>
-              </li>
-              <li>
-                <Link href="/simulation" className="hover:text-sky-300 transition-colors">
-                  What-If Hydraulic Simulation
-                </Link>
-              </li>
-              <li>
-                <Link href="/rainfall-map" className="hover:text-sky-300 transition-colors">
-                  Global Rainfall Monitor
-                </Link>
-              </li>
-              <li>
-                <Link href="/safe-route" className="hover:text-sky-300 transition-colors">
-                  Safe Route Navigator
-                </Link>
-              </li>
-              <li>
-                <Link href="/reports" className="hover:text-sky-300 transition-colors">
-                  Citizen Flood Reporting
-                </Link>
-              </li>
-              <li>
-                <Link href="/solution" className="hover:text-sky-300 transition-colors">
-                  Hydraulic Manning Modeling
-                </Link>
-              </li>
-              <li>
-                <Link href="/architecture" className="hover:text-sky-300 transition-colors">
-                  System Architecture
-                </Link>
-              </li>
-              <li>
-                <Link href="/team" className="hover:text-sky-300 transition-colors">
-                  SIH Team Error 404
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 3: Portal & Account */}
-          <div>
-            <h4 className="text-white font-semibold text-xs tracking-wider uppercase mb-4 text-sky-400">
-              Access & Portals
-            </h4>
-            <ul className="space-y-2.5 text-xs">
-              <li>
-                <Link href="/login" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
+                <Link href="/digital-twin" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-                  <span>Municipal & Citizen Sign In</span>
+                  <span>Digital Twin Ward Map</span>
                 </Link>
               </li>
               <li>
-                <Link href="/signup" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
+                <Link href="/simulation" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>Create Account / Onboard</span>
+                  <span>What-If Hydraulic Simulation</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/safe-route" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  <span>Safe Route Navigator</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/rainfall-map" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                  <span>Global Rainfall Radar</span>
                 </Link>
               </li>
               <li>
                 <Link href="/reports" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                  <span>Report Waterlogging</span>
+                  <span>Citizen Flood Reporting</span>
                 </Link>
               </li>
             </ul>
-            <div className="flex items-center space-x-2 pt-4">
-              <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-mono">
+          </div>
+
+          {/* Col 3: SIH Project Meta */}
+          <div>
+            <h4 className="text-white font-semibold text-xs tracking-wider uppercase mb-4 text-sky-400">
+              Project Info
+            </h4>
+            <p className="text-xs text-slate-400 leading-relaxed mb-4">
+              Smart India Hackathon 2026. Street-level urban flood risk modeling and dynamic evacuation corridor routing.
+            </p>
+            <div className="flex items-center space-x-2">
+              <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-mono">
                 SIH 2026
               </span>
-              <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-emerald-400 font-mono">
-                Production MVP
+              <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-emerald-400 font-mono">
+                Hydro Engine v2.0
               </span>
             </div>
           </div>
