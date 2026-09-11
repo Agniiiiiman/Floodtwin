@@ -21,7 +21,8 @@ import {
   RefreshCw,
   Building,
   Hospital,
-  Mountain
+  Mountain,
+  ChevronDown
 } from 'lucide-react';
 
 const SafeRouteMap = dynamic(
@@ -40,9 +41,10 @@ export interface PlaceItem {
 }
 
 export const ALL_ORIGIN_PLACES: PlaceItem[] = [
+  { id: 'colaba_depot', name: 'Ward A HQ - Colaba Municipal Depot', category: 'Municipal Sector', area: 'Colaba', lat: '18.9160', lng: '72.8250', elevationM: 4 },
+  { id: 'colaba_causeway', name: 'Colaba Causeway & Market', category: 'Commercial Corridor', area: 'Colaba', lat: '18.9190', lng: '72.8270', elevationM: 4 },
   { id: 'gateway_india', name: 'Gateway of India Promenade', category: 'Coastal Landmark', area: 'Colaba / South Mumbai', lat: '18.9220', lng: '72.8347', elevationM: 3 },
   { id: 'nariman_point', name: 'Nariman Point Financial Center', category: 'Commercial Hub', area: 'Nariman Point', lat: '18.9256', lng: '72.8242', elevationM: 4 },
-  { id: 'colaba_depot', name: 'Ward A HQ - Colaba Municipal Depot', category: 'Municipal Sector', area: 'Colaba', lat: '18.9160', lng: '72.8250', elevationM: 4 },
   { id: 'marine_drive', name: 'Marine Drive Promenade (Low Basin)', category: 'Vulnerable Seafront', area: 'Churchgate', lat: '18.9432', lng: '72.8230', elevationM: 3 },
   { id: 'churchgate', name: 'Churchgate Western Railway Terminal', category: 'Transit Hub', area: 'Churchgate', lat: '18.9352', lng: '72.8272', elevationM: 5 },
   { id: 'crawford_market', name: 'Crawford Market Junction', category: 'Commercial Center', area: 'Fort / Crawford', lat: '18.9472', lng: '72.8340', elevationM: 5 },
@@ -73,6 +75,28 @@ export const ALL_DEST_PLACES: PlaceItem[] = [
 
 export const POPULAR_ROUTES = [
   {
+    label: 'Ward A HQ ➔ CSMT Evacuation Zone',
+    origId: 'colaba_depot',
+    destId: 'csmt_relief',
+    fromName: 'Ward A HQ - Colaba Municipal Depot',
+    toName: 'CSMT Evacuation & Disaster Relief Center',
+    sLat: '18.9160',
+    sLng: '72.8250',
+    eLat: '18.9400',
+    eLng: '72.8354',
+  },
+  {
+    label: 'Colaba Causeway ➔ St. George Hospital',
+    origId: 'colaba_causeway',
+    destId: 'st_george_hospital',
+    fromName: 'Colaba Causeway & Market',
+    toName: 'St. George Hospital Emergency Trauma Care',
+    sLat: '18.9190',
+    sLng: '72.8270',
+    eLat: '18.9415',
+    eLng: '72.8385',
+  },
+  {
     label: 'Gateway of India ➔ CSMT Relief Center',
     origId: 'gateway_india',
     destId: 'csmt_relief',
@@ -84,7 +108,7 @@ export const POPULAR_ROUTES = [
     eLng: '72.8354',
   },
   {
-    label: 'Marine Drive ➔ Malabar Hill Elevated Refuge (35m MSL)',
+    label: 'Marine Drive ➔ Malabar Hill Refuge (35m MSL)',
     origId: 'marine_drive',
     destId: 'malabar_hill',
     fromName: 'Marine Drive Promenade (Low Basin)',
@@ -93,17 +117,6 @@ export const POPULAR_ROUTES = [
     sLng: '72.8230',
     eLat: '18.9550',
     eLng: '72.8050',
-  },
-  {
-    label: 'Colaba Depot ➔ St. George Hospital',
-    origId: 'colaba_depot',
-    destId: 'st_george_hospital',
-    fromName: 'Ward A HQ - Colaba Municipal Depot',
-    toName: 'St. George Hospital Emergency Trauma Care',
-    sLat: '18.9160',
-    sLng: '72.8250',
-    eLat: '18.9415',
-    eLng: '72.8385',
   },
   {
     label: 'Sion Flood Basin ➔ KEM Hospital Parel',
@@ -127,24 +140,13 @@ export const POPULAR_ROUTES = [
     eLat: '19.1080',
     eLng: '72.8360',
   },
-  {
-    label: 'BKC G Block ➔ BKC Elevated Pavilion',
-    origId: 'bkc_complex',
-    destId: 'bkc_shelter',
-    fromName: 'Bandra-Kurla Complex (BKC) G Block',
-    toName: 'BKC Elevated Disaster Management Pavilion',
-    sLat: '19.0600',
-    sLng: '72.8640',
-    eLat: '19.0660',
-    eLng: '72.8680',
-  },
 ];
 
 export function SafeRoutePlanner() {
-  const [fromPlaceName, setFromPlaceName] = useState('Gateway of India Promenade');
+  const [fromPlaceName, setFromPlaceName] = useState('Ward A HQ - Colaba Municipal Depot');
   const [toPlaceName, setToPlaceName] = useState('CSMT Evacuation & Disaster Relief Center');
-  const [startLat, setStartLat] = useState('18.9220');
-  const [startLng, setStartLng] = useState('72.8347');
+  const [startLat, setStartLat] = useState('18.9160');
+  const [startLng, setStartLng] = useState('72.8250');
   const [endLat, setEndLat] = useState('18.9400');
   const [endLng, setEndLng] = useState('72.8354');
   const [showCoordinates, setShowCoordinates] = useState(false);
@@ -154,8 +156,8 @@ export function SafeRoutePlanner() {
   const calculateRoute = useCallback(
     async (sLatStr: string, sLngStr: string, eLatStr: string, eLngStr: string) => {
       setIsLoading(true);
-      const sLat = parseFloat(sLatStr) || 18.9220;
-      const sLng = parseFloat(sLngStr) || 72.8347;
+      const sLat = parseFloat(sLatStr) || 18.9160;
+      const sLng = parseFloat(sLngStr) || 72.8250;
       const eLat = parseFloat(eLatStr) || 18.9400;
       const eLng = parseFloat(eLngStr) || 72.8354;
 
@@ -203,7 +205,7 @@ export function SafeRoutePlanner() {
     []
   );
 
-  // Auto-calculate on initial mount so safe route is ALWAYS active and visible immediately!
+  // Auto-calculate on initial mount so safe route simulation is ALWAYS active and shown!
   useEffect(() => {
     calculateRoute(startLat, startLng, endLat, endLng);
   }, []);
@@ -261,66 +263,33 @@ export function SafeRoutePlanner() {
 
   return (
     <div id="safe-route" className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-500/25 shadow-2xl space-y-6">
-      {/* Header with status badge */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             <Navigation className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-white tracking-tight">
-              Emergency Safe Route & Evacuation Corridor Planner
+            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+              Emergency Flood-Safe Corridor Routing & Simulation
             </h3>
-            <p className="text-xs text-slate-400">
-              Select your departure point and destination safe haven to generate a flood-free route that avoids submerged streets.
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Powered by OSRM graph search with real-time hydraulic exclusion zones
             </p>
           </div>
         </div>
 
-        <span className="text-[11px] uppercase font-mono px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold self-start sm:self-auto flex items-center gap-1.5 shrink-0">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          Live Route Solver Active
+        <span className="text-[11px] uppercase font-mono px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold self-start sm:self-auto flex items-center gap-1.5 shrink-0">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
+          OSRM ENGINE ACTIVE
         </span>
       </div>
 
-      {/* Prominent Current From -> To Place Banner */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-950/40 via-slate-900/80 to-emerald-950/40 border border-sky-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center space-x-3 truncate">
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="px-2.5 py-1 rounded-lg bg-sky-500/20 border border-sky-400/40 text-sky-300 font-extrabold text-xs flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-sky-400" />
-              FROM:
-            </span>
-            <span className="text-white font-bold text-xs sm:text-sm truncate">{fromPlaceName}</span>
-          </div>
-
-          <ArrowRight className="w-4 h-4 text-emerald-400 shrink-0 hidden sm:block" />
-
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-extrabold text-xs flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              TO:
-            </span>
-            <span className="text-white font-bold text-xs sm:text-sm truncate">{toPlaceName}</span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleSwapPlaces}
-          title="Swap starting point and destination"
-          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer self-start md:self-auto"
-        >
-          <ArrowUpDown className="w-3.5 h-3.5 text-sky-400" />
-          <span>Swap Places (⇄)</span>
-        </button>
-      </div>
-
-      {/* 1-Click Popular Emergency Evacuation Presets */}
+      {/* Quick Emergency Routes (1-Click Fill & Instant Simulation) */}
       <div className="space-y-2">
-        <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          Popular Flood-Safe Routes (1-Click Instant Calculation):
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+          Quick Emergency Routes (1-Click Instant Calculation):
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {POPULAR_ROUTES.map((preset, idx) => {
@@ -330,14 +299,14 @@ export function SafeRoutePlanner() {
                 key={idx}
                 type="button"
                 onClick={() => handleSelectPreset(preset)}
-                className={`text-xs p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                className={`text-xs p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                   isCurrent
-                    ? 'bg-sky-500/25 border-sky-400 text-white font-bold shadow-md ring-1 ring-sky-400'
-                    : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:text-white hover:border-sky-500/40 hover:bg-slate-800'
+                    ? 'bg-sky-500/15 border-sky-500 text-sky-700 dark:text-sky-300 font-bold shadow-sm ring-1 ring-sky-400'
+                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-sky-500/50 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 <div className="flex items-center space-x-2 truncate">
-                  <Milestone className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-amber-400' : 'text-sky-400'}`} />
+                  <Milestone className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-amber-500' : 'text-sky-500'}`} />
                   <span className="truncate">{preset.label}</span>
                 </div>
                 <ArrowRight className="w-3 h-3 text-slate-400 shrink-0 ml-1.5" />
@@ -351,64 +320,64 @@ export function SafeRoutePlanner() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* FROM Location Card */}
-          <div className="p-5 rounded-2xl bg-slate-900/80 border border-sky-500/30 space-y-3 relative overflow-hidden">
+          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-sky-400/40 dark:border-sky-500/30 space-y-3 relative overflow-hidden shadow-sm">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs font-black text-sky-400 uppercase tracking-wider">
+              <div className="flex items-center space-x-2 text-xs font-black text-sky-600 dark:text-sky-400 uppercase tracking-wider">
                 <MapPin className="w-4 h-4" />
-                <span>1. FROM (DEPARTURE / CURRENT LOCATION)</span>
+                <span>📍 ORIGIN PLACE (FROM - DEPARTURE)</span>
               </div>
-              <span className="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/30">
-                Origin
+              <span className="text-[10px] font-mono font-bold text-sky-700 dark:text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/30">
+                Departure
               </span>
             </div>
 
-            {/* Landmark Dropdown */}
+            {/* Landmark Dropdown Selector */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300 block">Select Starting Landmark / Area:</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Choose Departure Location:</label>
               <select
                 value={ALL_ORIGIN_PLACES.find((p) => p.name === fromPlaceName)?.id || ''}
                 onChange={handleFromSelect}
-                className="w-full pl-3 pr-8 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:border-sky-500 focus:outline-none cursor-pointer"
+                className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:border-sky-500 focus:outline-none cursor-pointer"
               >
                 {ALL_ORIGIN_PLACES.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} [{p.area}]
+                    {p.name} — [{p.area}]
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Custom Edit Place Name Input */}
+            {/* Custom Place Input */}
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-400">Or type custom place name:</label>
+              <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Or type custom place name:</label>
               <input
                 type="text"
                 value={fromPlaceName}
                 onChange={(e) => setFromPlaceName(e.target.value)}
-                placeholder="e.g. Gateway of India, Nariman Point, Dadar..."
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none"
+                placeholder="e.g. Gateway of India, Ward A Depot, Marine Drive, Dadar..."
+                className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:border-sky-500 focus:outline-none"
               />
             </div>
 
-            {/* Fine coordinates toggle */}
+            {/* Coordinates Toggle */}
             {showCoordinates && (
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                 <div>
-                  <label className="text-[10px] text-slate-400 font-mono block">Latitude</label>
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">Latitude</label>
                   <input
                     type="text"
                     value={startLat}
                     onChange={(e) => setStartLat(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-white"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-mono block">Longitude</label>
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">Longitude</label>
                   <input
                     type="text"
                     value={startLng}
                     onChange={(e) => setStartLng(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-white"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -416,64 +385,64 @@ export function SafeRoutePlanner() {
           </div>
 
           {/* TO Location Card */}
-          <div className="p-5 rounded-2xl bg-slate-900/80 border border-emerald-500/30 space-y-3 relative overflow-hidden">
+          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-emerald-400/40 dark:border-emerald-500/30 space-y-3 relative overflow-hidden shadow-sm">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs font-black text-emerald-400 uppercase tracking-wider">
+              <div className="flex items-center space-x-2 text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                 <ShieldCheck className="w-4 h-4" />
-                <span>2. TO (SAFE HAVEN / EVACUATION DESTINATION)</span>
+                <span>🛡️ DESTINATION PLACE (TO - SAFE HAVEN)</span>
               </div>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+              <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
                 Safe Destination
               </span>
             </div>
 
-            {/* Destination Dropdown */}
+            {/* Destination Dropdown Selector */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300 block">Select Safe Haven / Hospital / High Ground:</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Choose Safe Haven / Relief Center:</label>
               <select
                 value={ALL_DEST_PLACES.find((p) => p.name === toPlaceName)?.id || ''}
                 onChange={handleToSelect}
-                className="w-full pl-3 pr-8 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
+                className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
               >
                 {ALL_DEST_PLACES.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} [{p.category}]
+                    {p.name} — [{p.category}]
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Custom Edit Place Name Input */}
+            {/* Custom Place Input */}
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-400">Or type custom safe destination:</label>
+              <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Or type custom safe destination:</label>
               <input
                 type="text"
                 value={toPlaceName}
                 onChange={(e) => setToPlaceName(e.target.value)}
-                placeholder="e.g. CSMT Relief Center, Malabar Hill, KEM Hospital..."
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                placeholder="e.g. CSMT Evacuation Center, St. George Hospital, Malabar Hill..."
+                className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none"
               />
             </div>
 
-            {/* Fine coordinates toggle */}
+            {/* Coordinates Toggle */}
             {showCoordinates && (
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                 <div>
-                  <label className="text-[10px] text-slate-400 font-mono block">Latitude</label>
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">Latitude</label>
                   <input
                     type="text"
                     value={endLat}
                     onChange={(e) => setEndLat(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-white"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-mono block">Longitude</label>
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">Longitude</label>
                   <input
                     type="text"
                     value={endLng}
                     onChange={(e) => setEndLng(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-white"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -481,113 +450,125 @@ export function SafeRoutePlanner() {
           </div>
         </div>
 
-        {/* Coordinate toggle & Mode details */}
-        <div className="flex items-center justify-between text-xs text-slate-400">
-          <button
-            type="button"
-            onClick={() => setShowCoordinates(!showCoordinates)}
-            className="flex items-center space-x-1.5 hover:text-white transition-colors cursor-pointer"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-sky-400" />
-            <span>{showCoordinates ? 'Hide' : 'Show'} Fine-Grained GPS Coordinates (Lat / Lng)</span>
-          </button>
-          <span className="font-mono text-[11px] text-emerald-400 flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5" /> High-Elevation Safe Corridors
+        {/* Controls strip */}
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSwapPlaces}
+              className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <ArrowUpDown className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              <span>Swap Places (⇄)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowCoordinates(!showCoordinates)}
+              className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-medium"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 text-sky-500" />
+              <span>{showCoordinates ? 'Hide' : 'Show'} Fine GPS Coordinates</span>
+            </button>
+          </div>
+
+          <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-bold">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> 100% Inundation Bypass Active
           </span>
         </div>
 
-        {/* High-visibility Action Button */}
+        {/* Main Action Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-600 hover:from-emerald-400 hover:to-sky-500 text-white text-sm font-black tracking-wider uppercase transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white text-sm font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75"
         >
           <Compass className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
           <span>
             {isLoading
-              ? 'Computing Flood-Free Corridor...'
-              : `Calculate Safe Route: ${fromPlaceName.split(' - ')[0].split(' [')[0]} ➔ ${toPlaceName.split(' - ')[0].split(' [')[0]}`}
+              ? 'Computing Flood-Free Corridor Simulation...'
+              : `CALCULATE INUNDATION-FREE SAFE ROUTE: ${fromPlaceName.split(' - ')[0].split(' [')[0]} ➔ ${toPlaceName.split(' - ')[0].split(' [')[0]}`}
           </span>
         </button>
       </form>
 
-      {/* Calculated Safe Route Output & Visual Itinerary */}
+      {/* Simulated Route Results & Interactive Map */}
       {routeResult && (
-        <div className="p-6 rounded-3xl bg-emerald-950/25 border border-emerald-500/40 space-y-5 animate-fadeIn">
-          {/* Main Corridor Banner */}
+        <div className="p-6 rounded-3xl bg-emerald-500/5 dark:bg-emerald-950/25 border border-emerald-500/40 space-y-5 animate-fadeIn">
+          {/* Main Status Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/20 pb-4">
             <div>
-              <div className="flex items-center space-x-2 text-emerald-400 font-bold text-sm">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400 font-extrabold text-sm">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                 <span>INUNDATION-FREE EVACUATION CORRIDOR COMPUTED</span>
               </div>
-              <h4 className="text-base font-black text-white mt-1">
-                {fromPlaceName} <span className="text-emerald-400">➔</span> {toPlaceName}
+              <h4 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                {fromPlaceName} <span className="text-emerald-500">➔</span> {toPlaceName}
               </h4>
             </div>
-            <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30 font-bold self-start sm:self-auto">
+            <span className="text-xs font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-3.5 py-1.5 rounded-full border border-emerald-500/30 font-bold self-start sm:self-auto">
               100% Inundation-Free
             </span>
           </div>
 
           {/* Place Summary Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 font-mono uppercase block">📍 1. DEPARTURE PLACE</span>
-              <strong className="text-white text-xs block truncate">{fromPlaceName}</strong>
-              <span className="text-[10px] text-sky-400 font-mono">{startLat}, {startLng}</span>
+            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase font-bold block">📍 1. DEPARTURE PLACE</span>
+              <strong className="text-slate-900 dark:text-white text-xs block truncate">{fromPlaceName}</strong>
+              <span className="text-[10px] text-sky-600 dark:text-sky-400 font-mono">{startLat}, {startLng}</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 font-mono uppercase block">🛡️ 2. SAFE DESTINATION</span>
-              <strong className="text-white text-xs block truncate">{toPlaceName}</strong>
-              <span className="text-[10px] text-emerald-400 font-mono">{endLat}, {endLng}</span>
+            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase font-bold block">🛡️ 2. SAFE HAVEN DESTINATION</span>
+              <strong className="text-slate-900 dark:text-white text-xs block truncate">{toPlaceName}</strong>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">{endLat}, {endLng}</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
               <div>
-                <span className="text-[10px] text-slate-400 font-mono uppercase block">CORRIDOR METRICS</span>
-                <div className="text-sm font-black text-white mt-0.5">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase font-bold block">CORRIDOR METRICS</span>
+                <div className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
                   {routeResult.route?.routes?.[0]?.distance ? `${(routeResult.route.routes[0].distance / 1000).toFixed(1)} km` : '2.8 km'}
-                  <span className="text-slate-400 font-normal text-xs ml-1.5">
+                  <span className="text-slate-500 dark:text-slate-400 font-normal text-xs ml-1.5">
                     (~{routeResult.route?.routes?.[0]?.duration ? Math.ceil(routeResult.route.routes[0].duration / 60) : '7'} min)
                   </span>
                 </div>
               </div>
-              <Compass className="w-7 h-7 text-emerald-400 shrink-0" />
+              <Compass className="w-7 h-7 text-emerald-500 shrink-0" />
             </div>
           </div>
 
           {/* Flooded Streets Actively Avoided */}
           {routeResult.avoided_segments && routeResult.avoided_segments.length > 0 && (
-            <div className="rounded-2xl border border-rose-500/30 bg-rose-950/20 p-3.5 text-xs text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="rounded-2xl border border-rose-400/40 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-950/20 p-3.5 text-xs text-rose-800 dark:text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
                 <span>
                   <strong>Actively Bypassed Inundated Streets:</strong> {routeResult.avoided_segments.join(' • ')}
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-rose-400 uppercase font-bold shrink-0 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/30">
+              <span className="text-[10px] font-mono text-rose-700 dark:text-rose-400 uppercase font-bold shrink-0 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/30">
                 Hazard Detoured
               </span>
             </div>
           )}
 
           {/* Turn-by-Turn Safe Itinerary Steps */}
-          <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2.5">
-            <h5 className="text-xs font-bold text-white flex items-center gap-2">
-              <Route className="w-4 h-4 text-sky-400" />
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-sm">
+            <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Route className="w-4 h-4 text-sky-500" />
               <span>Step-by-Step Safe Evacuation Guidance</span>
             </h5>
-            <ol className="space-y-1.5 text-xs text-slate-300 list-decimal list-inside leading-relaxed">
+            <ol className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-decimal list-inside leading-relaxed">
               <li>
-                Depart from <strong className="text-white">{fromPlaceName}</strong> heading towards the nearest elevated artery road.
+                Depart from <strong className="text-slate-900 dark:text-white">{fromPlaceName}</strong> heading towards the nearest elevated artery road.
               </li>
               <li>
                 Take the bypass detour via elevated ridge line avoiding low-point street depressions and surcharged storm drains.
               </li>
               <li>
-                Proceed along designated emergency corridor directly into <strong className="text-emerald-400">{toPlaceName}</strong>.
+                Proceed along designated emergency corridor directly into <strong className="text-emerald-600 dark:text-emerald-400">{toPlaceName}</strong>.
               </li>
             </ol>
           </div>
@@ -601,9 +582,9 @@ export function SafeRoutePlanner() {
               fromPlaceName={fromPlaceName}
               toPlaceName={toPlaceName}
             />
-            <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 font-mono">
-              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                <span className="w-3 h-1 bg-emerald-400 rounded-full inline-block"></span> Glowing green path: 100% Inundation-free route
+            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1 font-mono">
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="w-3 h-1 bg-emerald-500 rounded-full inline-block"></span> Glowing green path: 100% Inundation-free route
               </span>
               <span>OSRM Dynamic Route Engine</span>
             </div>
