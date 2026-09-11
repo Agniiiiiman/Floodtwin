@@ -522,7 +522,7 @@ export function SafeRoutePlanner() {
 
       {/* Simulated Route Results & Interactive Map */}
       {routeResult && (
-        <div className="p-6 rounded-3xl bg-white dark:bg-emerald-950/25 border border-slate-200 dark:border-emerald-500/40 space-y-5 shadow-lg animate-fadeIn">
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-emerald-500/40 space-y-5 shadow-xl animate-fadeIn">
           {/* Main Status Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-emerald-500/20 pb-4">
             <div>
@@ -541,25 +541,43 @@ export function SafeRoutePlanner() {
 
           {/* Place Summary Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
-              <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">📍 1. DEPARTURE PLACE</span>
-              <strong className="text-slate-950 dark:text-white text-xs block truncate font-black">{fromPlaceName}</strong>
-              <span className="text-[10px] text-sky-800 dark:text-sky-400 font-mono font-bold">{startLat}, {startLng}</span>
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 space-y-1 shadow-sm">
+              <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">
+                📍 1. DEPARTURE PLACE
+              </span>
+              <div className="text-slate-950 dark:text-white text-xs font-black truncate">
+                {fromPlaceName}
+              </div>
+              <span className="text-[10px] text-sky-700 dark:text-sky-400 font-mono font-bold block">
+                {startLat}, {startLng}
+              </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
-              <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">🛡️ 2. SAFE HAVEN DESTINATION</span>
-              <strong className="text-slate-950 dark:text-white text-xs block truncate font-black">{toPlaceName}</strong>
-              <span className="text-[10px] text-emerald-800 dark:text-emerald-400 font-mono font-bold">{endLat}, {endLng}</span>
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 space-y-1 shadow-sm">
+              <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">
+                🛡️ 2. SAFE HAVEN DESTINATION
+              </span>
+              <div className="text-slate-950 dark:text-white text-xs font-black truncate">
+                {toPlaceName}
+              </div>
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold block">
+                {endLat}, {endLng}
+              </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 flex items-center justify-between shadow-sm">
               <div>
-                <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">CORRIDOR METRICS</span>
-                <div className="text-sm font-black text-slate-950 dark:text-white mt-0.5">
-                  {routeResult.route?.routes?.[0]?.distance ? `${(routeResult.route.routes[0].distance / 1000).toFixed(1)} km` : '2.9 km'}
-                  <span className="text-slate-700 dark:text-slate-300 font-bold text-xs ml-1.5">
-                    (~{routeResult.route?.routes?.[0]?.duration ? Math.ceil(routeResult.route.routes[0].duration / 60) : '7'} min)
+                <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">
+                  CORRIDOR METRICS
+                </span>
+                <div className="mt-0.5 flex items-baseline gap-1.5">
+                  <span className="text-sm font-black text-slate-950 dark:text-white">
+                    {routeResult.route?.routes?.[0]?.distance
+                      ? `${(routeResult.route.routes[0].distance / 1000).toFixed(1)} km`
+                      : '3.6 km'}
+                  </span>
+                  <span className="text-slate-700 dark:text-slate-300 font-bold text-xs">
+                    (~{routeResult.route?.routes?.[0]?.duration ? Math.ceil(routeResult.route.routes[0].duration / 60) : '5'} min)
                   </span>
                 </div>
               </div>
