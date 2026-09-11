@@ -40,6 +40,11 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li>
+                <Link href="/dashboard" className="hover:text-sky-300 transition-colors font-semibold text-sky-400">
+                  Command Dashboard
+                </Link>
+              </li>
+              <li>
                 <Link href="/digital-twin" className="hover:text-sky-300 transition-colors">
                   Digital Twin Ward Map
                 </Link>

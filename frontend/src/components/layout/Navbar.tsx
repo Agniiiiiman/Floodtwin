@@ -34,6 +34,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: 'Home', href: '/' },
+    { name: 'Dashboard', href: '/dashboard' },
     { name: 'Digital Twin', href: '/digital-twin' },
     { name: 'Simulation', href: '/simulation' },
     { name: 'Safe Route', href: '/safe-route' },
