@@ -522,48 +522,48 @@ export function SafeRoutePlanner() {
 
       {/* Simulated Route Results & Interactive Map */}
       {routeResult && (
-        <div className="p-6 rounded-3xl bg-emerald-500/5 dark:bg-emerald-950/25 border border-emerald-500/40 space-y-5 animate-fadeIn">
+        <div className="p-6 rounded-3xl bg-white dark:bg-emerald-950/25 border border-slate-200 dark:border-emerald-500/40 space-y-5 shadow-lg animate-fadeIn">
           {/* Main Status Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/20 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-emerald-500/20 pb-4">
             <div>
-              <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400 font-extrabold text-sm">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              <div className="flex items-center space-x-2 text-emerald-700 dark:text-emerald-400 font-extrabold text-sm">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
                 <span>INUNDATION-FREE EVACUATION CORRIDOR COMPUTED</span>
               </div>
               <h4 className="text-base font-black text-slate-900 dark:text-white mt-1">
-                {fromPlaceName} <span className="text-emerald-500">➔</span> {toPlaceName}
+                {fromPlaceName} <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">➔</span> {toPlaceName}
               </h4>
             </div>
-            <span className="text-xs font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-3.5 py-1.5 rounded-full border border-emerald-500/30 font-bold self-start sm:self-auto">
+            <span className="text-xs font-mono text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 px-3.5 py-1.5 rounded-full border border-emerald-300 dark:border-emerald-500/30 font-bold self-start sm:self-auto shadow-sm">
               100% Inundation-Free
             </span>
           </div>
 
           {/* Place Summary Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase font-bold block">📍 1. DEPARTURE PLACE</span>
-              <strong className="text-slate-900 dark:text-white text-xs block truncate">{fromPlaceName}</strong>
-              <span className="text-[10px] text-sky-600 dark:text-sky-400 font-mono">{startLat}, {startLng}</span>
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+              <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase font-black block">📍 1. DEPARTURE PLACE</span>
+              <strong className="text-slate-900 dark:text-white text-xs block truncate font-black">{fromPlaceName}</strong>
+              <span className="text-[10px] text-sky-700 dark:text-sky-400 font-mono font-bold">{startLat}, {startLng}</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase font-bold block">🛡️ 2. SAFE HAVEN DESTINATION</span>
-              <strong className="text-slate-900 dark:text-white text-xs block truncate">{toPlaceName}</strong>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">{endLat}, {endLng}</span>
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+              <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase font-black block">🛡️ 2. SAFE HAVEN DESTINATION</span>
+              <strong className="text-slate-900 dark:text-white text-xs block truncate font-black">{toPlaceName}</strong>
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">{endLat}, {endLng}</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
               <div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase font-bold block">CORRIDOR METRICS</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase font-black block">CORRIDOR METRICS</span>
                 <div className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
                   {routeResult.route?.routes?.[0]?.distance ? `${(routeResult.route.routes[0].distance / 1000).toFixed(1)} km` : '2.9 km'}
-                  <span className="text-slate-500 dark:text-slate-400 font-normal text-xs ml-1.5">
+                  <span className="text-slate-600 dark:text-slate-400 font-medium text-xs ml-1.5">
                     (~{routeResult.route?.routes?.[0]?.duration ? Math.ceil(routeResult.route.routes[0].duration / 60) : '7'} min)
                   </span>
                 </div>
               </div>
-              <Compass className="w-7 h-7 text-emerald-500 shrink-0" />
+              <Compass className="w-7 h-7 text-emerald-600 dark:text-emerald-400 shrink-0" />
             </div>
           </div>
 
@@ -571,10 +571,10 @@ export function SafeRoutePlanner() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h5 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
-                <Compass className="w-4 h-4 text-emerald-500" />
+                <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
                 <span>🗺️ Live Flood-Safe Evacuation Map & Avoidance Mesh</span>
               </h5>
-              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+              <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 font-bold">
                 OSRM Dynamic Engine
               </span>
             </div>
@@ -587,44 +587,44 @@ export function SafeRoutePlanner() {
               toPlaceName={toPlaceName}
             />
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400 pt-1 font-mono">
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-700 dark:text-slate-400 pt-1 font-mono">
+              <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
                 <span className="w-3 h-1 bg-emerald-500 rounded-full inline-block"></span> Glowing green corridor: 100% Inundation-free evacuation path
               </span>
-              <span>Submerged depressions actively routed around</span>
+              <span className="text-slate-700 dark:text-slate-400 font-semibold">Submerged depressions actively routed around</span>
             </div>
           </div>
 
           {/* Flooded Streets Actively Avoided */}
           {routeResult.avoided_segments && routeResult.avoided_segments.length > 0 && (
-            <div className="rounded-2xl border border-rose-400/40 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-950/20 p-3.5 text-xs text-rose-800 dark:text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
+            <div className="rounded-2xl border border-rose-300 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-950/20 p-4 text-xs text-rose-950 dark:text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
-                <span>
-                  <strong>Actively Bypassed Inundated Streets:</strong> {routeResult.avoided_segments.join(' • ')}
+                <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-500 shrink-0" />
+                <span className="text-rose-950 dark:text-rose-200 font-semibold">
+                  <strong className="text-rose-950 dark:text-white font-black">Actively Bypassed Inundated Streets:</strong> {routeResult.avoided_segments.join(' • ')}
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-rose-700 dark:text-rose-400 uppercase font-bold shrink-0 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/30">
+              <span className="text-[10px] font-mono text-rose-800 dark:text-rose-400 uppercase font-black shrink-0 bg-rose-100 dark:bg-rose-500/10 px-2.5 py-1 rounded border border-rose-300 dark:border-rose-500/30">
                 Hazard Detoured
               </span>
             </div>
           )}
 
           {/* Turn-by-Turn Safe Itinerary Steps */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-sm">
-            <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Route className="w-4 h-4 text-sky-500" />
+          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
+            <h5 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
+              <Route className="w-4 h-4 text-sky-600 dark:text-sky-500" />
               <span>Step-by-Step Safe Evacuation Guidance</span>
             </h5>
-            <ol className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-decimal list-inside leading-relaxed">
+            <ol className="space-y-2 text-xs text-slate-800 dark:text-slate-200 list-decimal list-inside leading-relaxed font-medium">
               <li>
-                Depart from <strong className="text-slate-900 dark:text-white">{fromPlaceName}</strong> heading towards the nearest elevated artery road.
+                Depart from <strong className="text-slate-950 dark:text-white font-black">{fromPlaceName}</strong> heading towards the nearest elevated artery road.
               </li>
               <li>
                 Take the bypass detour via elevated ridge line avoiding low-point street depressions and surcharged storm drains.
               </li>
               <li>
-                Proceed along designated emergency corridor directly into <strong className="text-emerald-600 dark:text-emerald-400">{toPlaceName}</strong>.
+                Proceed along designated emergency corridor directly into <strong className="text-emerald-700 dark:text-emerald-400 font-black">{toPlaceName}</strong>.
               </li>
             </ol>
           </div>

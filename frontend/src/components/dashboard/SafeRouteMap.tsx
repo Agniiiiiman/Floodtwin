@@ -307,14 +307,14 @@ export function SafeRouteMap({
 
       {/* Bottom Map Legend Overlay */}
       <div className="absolute bottom-3 left-3 z-[500] pointer-events-none">
-        <div className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg text-[11px] space-y-1">
-          <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-            <span className="w-3 h-1.5 bg-emerald-500 rounded-full inline-block"></span>
-            <span>Flood-Free Safe Evacuation Route</span>
+        <div className="pointer-events-auto bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-xl text-[11px] space-y-1.5">
+          <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
+            <span className="w-3 h-1.5 bg-emerald-500 rounded-full inline-block shrink-0"></span>
+            <span className="text-slate-900 dark:text-white font-extrabold">Flood-Free Safe Evacuation Route</span>
           </div>
           <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-400">
-            <span className="w-3 h-1.5 bg-rose-500/40 border border-rose-500 rounded-full inline-block"></span>
-            <span>Submerged Hazard Zones (Actively Bypassed)</span>
+            <span className="w-3 h-1.5 bg-rose-500/40 border border-rose-500 rounded-full inline-block shrink-0"></span>
+            <span className="text-rose-800 dark:text-rose-300 font-extrabold">Submerged Hazard Zones (Actively Bypassed)</span>
           </div>
         </div>
       </div>
