@@ -49,20 +49,20 @@ export function HeroSection() {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-14">
           <Link
-            href="/dashboard"
+            href="/digital-twin"
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-sm font-semibold tracking-wide shadow-lg shadow-sky-500/30 hover:shadow-sky-500/50 hover:scale-[1.02] transition-all duration-200"
           >
             <Activity className="w-4 h-4" />
-            <span>Launch Live Dashboard</span>
+            <span>Launch Ward Twin</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </Link>
 
           <Link
-            href="/signup"
+            href="/safe-route"
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-white border border-sky-500/40 text-sm font-semibold tracking-wide hover:scale-[1.02] transition-all duration-200 shadow-md shadow-sky-500/10"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Create Free Account</span>
+            <span>Safe Route Planner</span>
           </Link>
 
           <Link

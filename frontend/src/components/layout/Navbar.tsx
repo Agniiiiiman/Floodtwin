@@ -4,18 +4,18 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '../theme/ThemeProvider';
-import { 
-  Waves, 
-  Sun, 
-  Moon, 
-  Menu, 
-  X, 
-  Activity, 
-  Map, 
-  Navigation, 
-  ShieldAlert, 
-  Layers, 
-  Users 
+import {
+  Waves,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  Activity,
+  Compass,
+  Radio,
+  Globe2,
+  Cpu,
+  ShieldAlert
 } from 'lucide-react';
 
 export function Navbar() {
@@ -34,15 +34,11 @@ export function Navbar() {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Dashboard', href: '/dashboard' },
     { name: 'Digital Twin', href: '/digital-twin' },
     { name: 'Simulation', href: '/simulation' },
     { name: 'Safe Route', href: '/safe-route' },
     { name: 'Rainfall Radar', href: '/rainfall-map' },
     { name: 'Citizen Reports', href: '/reports' },
-    { name: 'Solution', href: '/solution' },
-    { name: 'Architecture', href: '/architecture' },
-    { name: 'Team', href: '/team' },
   ];
 
   return (
@@ -50,13 +46,13 @@ export function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'glass-panel border-b border-sky-500/20 py-3 shadow-xl'
-          : 'bg-transparent py-5'
+          : 'bg-transparent py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center space-x-3 group">
+          <Link href="/" className="flex items-center space-x-3 group shrink-0">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-sky-500/30 group-hover:scale-105 transition-transform duration-300">
               <Waves className="w-5 h-5 text-white" />
             </div>
@@ -71,18 +67,20 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2 bg-slate-900/40 p-1.5 rounded-full border border-sky-500/20 backdrop-blur-md">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 bg-slate-900/60 p-1.5 rounded-full border border-sky-500/20 backdrop-blur-md">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href) && !link.href.includes('#'));
+              const isActive =
+                pathname === link.href ||
+                (link.href !== '/' && pathname.startsWith(link.href));
               return (
                 <Link
                   key={link.name}
                   href={link.href}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                      ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25 font-semibold'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
                   }`}
                 >
                   {link.name}
@@ -91,32 +89,25 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Action CTAs and Theme Toggle */}
-          <div className="flex items-center space-x-2.5 sm:space-x-3">
+          {/* Right CTAs and Theme Toggle */}
+          <div className="flex items-center space-x-2.5 sm:space-x-3 shrink-0">
             <Link
               href="/rainfall-map"
-              className="hidden xl:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 text-xs font-semibold tracking-wide transition-all duration-200 shadow-sm hover:shadow-sky-500/10"
+              className="hidden lg:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 text-xs font-semibold tracking-wide transition-all duration-200 shadow-sm hover:shadow-sky-500/10"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-0.5" />
               <span>Global Radar</span>
             </Link>
 
-            {/* Auth Buttons */}
             <Link
-              href="/login"
-              className="hidden sm:inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors border border-transparent hover:border-slate-700"
+              href="/digital-twin"
+              className="hidden sm:inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md shadow-sky-500/25 hover:shadow-sky-500/40 hover:scale-[1.02] transition-all"
             >
-              Sign In
+              <Activity className="w-3.5 h-3.5" />
+              <span>Ward Twin</span>
             </Link>
 
-            <Link
-              href="/signup"
-              className="hidden sm:inline-flex items-center px-4 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md shadow-sky-500/25 hover:shadow-sky-500/40 hover:scale-[1.02] transition-all"
-            >
-              Sign Up
-            </Link>
-
-            {/* Theme Toggle */}
+            {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
               aria-label="Toggle theme"
@@ -129,7 +120,7 @@ export function Navbar() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
-              className="lg:hidden p-2 rounded-xl glass-panel text-slate-300 hover:text-white"
+              className="md:hidden p-2 rounded-xl glass-panel text-slate-300 hover:text-white"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -138,33 +129,26 @@ export function Navbar() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden mt-4 p-4 glass-panel rounded-2xl border border-sky-500/20 flex flex-col space-y-2 animate-fadeIn">
-            <div className="grid grid-cols-2 gap-2 pb-2 mb-2 border-b border-slate-800">
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-center py-2 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-medium text-slate-200 hover:text-white hover:border-sky-500/40"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-center py-2 rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 text-xs font-semibold text-white shadow-md shadow-sky-500/25"
-              >
-                Sign Up
-              </Link>
-            </div>
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-slate-200 hover:bg-sky-500/20 hover:text-sky-300 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
+          <div className="md:hidden mt-3 p-4 glass-panel rounded-2xl border border-sky-500/20 flex flex-col space-y-1.5 animate-fadeIn">
+            {navLinks.map((link) => {
+              const isActive =
+                pathname === link.href ||
+                (link.href !== '/' && pathname.startsWith(link.href));
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-sky-500 text-white font-semibold shadow-md shadow-sky-500/25'
+                      : 'text-slate-200 hover:bg-sky-500/20 hover:text-sky-300'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
