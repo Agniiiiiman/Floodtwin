@@ -567,6 +567,34 @@ export function SafeRoutePlanner() {
             </div>
           </div>
 
+          {/* Interactive Leaflet Map View */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h5 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
+                <Compass className="w-4 h-4 text-emerald-500" />
+                <span>🗺️ Live Flood-Safe Evacuation Map & Avoidance Mesh</span>
+              </h5>
+              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                OSRM Dynamic Engine
+              </span>
+            </div>
+
+            <SafeRouteMap
+              routeResult={routeResult}
+              origin={[parseFloat(startLat), parseFloat(startLng)]}
+              destination={[parseFloat(endLat), parseFloat(endLng)]}
+              fromPlaceName={fromPlaceName}
+              toPlaceName={toPlaceName}
+            />
+
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400 pt-1 font-mono">
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="w-3 h-1 bg-emerald-500 rounded-full inline-block"></span> Glowing green corridor: 100% Inundation-free evacuation path
+              </span>
+              <span>Submerged depressions actively routed around</span>
+            </div>
+          </div>
+
           {/* Flooded Streets Actively Avoided */}
           {routeResult.avoided_segments && routeResult.avoided_segments.length > 0 && (
             <div className="rounded-2xl border border-rose-400/40 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-950/20 p-3.5 text-xs text-rose-800 dark:text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
@@ -599,23 +627,6 @@ export function SafeRoutePlanner() {
                 Proceed along designated emergency corridor directly into <strong className="text-emerald-600 dark:text-emerald-400">{toPlaceName}</strong>.
               </li>
             </ol>
-          </div>
-
-          {/* Interactive Leaflet Map */}
-          <div className="space-y-1.5">
-            <SafeRouteMap
-              routeResult={routeResult}
-              origin={[parseFloat(startLat), parseFloat(startLng)]}
-              destination={[parseFloat(endLat), parseFloat(endLng)]}
-              fromPlaceName={fromPlaceName}
-              toPlaceName={toPlaceName}
-            />
-            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1 font-mono">
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
-                <span className="w-3 h-1 bg-emerald-500 rounded-full inline-block"></span> Glowing green path: 100% Inundation-free route
-              </span>
-              <span>OSRM Dynamic Route Engine</span>
-            </div>
           </div>
         </div>
       )}
