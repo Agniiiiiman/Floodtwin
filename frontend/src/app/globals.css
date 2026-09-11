@@ -17,7 +17,7 @@
   }
 
   [data-theme="light"] {
-    --bg-primary: #f0f4f9;
+    --bg-primary: #f1f5f9;
     --bg-secondary: #e2e8f0;
     --bg-card: #ffffff;
     --border-color: #cbd5e1;
@@ -102,30 +102,34 @@ body {
   color: #64748b !important;
 }
 
-/* Light Theme Cards & Subsections */
-[data-theme="light"] .bg-slate-950,
-[data-theme="light"] .bg-slate-900,
-[data-theme="light"] .bg-slate-800,
-[data-theme="light"] .bg-slate-950\/70,
-[data-theme="light"] .bg-slate-950\/80,
-[data-theme="light"] .bg-slate-950\/90,
-[data-theme="light"] .bg-slate-950\/40,
-[data-theme="light"] .bg-slate-900\/60,
-[data-theme="light"] .bg-slate-900\/70,
-[data-theme="light"] .bg-slate-900\/80,
-[data-theme="light"] .bg-slate-900\/90 {
+/* 
+   LIGHT THEME: Remove all dark grey backgrounds from inner cards,
+   boxes, buttons, and coordinates panels
+*/
+[data-theme="light"] [class*="bg-slate-900"],
+[data-theme="light"] [class*="bg-slate-950"],
+[data-theme="light"] [class*="bg-slate-800"] {
   background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
 }
 
-[data-theme="light"] .border-slate-800,
-[data-theme="light"] .border-slate-700,
-[data-theme="light"] .border-slate-900,
-[data-theme="light"] .border-slate-800\/80,
-[data-theme="light"] .border-slate-800\/60,
-[data-theme="light"] .border-slate-700\/80,
-[data-theme="light"] .border-slate-700\/70,
-[data-theme="light"] .border-slate-700\/60 {
+/* Hover states for buttons & cards in Light Mode */
+[data-theme="light"] [class*="bg-slate-900"]:hover,
+[data-theme="light"] [class*="bg-slate-950"]:hover,
+[data-theme="light"] [class*="bg-slate-800"]:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+/* Selected item state in lists */
+[data-theme="light"] [class*="bg-sky-500/20"] {
+  background-color: #e0f2fe !important;
+  border-color: #38bdf8 !important;
+}
+
+[data-theme="light"] [class*="border-slate-800"],
+[data-theme="light"] [class*="border-slate-700"],
+[data-theme="light"] [class*="border-slate-900"] {
   border-color: #cbd5e1 !important;
 }
 
@@ -138,7 +142,7 @@ body {
 
 /* Header & Navigation in Light Mode */
 [data-theme="light"] header.glass-panel {
-  background: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
   border-bottom: 1px solid #cbd5e1 !important;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
 }
@@ -188,6 +192,7 @@ body {
 /* Tables in Light Mode */
 [data-theme="light"] thead {
   border-bottom-color: #cbd5e1 !important;
+  background-color: #f8fafc !important;
 }
 
 [data-theme="light"] thead th {
