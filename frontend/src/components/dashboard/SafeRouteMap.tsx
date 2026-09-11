@@ -8,9 +8,17 @@ interface SafeRouteMapProps {
   routeResult: RouteResponse;
   origin: [number, number];
   destination: [number, number];
+  fromPlaceName?: string;
+  toPlaceName?: string;
 }
 
-export function SafeRouteMap({ routeResult, origin, destination }: SafeRouteMapProps) {
+export function SafeRouteMap({
+  routeResult,
+  origin,
+  destination,
+  fromPlaceName = 'Starting Point',
+  toPlaceName = 'Safe Destination',
+}: SafeRouteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const routeLayerRef = useRef<L.LayerGroup | null>(null);
@@ -42,25 +50,37 @@ export function SafeRouteMap({ routeResult, origin, destination }: SafeRouteMapP
     layer.clearLayers();
     const latLngs = coordinates.map(([lng, lat]: [number, number]) => [lat, lng] as [number, number]);
 
-    // Outer glow line
-    L.polyline(latLngs, { color: '#059669', weight: 8, opacity: 0.35 }).addTo(layer);
+    // Outer glow halo line
+    L.polyline(latLngs, { color: '#059669', weight: 8, opacity: 0.4 }).addTo(layer);
     // Inner vibrant line
-    L.polyline(latLngs, { color: '#10b981', weight: 4.5, opacity: 1 }).addTo(layer);
+    L.polyline(latLngs, { color: '#10b981', weight: 4.5, opacity: 1, dashArray: undefined }).addTo(layer);
 
-    // Origin marker
-    L.circleMarker(origin, { radius: 8, fillColor: '#0284c7', color: '#ffffff', weight: 2.5, fillOpacity: 1 })
-      .bindPopup('<b>Starting Point (Origin)</b>')
-      .bindTooltip('Origin (Departure)', { permanent: false })
+    // Departure (Origin) custom icon / marker
+    const originMarker = L.circleMarker(origin, {
+      radius: 9,
+      fillColor: '#0284c7',
+      color: '#ffffff',
+      weight: 3,
+      fillOpacity: 1,
+    })
+      .bindPopup(`<div style="font-size: 12px; font-family: sans-serif;"><b>📍 FROM (Departure)</b><br/>${fromPlaceName}</div>`)
+      .bindTooltip(`📍 FROM: ${fromPlaceName}`, { permanent: false, direction: 'top' })
       .addTo(layer);
 
-    // Destination marker
-    L.circleMarker(destination, { radius: 9, fillColor: '#10b981', color: '#ffffff', weight: 2.5, fillOpacity: 1 })
-      .bindPopup('<b>Safe Haven / Evacuation Center</b>')
-      .bindTooltip('Destination (Safe Haven)', { permanent: false })
+    // Destination (Safe Haven) custom icon / marker
+    const destMarker = L.circleMarker(destination, {
+      radius: 10,
+      fillColor: '#10b981',
+      color: '#ffffff',
+      weight: 3,
+      fillOpacity: 1,
+    })
+      .bindPopup(`<div style="font-size: 12px; font-family: sans-serif;"><b>🛡️ TO (Safe Haven)</b><br/>${toPlaceName}</div>`)
+      .bindTooltip(`🛡️ TO: ${toPlaceName}`, { permanent: false, direction: 'top' })
       .addTo(layer);
 
-    map.fitBounds(L.latLngBounds(latLngs), { padding: [32, 32] });
-  }, [routeResult, origin, destination]);
+    map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40] });
+  }, [routeResult, origin, destination, fromPlaceName, toPlaceName]);
 
-  return <div ref={containerRef} className="h-72 sm:h-80 w-full overflow-hidden rounded-2xl border border-emerald-500/30 shadow-inner" />;
+  return <div ref={containerRef} className="h-72 sm:h-96 w-full overflow-hidden rounded-2xl border border-emerald-500/30 shadow-inner z-0" />;
 }
