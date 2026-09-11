@@ -82,20 +82,37 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: Team & Hackathon */}
+          {/* Col 3: Portal & Account */}
           <div>
             <h4 className="text-white font-semibold text-xs tracking-wider uppercase mb-4 text-sky-400">
-              Smart India Hackathon
+              Access & Portals
             </h4>
-            <p className="text-xs text-slate-400 mb-3">
-              StreetFlood • Smart India Hackathon 2026 • Street-level flood risk translation.
-            </p>
-            <div className="flex items-center space-x-3 pt-1">
-              <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-300 font-mono">
+            <ul className="space-y-2.5 text-xs">
+              <li>
+                <Link href="/login" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                  <span>Municipal & Citizen Sign In</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/signup" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Create Account / Onboard</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/reports" className="hover:text-sky-300 transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                  <span>Report Waterlogging</span>
+                </Link>
+              </li>
+            </ul>
+            <div className="flex items-center space-x-2 pt-4">
+              <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-mono">
                 SIH 2026
               </span>
-              <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[11px] text-emerald-400 font-mono">
-                Prototype v2.0
+              <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-emerald-400 font-mono">
+                Production MVP
               </span>
             </div>
           </div>
