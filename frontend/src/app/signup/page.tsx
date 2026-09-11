@@ -100,13 +100,7 @@ export default function SignupPage() {
       setIsLoading(false);
       setSignupSuccess(true);
       setTimeout(() => {
-        if (role === 'municipal') {
-          router.push('/digital-twin');
-        } else if (role === 'responder') {
-          router.push('/safe-route');
-        } else {
-          router.push('/reports');
-        }
+        router.push('/dashboard');
       }, 1200);
     }, 1300);
   };

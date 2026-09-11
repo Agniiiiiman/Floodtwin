@@ -61,13 +61,7 @@ export default function LoginPage() {
       setIsLoading(false);
       setAuthSuccess(true);
       setTimeout(() => {
-        if (role === 'municipal') {
-          router.push('/digital-twin');
-        } else if (role === 'responder') {
-          router.push('/safe-route');
-        } else {
-          router.push('/reports');
-        }
+        router.push('/dashboard');
       }, 1000);
     }, 1200);
   };
