@@ -41,15 +41,26 @@ export function SafeRouteMap({ routeResult, origin, destination }: SafeRouteMapP
 
     layer.clearLayers();
     const latLngs = coordinates.map(([lng, lat]: [number, number]) => [lat, lng] as [number, number]);
-    L.polyline(latLngs, { color: '#10b981', weight: 5, opacity: 0.9 }).addTo(layer);
-    L.circleMarker(origin, { radius: 7, fillColor: '#38bdf8', color: '#fff', weight: 2, fillOpacity: 1 })
-      .bindTooltip('Origin')
+
+    // Outer glow line
+    L.polyline(latLngs, { color: '#059669', weight: 8, opacity: 0.35 }).addTo(layer);
+    // Inner vibrant line
+    L.polyline(latLngs, { color: '#10b981', weight: 4.5, opacity: 1 }).addTo(layer);
+
+    // Origin marker
+    L.circleMarker(origin, { radius: 8, fillColor: '#0284c7', color: '#ffffff', weight: 2.5, fillOpacity: 1 })
+      .bindPopup('<b>Starting Point (Origin)</b>')
+      .bindTooltip('Origin (Departure)', { permanent: false })
       .addTo(layer);
-    L.circleMarker(destination, { radius: 7, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 1 })
-      .bindTooltip('Destination')
+
+    // Destination marker
+    L.circleMarker(destination, { radius: 9, fillColor: '#10b981', color: '#ffffff', weight: 2.5, fillOpacity: 1 })
+      .bindPopup('<b>Safe Haven / Evacuation Center</b>')
+      .bindTooltip('Destination (Safe Haven)', { permanent: false })
       .addTo(layer);
-    map.fitBounds(L.latLngBounds(latLngs), { padding: [24, 24] });
+
+    map.fitBounds(L.latLngBounds(latLngs), { padding: [32, 32] });
   }, [routeResult, origin, destination]);
 
-  return <div ref={containerRef} className="h-56 w-full overflow-hidden rounded-xl border border-emerald-500/25" />;
+  return <div ref={containerRef} className="h-72 sm:h-80 w-full overflow-hidden rounded-2xl border border-emerald-500/30 shadow-inner" />;
 }

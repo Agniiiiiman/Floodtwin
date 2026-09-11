@@ -69,6 +69,7 @@ export interface RouteRequest {
   start_lng: number;
   end_lat: number;
   end_lng: number;
+  rainfall_mm_hr?: number;
 }
 
 export interface RouteResponse {
