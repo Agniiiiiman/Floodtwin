@@ -241,35 +241,59 @@ header {
   border-color: #e9d5ff !important;
 }
 
-/* High Contrast Accent Badges & Texts */
+/* High Contrast Accent Badges & Action Buttons */
 [data-theme="light"] .text-sky-400,
-[data-theme="light"] .text-sky-300 {
+[data-theme="light"] .text-sky-300,
+[data-theme="light"] .text-sky-500 {
   color: #0284c7 !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] a[class*="text-sky-"],
+[data-theme="light"] button[class*="text-sky-"],
+[data-theme="light"] a[class*="border-sky-500"],
+[data-theme="light"] button[class*="border-sky-500"] {
+  color: #0369a1 !important;
+  border-color: #7dd3fc !important;
+  background-color: #f0f9ff !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] a[class*="text-sky-"]:hover,
+[data-theme="light"] button[class*="text-sky-"]:hover {
+  color: #0c4a6e !important;
+  background-color: #e0f2fe !important;
+  border-color: #38bdf8 !important;
 }
 
 [data-theme="light"] .text-emerald-400,
 [data-theme="light"] .text-emerald-300 {
-  color: #059669 !important;
+  color: #047857 !important;
+  font-weight: 600;
 }
 
 [data-theme="light"] .text-amber-400,
 [data-theme="light"] .text-amber-300 {
   color: #b45309 !important;
+  font-weight: 600;
 }
 
 [data-theme="light"] .text-rose-400,
 [data-theme="light"] .text-rose-300 {
   color: #dc2626 !important;
+  font-weight: 600;
 }
 
 [data-theme="light"] .text-purple-400,
 [data-theme="light"] .text-purple-300 {
   color: #7c3aed !important;
+  font-weight: 600;
 }
 
 [data-theme="light"] .text-blue-400,
 [data-theme="light"] .text-blue-300 {
   color: #1d4ed8 !important;
+  font-weight: 600;
 }
 
 /* Footer in Light Mode */
