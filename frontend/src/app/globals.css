@@ -74,37 +74,75 @@ body {
 /* ----------------------------------------------------
    LIGHT THEME: Complete Visibility & Typography Fixes
    ---------------------------------------------------- */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="light"] body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
 [data-theme="light"] h1,
 [data-theme="light"] h2,
 [data-theme="light"] h3,
 [data-theme="light"] h4,
 [data-theme="light"] h5,
-[data-theme="light"] h6,
+[data-theme="light"] h6 {
+  color: #0f172a !important;
+  font-weight: 800;
+}
+
 [data-theme="light"] strong,
 [data-theme="light"] b {
   color: #0f172a !important;
+  font-weight: 800;
 }
 
 [data-theme="light"] p {
-  color: #334155 !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] li {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] label {
+  color: #0f172a !important;
+  font-weight: 700;
 }
 
 [data-theme="light"] .text-slate-100,
 [data-theme="light"] .text-slate-200,
 [data-theme="light"] .text-slate-300 {
-  color: #334155 !important;
+  color: #0f172a !important;
 }
 
 [data-theme="light"] .text-slate-400 {
-  color: #475569 !important;
+  color: #334155 !important;
 }
 
 [data-theme="light"] .text-slate-500 {
-  color: #64748b !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .text-slate-600 {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .text-slate-700,
+[data-theme="light"] .text-slate-800,
+[data-theme="light"] .text-slate-900 {
+  color: #0f172a !important;
+}
+
+/* Overriding stray white texts in light mode, except on filled buttons */
+[data-theme="light"] .text-white:not(button):not(button *):not(a.bg-sky-500):not(a.bg-sky-500 *):not(a.bg-gradient-to-r):not(a.bg-gradient-to-r *) {
+  color: #0f172a !important;
 }
 
 /* 
-   LIGHT THEME: Action Buttons & Filled Gradients KEEP WHITE TEXT
+   LIGHT THEME: Action Buttons & Filled Gradients KEEP PURE WHITE TEXT
 */
 [data-theme="light"] button.bg-gradient-to-r,
 [data-theme="light"] button[type="submit"],
@@ -118,18 +156,27 @@ body {
 
 [data-theme="light"] button.bg-gradient-to-r *,
 [data-theme="light"] button[type="submit"] *,
-[data-theme="light"] a.bg-gradient-to-r * {
+[data-theme="light"] a.bg-gradient-to-r *,
+[data-theme="light"] button.bg-sky-500 *,
+[data-theme="light"] a.bg-sky-500 * {
   color: #ffffff !important;
 }
 
 /* 
    LIGHT THEME: Card Backgrounds & Inputs
 */
+[data-theme="light"] .glass-panel {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
 [data-theme="light"] [class*="bg-slate-900"],
 [data-theme="light"] [class*="bg-slate-950"],
 [data-theme="light"] [class*="bg-slate-800"] {
   background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
 /* Hover states for interactive items */
@@ -152,7 +199,7 @@ header {
 }
 
 [data-theme="light"] header.glass-panel {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
   border-bottom: 1px solid #cbd5e1 !important;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
 }
@@ -163,7 +210,8 @@ header {
 }
 
 [data-theme="light"] header nav a:not(.bg-sky-500) {
-  color: #475569 !important;
+  color: #334155 !important;
+  font-weight: 600;
 }
 
 [data-theme="light"] header nav a:not(.bg-sky-500):hover {
@@ -192,82 +240,71 @@ header {
 [data-theme="light"] details {
   background-color: #f8fafc !important;
   border-color: #cbd5e1 !important;
-  color: #334155 !important;
+  color: #0f172a !important;
 }
 
 [data-theme="light"] summary {
-  color: #0284c7 !important;
+  color: #0369a1 !important;
+  font-weight: 700;
 }
 
 /* High Contrast Accent Colors for Light Mode */
-[data-theme="light"] .text-sky-400,
-[data-theme="light"] .text-sky-300,
-[data-theme="light"] .text-sky-500,
-[data-theme="light"] .text-sky-600 {
+[data-theme="light"] [class*="text-sky-"] {
   color: #0369a1 !important;
 }
 
-[data-theme="light"] .text-emerald-400,
-[data-theme="light"] .text-emerald-300,
-[data-theme="light"] .text-emerald-500,
-[data-theme="light"] .text-emerald-600 {
+[data-theme="light"] [class*="text-emerald-"] {
   color: #047857 !important;
 }
 
-[data-theme="light"] .text-amber-400,
-[data-theme="light"] .text-amber-300,
-[data-theme="light"] .text-amber-500,
-[data-theme="light"] .text-amber-600 {
+[data-theme="light"] [class*="text-amber-"] {
   color: #b45309 !important;
 }
 
-[data-theme="light"] .text-rose-400,
-[data-theme="light"] .text-rose-300,
-[data-theme="light"] .text-rose-500,
-[data-theme="light"] .text-rose-600 {
+[data-theme="light"] [class*="text-rose-"] {
   color: #dc2626 !important;
 }
 
-[data-theme="light"] .text-purple-400,
-[data-theme="light"] .text-purple-300,
-[data-theme="light"] .text-purple-500,
-[data-theme="light"] .text-purple-600 {
+[data-theme="light"] [class*="text-purple-"] {
   color: #7e22ce !important;
 }
 
-[data-theme="light"] .text-blue-400,
-[data-theme="light"] .text-blue-300,
-[data-theme="light"] .text-blue-500,
-[data-theme="light"] .text-blue-600 {
+[data-theme="light"] [class*="text-blue-"] {
   color: #1d4ed8 !important;
 }
 
 /* Status Banners in Light Mode */
 [data-theme="light"] .bg-rose-950\/20,
 [data-theme="light"] .bg-rose-950\/40,
+[data-theme="light"] .bg-rose-50,
 [data-theme="light"] .bg-rose-500\/10 {
   background-color: #fef2f2 !important;
   border-color: #fca5a5 !important;
+  color: #991b1b !important;
 }
 
 [data-theme="light"] .bg-emerald-950\/20,
 [data-theme="light"] .bg-emerald-950\/40,
+[data-theme="light"] .bg-emerald-50,
 [data-theme="light"] .bg-emerald-500\/10 {
   background-color: #f0fdf4 !important;
   border-color: #86efac !important;
 }
 
-[data-theme="light"] .bg-amber-500\/10 {
+[data-theme="light"] .bg-amber-500\/10,
+[data-theme="light"] .bg-amber-50 {
   background-color: #fffbeb !important;
   border-color: #fde68a !important;
 }
 
-[data-theme="light"] .bg-sky-500\/10 {
+[data-theme="light"] .bg-sky-500\/10,
+[data-theme="light"] .bg-sky-50 {
   background-color: #f0f9ff !important;
   border-color: #bae6fd !important;
 }
 
-[data-theme="light"] .bg-purple-500\/10 {
+[data-theme="light"] .bg-purple-500\/10,
+[data-theme="light"] .bg-purple-50 {
   background-color: #faf5ff !important;
   border-color: #e9d5ff !important;
 }
@@ -276,11 +313,11 @@ header {
 [data-theme="light"] footer {
   background-color: #ffffff !important;
   border-top-color: #cbd5e1 !important;
-  color: #475569 !important;
+  color: #334155 !important;
 }
 
 [data-theme="light"] footer h4 {
-  color: #0284c7 !important;
+  color: #0369a1 !important;
 }
 
 /* Leaflet Customizations */
