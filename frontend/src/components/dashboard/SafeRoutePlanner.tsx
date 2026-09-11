@@ -294,20 +294,20 @@ export function SafeRoutePlanner() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
             <Navigation className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+            <h3 className="text-lg font-black text-slate-950 dark:text-white tracking-tight">
               Emergency Flood-Safe Corridor Routing & Simulation
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
               Powered by OSRM graph search with real-time hydraulic exclusion zones
             </p>
           </div>
         </div>
 
-        <span className="text-[11px] uppercase font-mono px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold self-start sm:self-auto flex items-center gap-1.5 shrink-0">
+        <span className="text-[11px] uppercase font-mono px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border border-emerald-500/30 font-black self-start sm:self-auto flex items-center gap-1.5 shrink-0 shadow-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
           OSRM ENGINE ACTIVE
         </span>
@@ -315,8 +315,8 @@ export function SafeRoutePlanner() {
 
       {/* Quick Emergency Routes */}
       <div className="space-y-2">
-        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+        <span className="text-xs font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
           Quick Emergency Routes (1-Click Instant Simulation):
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -329,15 +329,15 @@ export function SafeRoutePlanner() {
                 onClick={() => handleSelectPreset(preset)}
                 className={`text-xs p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                   isCurrent
-                    ? 'bg-sky-500/15 border-sky-500 text-sky-700 dark:text-sky-300 font-bold shadow-sm ring-1 ring-sky-400'
-                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-sky-500/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'bg-sky-50 dark:bg-sky-500/20 border-sky-500 text-sky-950 dark:text-sky-300 font-black shadow-sm ring-1 ring-sky-400'
+                    : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:border-sky-500 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm'
                 }`}
               >
                 <div className="flex items-center space-x-2 truncate">
-                  <Milestone className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-amber-500' : 'text-sky-500'}`} />
-                  <span className="truncate">{preset.label}</span>
+                  <Milestone className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-amber-600 dark:text-amber-400' : 'text-sky-600 dark:text-sky-400'}`} />
+                  <span className="truncate font-bold">{preset.label}</span>
                 </div>
-                <ArrowRight className="w-3 h-3 text-slate-400 shrink-0 ml-1.5" />
+                <ArrowRight className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0 ml-1.5" />
               </button>
             );
           })}
@@ -348,24 +348,24 @@ export function SafeRoutePlanner() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* FROM Location Card */}
-          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-sky-400/40 dark:border-sky-500/30 space-y-3 relative overflow-hidden shadow-sm">
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-sky-400/50 dark:border-sky-500/30 space-y-3 relative overflow-hidden shadow-sm">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs font-black text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+              <div className="flex items-center space-x-2 text-xs font-black text-sky-700 dark:text-sky-400 uppercase tracking-wider">
                 <MapPin className="w-4 h-4" />
                 <span>📍 ORIGIN PLACE (FROM - DEPARTURE)</span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-sky-700 dark:text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/30">
+              <span className="text-[10px] font-mono font-black text-sky-800 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 px-2 py-0.5 rounded border border-sky-300 dark:border-sky-500/30">
                 Departure
               </span>
             </div>
 
             {/* Landmark Dropdown Selector */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Choose Departure Location / Landmark:</label>
+              <label className="text-xs font-black text-slate-900 dark:text-slate-200 block">Choose Departure Location / Landmark:</label>
               <select
                 value={ALL_ORIGIN_PLACES.find((p) => p.name === fromPlaceName)?.id || ''}
                 onChange={handleFromSelect}
-                className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:border-sky-500 focus:outline-none cursor-pointer"
+                className="w-full pl-3 pr-8 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-950 dark:text-white focus:border-sky-500 focus:outline-none cursor-pointer"
               >
                 {ALL_ORIGIN_PLACES.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -377,13 +377,13 @@ export function SafeRoutePlanner() {
 
             {/* Custom Place Input */}
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Or type custom place name:</label>
+              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Or type custom place name:</label>
               <input
                 type="text"
                 value={fromPlaceName}
                 onChange={(e) => setFromPlaceName(e.target.value)}
                 placeholder="e.g. Gateway of India, Ward A Depot, Marine Drive, Dadar..."
-                className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:border-sky-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-950 dark:text-white placeholder-slate-400 focus:border-sky-500 focus:outline-none"
               />
             </div>
 
@@ -391,21 +391,21 @@ export function SafeRoutePlanner() {
             {showCoordinates && (
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                 <div>
-                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">Latitude</label>
+                  <label className="text-[10px] text-slate-700 dark:text-slate-400 font-mono block font-bold">Latitude</label>
                   <input
                     type="text"
                     value={startLat}
                     onChange={(e) => setStartLat(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono font-bold text-slate-950 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">Longitude</label>
+                  <label className="text-[10px] text-slate-700 dark:text-slate-400 font-mono block font-bold">Longitude</label>
                   <input
                     type="text"
                     value={startLng}
                     onChange={(e) => setStartLng(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono font-bold text-slate-950 dark:text-white"
                   />
                 </div>
               </div>
@@ -413,24 +413,24 @@ export function SafeRoutePlanner() {
           </div>
 
           {/* TO Location Card */}
-          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-emerald-400/40 dark:border-emerald-500/30 space-y-3 relative overflow-hidden shadow-sm">
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-400/50 dark:border-emerald-500/30 space-y-3 relative overflow-hidden shadow-sm">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+              <div className="flex items-center space-x-2 text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
                 <ShieldCheck className="w-4 h-4" />
                 <span>🛡️ DESTINATION PLACE (TO - SAFE HAVEN)</span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+              <span className="text-[10px] font-mono font-black text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-500/30">
                 Safe Destination
               </span>
             </div>
 
             {/* Destination Dropdown Selector */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Choose Safe Haven / Relief Center:</label>
+              <label className="text-xs font-black text-slate-900 dark:text-slate-200 block">Choose Safe Haven / Relief Center:</label>
               <select
                 value={ALL_DEST_PLACES.find((p) => p.name === toPlaceName)?.id || ''}
                 onChange={handleToSelect}
-                className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
+                className="w-full pl-3 pr-8 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-950 dark:text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
               >
                 {ALL_DEST_PLACES.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -442,13 +442,13 @@ export function SafeRoutePlanner() {
 
             {/* Custom Place Input */}
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Or type custom safe destination:</label>
+              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Or type custom safe destination:</label>
               <input
                 type="text"
                 value={toPlaceName}
                 onChange={(e) => setToPlaceName(e.target.value)}
                 placeholder="e.g. CSMT Evacuation Center, St. George Hospital, Malabar Hill..."
-                className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-950 dark:text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none"
               />
             </div>
 
@@ -456,21 +456,21 @@ export function SafeRoutePlanner() {
             {showCoordinates && (
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                 <div>
-                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">Latitude</label>
+                  <label className="text-[10px] text-slate-700 dark:text-slate-400 font-mono block font-bold">Latitude</label>
                   <input
                     type="text"
                     value={endLat}
                     onChange={(e) => setEndLat(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono font-bold text-slate-950 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">Longitude</label>
+                  <label className="text-[10px] text-slate-700 dark:text-slate-400 font-mono block font-bold">Longitude</label>
                   <input
                     type="text"
                     value={endLng}
                     onChange={(e) => setEndLng(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg text-xs font-mono font-bold text-slate-950 dark:text-white"
                   />
                 </div>
               </div>
@@ -484,24 +484,24 @@ export function SafeRoutePlanner() {
             <button
               type="button"
               onClick={handleSwapPlaces}
-              className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-950 dark:text-slate-100 border border-slate-300 dark:border-slate-700 text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
               <span>Swap Places (⇄)</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowCoordinates(!showCoordinates)}
-              className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer font-medium"
+              className="flex items-center space-x-1.5 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer font-black"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-sky-500" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
               <span>{showCoordinates ? 'Hide' : 'Show'} Fine GPS Coordinates</span>
             </button>
           </div>
 
-          <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-bold">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> 100% Inundation Bypass Active
+          <span className="font-mono text-[11px] text-emerald-800 dark:text-emerald-400 flex items-center gap-1 font-black">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 100% Inundation Bypass Active
           </span>
         </div>
 
@@ -530,11 +530,11 @@ export function SafeRoutePlanner() {
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
                 <span>INUNDATION-FREE EVACUATION CORRIDOR COMPUTED</span>
               </div>
-              <h4 className="text-base font-black text-slate-900 dark:text-white mt-1">
-                {fromPlaceName} <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">➔</span> {toPlaceName}
+              <h4 className="text-base font-black text-slate-950 dark:text-white mt-1">
+                {fromPlaceName} <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">➔</span> {toPlaceName}
               </h4>
             </div>
-            <span className="text-xs font-mono text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 px-3.5 py-1.5 rounded-full border border-emerald-300 dark:border-emerald-500/30 font-bold self-start sm:self-auto shadow-sm">
+            <span className="text-xs font-mono text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 px-3.5 py-1.5 rounded-full border border-emerald-300 dark:border-emerald-500/30 font-black self-start sm:self-auto shadow-sm">
               100% Inundation-Free
             </span>
           </div>
@@ -542,39 +542,39 @@ export function SafeRoutePlanner() {
           {/* Place Summary Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
-              <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase font-black block">📍 1. DEPARTURE PLACE</span>
-              <strong className="text-slate-900 dark:text-white text-xs block truncate font-black">{fromPlaceName}</strong>
-              <span className="text-[10px] text-sky-700 dark:text-sky-400 font-mono font-bold">{startLat}, {startLng}</span>
+              <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">📍 1. DEPARTURE PLACE</span>
+              <strong className="text-slate-950 dark:text-white text-xs block truncate font-black">{fromPlaceName}</strong>
+              <span className="text-[10px] text-sky-800 dark:text-sky-400 font-mono font-bold">{startLat}, {startLng}</span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
-              <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase font-black block">🛡️ 2. SAFE HAVEN DESTINATION</span>
-              <strong className="text-slate-900 dark:text-white text-xs block truncate font-black">{toPlaceName}</strong>
-              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">{endLat}, {endLng}</span>
+              <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">🛡️ 2. SAFE HAVEN DESTINATION</span>
+              <strong className="text-slate-950 dark:text-white text-xs block truncate font-black">{toPlaceName}</strong>
+              <span className="text-[10px] text-emerald-800 dark:text-emerald-400 font-mono font-bold">{endLat}, {endLng}</span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
               <div>
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono uppercase font-black block">CORRIDOR METRICS</span>
-                <div className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
+                <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">CORRIDOR METRICS</span>
+                <div className="text-sm font-black text-slate-950 dark:text-white mt-0.5">
                   {routeResult.route?.routes?.[0]?.distance ? `${(routeResult.route.routes[0].distance / 1000).toFixed(1)} km` : '2.9 km'}
-                  <span className="text-slate-600 dark:text-slate-400 font-medium text-xs ml-1.5">
+                  <span className="text-slate-700 dark:text-slate-300 font-bold text-xs ml-1.5">
                     (~{routeResult.route?.routes?.[0]?.duration ? Math.ceil(routeResult.route.routes[0].duration / 60) : '7'} min)
                   </span>
                 </div>
               </div>
-              <Compass className="w-7 h-7 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <Compass className="w-7 h-7 text-emerald-700 dark:text-emerald-400 shrink-0" />
             </div>
           </div>
 
           {/* Interactive Leaflet Map View */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h5 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
-                <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
+              <h5 className="text-xs font-black text-slate-950 dark:text-white flex items-center gap-2 uppercase tracking-wider">
+                <Compass className="w-4 h-4 text-emerald-700 dark:text-emerald-500" />
                 <span>🗺️ Live Flood-Safe Evacuation Map & Avoidance Mesh</span>
               </h5>
-              <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 font-bold">
+              <span className="text-[11px] font-mono text-emerald-800 dark:text-emerald-400 font-black">
                 OSRM Dynamic Engine
               </span>
             </div>
@@ -587,24 +587,24 @@ export function SafeRoutePlanner() {
               toPlaceName={toPlaceName}
             />
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-700 dark:text-slate-400 pt-1 font-mono">
-              <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-800 dark:text-slate-400 pt-1 font-mono">
+              <span className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-400 font-black">
                 <span className="w-3 h-1 bg-emerald-500 rounded-full inline-block"></span> Glowing green corridor: 100% Inundation-free evacuation path
               </span>
-              <span className="text-slate-700 dark:text-slate-400 font-semibold">Submerged depressions actively routed around</span>
+              <span className="text-slate-800 dark:text-slate-300 font-bold">Submerged depressions actively routed around</span>
             </div>
           </div>
 
           {/* Flooded Streets Actively Avoided */}
           {routeResult.avoided_segments && routeResult.avoided_segments.length > 0 && (
-            <div className="rounded-2xl border border-rose-300 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-950/20 p-4 text-xs text-rose-950 dark:text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
+            <div className="rounded-2xl border-2 border-rose-300 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-950/20 p-4 text-xs text-rose-950 dark:text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-500 shrink-0" />
-                <span className="text-rose-950 dark:text-rose-200 font-semibold">
+                <span className="text-rose-950 dark:text-rose-200 font-bold">
                   <strong className="text-rose-950 dark:text-white font-black">Actively Bypassed Inundated Streets:</strong> {routeResult.avoided_segments.join(' • ')}
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-rose-800 dark:text-rose-400 uppercase font-black shrink-0 bg-rose-100 dark:bg-rose-500/10 px-2.5 py-1 rounded border border-rose-300 dark:border-rose-500/30">
+              <span className="text-[10px] font-mono text-rose-900 dark:text-rose-300 uppercase font-black shrink-0 bg-rose-100 dark:bg-rose-500/20 px-2.5 py-1 rounded border border-rose-400 dark:border-rose-500/30">
                 Hazard Detoured
               </span>
             </div>
@@ -612,11 +612,11 @@ export function SafeRoutePlanner() {
 
           {/* Turn-by-Turn Safe Itinerary Steps */}
           <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
-            <h5 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
-              <Route className="w-4 h-4 text-sky-600 dark:text-sky-500" />
+            <h5 className="text-xs font-black text-slate-950 dark:text-white flex items-center gap-2 uppercase tracking-wider">
+              <Route className="w-4 h-4 text-sky-700 dark:text-sky-500" />
               <span>Step-by-Step Safe Evacuation Guidance</span>
             </h5>
-            <ol className="space-y-2 text-xs text-slate-800 dark:text-slate-200 list-decimal list-inside leading-relaxed font-medium">
+            <ol className="space-y-2 text-xs text-slate-900 dark:text-slate-200 list-decimal list-inside leading-relaxed font-bold">
               <li>
                 Depart from <strong className="text-slate-950 dark:text-white font-black">{fromPlaceName}</strong> heading towards the nearest elevated artery road.
               </li>
@@ -624,7 +624,7 @@ export function SafeRoutePlanner() {
                 Take the bypass detour via elevated ridge line avoiding low-point street depressions and surcharged storm drains.
               </li>
               <li>
-                Proceed along designated emergency corridor directly into <strong className="text-emerald-700 dark:text-emerald-400 font-black">{toPlaceName}</strong>.
+                Proceed along designated emergency corridor directly into <strong className="text-emerald-800 dark:text-emerald-400 font-black">{toPlaceName}</strong>.
               </li>
             </ol>
           </div>
