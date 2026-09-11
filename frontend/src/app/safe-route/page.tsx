@@ -25,7 +25,7 @@ export default function SafeRoutePage() {
       </div>
 
       {/* Main Safe Route Component */}
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <SafeRoutePlanner />
       </div>
 
