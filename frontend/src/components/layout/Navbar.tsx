@@ -23,8 +23,10 @@ export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
@@ -111,9 +113,17 @@ export function Navbar() {
             <button
               onClick={toggleTheme}
               aria-label="Toggle theme"
-              className="p-2 rounded-xl glass-panel text-sky-400 hover:text-white hover:border-sky-400/50 transition-colors"
+              className="p-2 rounded-xl glass-panel text-sky-400 hover:text-white hover:border-sky-400/50 transition-colors w-9 h-9 flex items-center justify-center cursor-pointer"
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-sky-600" />}
+              {mounted ? (
+                theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-sky-600" />
+                )
+              ) : (
+                <div className="w-4 h-4" />
+              )}
             </button>
 
             {/* Mobile Menu Button */}
