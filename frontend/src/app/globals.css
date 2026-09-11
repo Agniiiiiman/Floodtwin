@@ -132,13 +132,18 @@ body {
 
 [data-theme="light"] .text-slate-700,
 [data-theme="light"] .text-slate-800,
-[data-theme="light"] .text-slate-900 {
-  color: #0f172a !important;
+[data-theme="light"] .text-slate-900,
+[data-theme="light"] .text-slate-950,
+[data-theme="light"] .text-black,
+[data-theme="light"] .metric-value,
+[data-theme="light"] .distance-value {
+  color: #000000 !important;
+  font-weight: 900 !important;
 }
 
 /* Overriding stray white texts in light mode, except on filled buttons */
 [data-theme="light"] .text-white:not(button):not(button *):not(a.bg-sky-500):not(a.bg-sky-500 *):not(a.bg-gradient-to-r):not(a.bg-gradient-to-r *) {
-  color: #0f172a !important;
+  color: #000000 !important;
 }
 
 /* 

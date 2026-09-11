@@ -545,7 +545,7 @@ export function SafeRoutePlanner() {
               <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">
                 📍 1. DEPARTURE PLACE
               </span>
-              <div className="text-slate-950 dark:text-white text-xs font-black truncate">
+              <div className="text-black dark:text-white text-xs font-black truncate">
                 {fromPlaceName}
               </div>
               <span className="text-[10px] text-sky-700 dark:text-sky-400 font-mono font-bold block">
@@ -557,7 +557,7 @@ export function SafeRoutePlanner() {
               <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono uppercase font-black block">
                 🛡️ 2. SAFE HAVEN DESTINATION
               </span>
-              <div className="text-slate-950 dark:text-white text-xs font-black truncate">
+              <div className="text-black dark:text-white text-xs font-black truncate">
                 {toPlaceName}
               </div>
               <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold block">
@@ -571,7 +571,7 @@ export function SafeRoutePlanner() {
                   CORRIDOR METRICS
                 </span>
                 <div className="mt-0.5 flex items-baseline gap-1.5">
-                  <span className="text-sm font-black text-slate-950 dark:text-white">
+                  <span className="metric-value distance-value text-base font-black text-black dark:text-white">
                     {routeResult.route?.routes?.[0]?.distance
                       ? `${(routeResult.route.routes[0].distance / 1000).toFixed(1)} km`
                       : '3.6 km'}
