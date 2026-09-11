@@ -140,7 +140,11 @@ body {
   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%) !important;
 }
 
-/* Header & Navigation in Light Mode */
+/* Header & Navigation */
+header {
+  z-index: 9999 !important;
+}
+
 [data-theme="light"] header.glass-panel {
   background: rgba(255, 255, 255, 0.94) !important;
   border-bottom: 1px solid #cbd5e1 !important;
