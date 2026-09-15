@@ -178,7 +178,7 @@ export async function getCorroboratedReports(): Promise<CorroboratedReportsRespo
  * Bulletproof Safe Route Solver:
  * Computes live or hydrodynamic bypass routes between any two locations without ever failing.
  */
-export async function calculateSafeRoute(req: RouteRequest): Promise<RouteResponse> {
+export async function calculateSafeRoute(req: RouteRequest): Promise<RouteResponse | null> {
   const start_lat = Number(req.start_lat) || 18.9160;
   const start_lng = Number(req.start_lng) || 72.8250;
   const end_lat = Number(req.end_lat) || 18.9400;
@@ -234,46 +234,9 @@ export async function calculateSafeRoute(req: RouteRequest): Promise<RouteRespon
     // Proceed to client-side waypoint solver
   }
 
-  // 3. Guaranteed High-Precision Client-Side Corridor
-  const waypoints: [number, number][] = [];
-  const steps = 18;
-  const midLat = (start_lat + end_lat) / 2;
-  const midLng = (start_lng + end_lng) / 2;
-  const perpOffset = 0.0042; // ~450m bypass around low-point flood depression
-
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    // Quadratic bezier spline avoiding flood nodes
-    const lat = (1 - t) * (1 - t) * start_lat + 2 * (1 - t) * t * (midLat + perpOffset) + t * t * end_lat;
-    const lng = (1 - t) * (1 - t) * start_lng + 2 * (1 - t) * t * (midLng - perpOffset * 0.75) + t * t * end_lng;
-    waypoints.push([Number(lng.toFixed(6)), Number(lat.toFixed(6))]);
-  }
-
-  const dLat = (end_lat - start_lat) * 111;
-  const dLng = (end_lng - start_lng) * 111 * Math.cos((start_lat * Math.PI) / 180);
-  const approxDistanceMeters = Math.max(800, Math.round(Math.sqrt(dLat * dLat + dLng * dLng) * 1000 * 1.3));
-  const approxDurationSeconds = Math.round(approxDistanceMeters / 6.0); // ~22 km/h emergency speed
-
-  return {
-    route: {
-      routes: [
-        {
-          geometry: {
-            type: 'LineString',
-            coordinates: waypoints,
-          },
-          distance: approxDistanceMeters,
-          duration: approxDurationSeconds,
-        },
-      ],
-    },
-    safe_status: `Elevated flood-safe bypass corridor calculated (${(approxDistanceMeters / 1000).toFixed(1)} km, ~${Math.ceil(approxDurationSeconds / 60)} min).`,
-    safe_duration: 'Safe for ~45 minutes; low-point junction actively bypassed.',
-    avoided_segments: ['Pilot Road Depression (5.1m Elevation)', 'Marine Lines Surcharged Conduit'],
-    rainfall_mm_hr: req.rainfall_mm_hr || 22.0,
-    rainfall_mode: 'demo',
-    data_mode: 'demo',
-  };
+  // 3. No valid road route found — return null so caller can show error
+  // NEVER fall back to a straight or bezier line
+  return null;
 }
 
 export async function calculateDrainageWhatIf(

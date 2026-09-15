@@ -141,33 +141,6 @@ export const POPULAR_ROUTES = [
   },
 ];
 
-// Initial default route result so the simulation map is NEVER empty on initial page render
-const INITIAL_ROUTE_RESULT: RouteResponse = {
-  route: {
-    routes: [
-      {
-        distance: 2900,
-        duration: 440,
-        geometry: {
-          type: 'LineString',
-          coordinates: [
-            [72.8250, 18.9160],
-            [72.8270, 18.9220],
-            [72.8310, 18.9320],
-            [72.8354, 18.9400],
-          ],
-        },
-      },
-    ],
-  },
-  safe_status: 'Active flood-safe evacuation corridor computed with hydrodynamic low-depression bypass.',
-  safe_duration: 'Route clearance verified for 45 mins under live rainfall conditions.',
-  avoided_segments: ['Colaba Low-Point Junction 4', 'Crawford Market Underpass (Surcharged)'],
-  rainfall_mm_hr: 18.5,
-  rainfall_mode: 'live',
-  data_mode: 'live',
-};
-
 export function SafeRoutePlanner() {
   const [fromPlaceName, setFromPlaceName] = useState('Ward A HQ - Colaba Municipal Depot');
   const [toPlaceName, setToPlaceName] = useState('CSMT Evacuation & Disaster Relief Center');
@@ -177,11 +150,13 @@ export function SafeRoutePlanner() {
   const [endLng, setEndLng] = useState('72.8354');
   const [showCoordinates, setShowCoordinates] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [routeResult, setRouteResult] = useState<RouteResponse>(INITIAL_ROUTE_RESULT);
+  const [routeResult, setRouteResult] = useState<RouteResponse | null>(null);
+  const [routeError, setRouteError] = useState<string | null>(null);
 
   const calculateRoute = useCallback(
     async (sLatStr: string, sLngStr: string, eLatStr: string, eLngStr: string) => {
       setIsLoading(true);
+      setRouteError(null);
       const sLat = parseFloat(sLatStr) || 18.9160;
       const sLng = parseFloat(sLngStr) || 72.8250;
       const eLat = parseFloat(eLatStr) || 18.9400;
@@ -194,38 +169,17 @@ export function SafeRoutePlanner() {
           end_lat: eLat,
           end_lng: eLng,
         });
+        // res is null when no road route could be found — NEVER fall back to a straight line
         if (res && res.route?.routes?.length) {
           setRouteResult(res);
+          setRouteError(null);
+        } else {
+          setRouteResult(null);
+          setRouteError('No road route available between these two locations. Please check coordinates or try different endpoints.');
         }
       } catch {
-        // Guaranteed fallback
-        const dLat = (eLat - sLat) * 111;
-        const dLng = (eLng - sLng) * 111 * Math.cos((sLat * Math.PI) / 180);
-        const approxDist = Math.max(900, Math.round(Math.sqrt(dLat * dLat + dLng * dLng) * 1000 * 1.28));
-        const approxSec = Math.round(approxDist / 6.2);
-
-        setRouteResult({
-          route: {
-            routes: [
-              {
-                distance: approxDist,
-                duration: approxSec,
-                geometry: {
-                  type: 'LineString',
-                  coordinates: [
-                    [sLng, sLat],
-                    [sLng + (eLng - sLng) * 0.33 + 0.002, sLat + (eLat - sLat) * 0.33 + 0.003],
-                    [sLng + (eLng - sLng) * 0.66 - 0.001, sLat + (eLat - sLat) * 0.66 - 0.002],
-                    [eLng, eLat],
-                  ],
-                },
-              },
-            ],
-          },
-          safe_status: 'Direct flood-free corridor computed with automated low-point depression bypass.',
-          safe_duration: 'Route clear for ~45 mins under live precipitation conditions.',
-          avoided_segments: ['Low-Point Arterial Subway (Inundation Risk)', 'Surcharged Storm Conduit'],
-        });
+        setRouteResult(null);
+        setRouteError('Unable to calculate a road route. Please verify your locations and try again.');
       } finally {
         setIsLoading(false);
       }
@@ -520,7 +474,28 @@ export function SafeRoutePlanner() {
         </button>
       </form>
 
-      {/* Simulated Route Results & Interactive Map */}
+      {/* Route Error State — No road route available */}
+      {routeError && !isLoading && (
+        <div className="p-6 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border-2 border-rose-300 dark:border-rose-500/40 space-y-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-black text-rose-900 dark:text-rose-200">No Road Route Available</p>
+              <p className="text-xs text-rose-700 dark:text-rose-300 font-medium">{routeError}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => calculateRoute(startLat, startLng, endLat, endLng)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition-all"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Retry Route Calculation
+          </button>
+        </div>
+      )}
+
+      {/* Route Results & Interactive Map */}
       {routeResult && (
         <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-emerald-500/40 space-y-5 shadow-xl animate-fadeIn">
           {/* Main Status Header */}

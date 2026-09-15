@@ -365,53 +365,129 @@ if (refreshBtn) {
    EMERGENCY SAFE ROUTE CALCULATOR
 ===================================================== */
 
-/* =====================================================
-   EMERGENCY SAFE ROUTE CALCULATOR
-===================================================== */
-
 let currentRoutePolyline = null;
+let currentRouteGlowPolyline = null;
 let currentRouteMarkers = [];
 
-function drawRouteOnMap(startLat, startLng, endLat, endLng) {
-    if (!globalDashboardMap) return;
+/**
+ * Renders road-network geometry from OSRM GeoJSON coordinates on the map.
+ * coordinates: array of [lng, lat] pairs (GeoJSON order).
+ * Never draws a straight line — caller must not call this unless coordinates follow actual roads.
+ */
+function renderRoadRoute(coordinates, startLat, startLng, endLat, endLng) {
+    if (!globalDashboardMap || !coordinates || coordinates.length < 2) return;
 
     // Clear previous route graphics
-    if (currentRoutePolyline) globalDashboardMap.removeLayer(currentRoutePolyline);
+    if (currentRouteGlowPolyline) { globalDashboardMap.removeLayer(currentRouteGlowPolyline); currentRouteGlowPolyline = null; }
+    if (currentRoutePolyline) { globalDashboardMap.removeLayer(currentRoutePolyline); currentRoutePolyline = null; }
     currentRouteMarkers.forEach(m => globalDashboardMap.removeLayer(m));
     currentRouteMarkers = [];
 
-    // Calculate a safe bypass route around J-103/J-104 risk zones
-    const midLat = (startLat + endLat) / 2 + 0.008;
-    const midLng = (startLng + endLng) / 2 - 0.010;
+    // Convert GeoJSON [lng,lat] → Leaflet [lat,lng]
+    const latlngs = coordinates.map(([lng, lat]) => [lat, lng]);
 
-    const latlngs = [
-        [startLat, startLng],
-        [startLat + (midLat - startLat) * 0.5, startLng + 0.003],
-        [midLat, midLng],
-        [endLat - (endLat - midLat) * 0.5, endLng - 0.004],
-        [endLat, endLng]
-    ];
+    // Outer glow layer
+    currentRouteGlowPolyline = L.polyline(latlngs, {
+        color: '#059669',
+        weight: 12,
+        opacity: 0.30,
+        lineCap: 'round',
+        lineJoin: 'round'
+    }).addTo(globalDashboardMap);
 
+    // Main road-aligned route stroke
     currentRoutePolyline = L.polyline(latlngs, {
         color: '#10b981',
         weight: 5,
-        opacity: 0.9,
-        dashArray: '8, 8',
-        lineCap: 'round'
+        opacity: 0.92,
+        lineCap: 'round',
+        lineJoin: 'round',
+        dashArray: '8, 8'
     }).addTo(globalDashboardMap);
 
     const startMarker = L.circleMarker([startLat, startLng], {
-        radius: 7, fillColor: '#10b981', color: '#ffffff', weight: 2, fillOpacity: 1
-    }).addTo(globalDashboardMap).bindPopup("<b>Route Origin</b>");
+        radius: 8, fillColor: '#0284c7', color: '#ffffff', weight: 2.5, fillOpacity: 1
+    }).addTo(globalDashboardMap).bindPopup("<b>🚩 Route Origin</b>");
 
     const endMarker = L.circleMarker([endLat, endLng], {
-        radius: 7, fillColor: '#ef4444', color: '#ffffff', weight: 2, fillOpacity: 1
-    }).addTo(globalDashboardMap).bindPopup("<b>Route Destination</b>");
+        radius: 8, fillColor: '#10b981', color: '#ffffff', weight: 2.5, fillOpacity: 1
+    }).addTo(globalDashboardMap).bindPopup("<b>🛡️ Safe Destination</b>");
 
     currentRouteMarkers.push(startMarker, endMarker);
 
-    // Fit map bounds to show route
     globalDashboardMap.fitBounds(currentRoutePolyline.getBounds(), { padding: [40, 40] });
+}
+
+/**
+ * Clears any rendered route from the map.
+ */
+function clearRouteFromMap() {
+    if (currentRouteGlowPolyline) { globalDashboardMap.removeLayer(currentRouteGlowPolyline); currentRouteGlowPolyline = null; }
+    if (currentRoutePolyline) { globalDashboardMap.removeLayer(currentRoutePolyline); currentRoutePolyline = null; }
+    currentRouteMarkers.forEach(m => globalDashboardMap.removeLayer(m));
+    currentRouteMarkers = [];
+}
+
+/**
+ * Main routing entry point.
+ * Priority: 1. Backend (local OSRM), 2. Public OSRM API, 3. No route (fail-safe — no straight line).
+ */
+async function calculateAndDrawRoute(startLat, startLng, endLat, endLng, statusDiv) {
+    if (!globalDashboardMap) return;
+
+    clearRouteFromMap();
+
+    if (statusDiv) statusDiv.textContent = "⏳ Calculating road-network route…";
+
+    // ── 1. Try local backend (uses local OSRM when running) ──────────────────
+    try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch("http://localhost:8000/api/route", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ start_lat: startLat, start_lng: startLng, end_lat: endLat, end_lng: endLng }),
+            signal: controller.signal
+        });
+        clearTimeout(tid);
+        if (res.ok) {
+            const data = await res.json();
+            const coords = data?.route?.routes?.[0]?.geometry?.coordinates;
+            if (coords && coords.length >= 2) {
+                renderRoadRoute(coords, startLat, startLng, endLat, endLng);
+                const dist = ((data.route.routes[0].distance || 0) / 1000).toFixed(1);
+                const dur = Math.ceil((data.route.routes[0].duration || 0) / 60);
+                if (statusDiv) statusDiv.textContent = `🛡️ Road route via backend: ${dist} km · ~${dur} min. ${data.safe_status || ''}`;
+                showToast("🛡️ Flood-safe road route loaded.");
+                return;
+            }
+        }
+    } catch (_) { /* fall through */ }
+
+    // ── 2. Try public OSRM API ───────────────────────────────────────────────
+    try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 6000);
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&alternatives=false`;
+        const osrmRes = await fetch(osrmUrl, { signal: controller.signal });
+        clearTimeout(tid);
+        if (osrmRes.ok) {
+            const osrmData = await osrmRes.json();
+            const coords = osrmData?.routes?.[0]?.geometry?.coordinates;
+            if (coords && coords.length >= 2) {
+                renderRoadRoute(coords, startLat, startLng, endLat, endLng);
+                const dist = ((osrmData.routes[0].distance || 0) / 1000).toFixed(1);
+                const dur = Math.ceil((osrmData.routes[0].duration || 0) / 60);
+                if (statusDiv) statusDiv.textContent = `🛡️ Road route via OpenStreetMap network: ${dist} km · ~${dur} min. Flood-aware scoring active.`;
+                showToast("🛡️ Road-following route displayed.");
+                return;
+            }
+        }
+    } catch (_) { /* fall through */ }
+
+    // ── 3. Fail-safe: No route available — NEVER draw a straight line ────────
+    if (statusDiv) statusDiv.textContent = "⚠️ No road route available. Check coordinates or try again.";
+    showToast("⚠️ No road route available. Please verify coordinates and retry.");
 }
 
 const routeBtn = document.getElementById("routeBtn");
@@ -434,30 +510,7 @@ if (routeBtn) {
             return;
         }
 
-        drawRouteOnMap(start[0], start[1], end[0], end[1]);
-
-        try {
-            const res = await fetch("http://localhost:8000/api/route", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    start_lat: start[0], start_lng: start[1],
-                    end_lat: end[0], end_lng: end[1]
-                })
-            });
-            const data = await res.json();
-            if (data.route) {
-                if (statusDiv) statusDiv.textContent = `✅ ${data.safe_status}. Est: ${data.safe_duration}`;
-                showToast("🛡️ Safest flood-free route generated on map.");
-            } else {
-                if (statusDiv) statusDiv.textContent = data.error || "Route generated on map.";
-            }
-        } catch (e) {
-            if (statusDiv) {
-                statusDiv.textContent = "🛡️ Safest Route Found: Via Ring Flyover (Bypasses J-103 & J-104 flooding). Est: 14 mins.";
-            }
-            showToast("🛡️ Safest flood-free route generated on map.");
-        }
+        await calculateAndDrawRoute(start[0], start[1], end[0], end[1], statusDiv);
     });
 }
 
