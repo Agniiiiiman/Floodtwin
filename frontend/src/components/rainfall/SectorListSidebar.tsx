@@ -154,6 +154,7 @@ export function SectorListSidebar({
             <button
               key={`${sector.lat}_${sector.lon}`}
               onClick={() => onSelectSector(sector)}
+              onMouseEnter={() => onSelectSector(sector)}
               className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between group ${
                 isSelected
                   ? 'bg-sky-500/20 border-sky-500/60 shadow-md'

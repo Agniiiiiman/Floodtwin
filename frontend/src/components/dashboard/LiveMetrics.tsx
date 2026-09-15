@@ -157,11 +157,13 @@ export function LiveMetrics({ data, loading, onRefresh }: LiveMetricsProps) {
             <span className="text-3xl font-extrabold text-white tracking-tight">
               {rainfall.toFixed(1)}
             </span>
-            <span className="text-sm font-medium text-blue-400">mm/hr</span>
+            <span className="text-sm font-medium text-blue-400">mm</span>
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-            <span>Open-Meteo Satellite Sync</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-emerald-300 font-mono">LIVE / DEMO</span>
+            <span>Open-Meteo Kolkata Sync</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
+            </span>
           </div>
         </div>
       </div>

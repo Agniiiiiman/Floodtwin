@@ -111,6 +111,10 @@ export default function RainfallMap({
       marker.on('click', () => {
         onSelectSector(sector);
       });
+      marker.on('mouseover', () => {
+        marker.openPopup();
+        onSelectSector(sector);
+      });
 
       group.addLayer(marker);
       markersMapRef.current.set(`${sector.lat}_${sector.lon}`, marker);

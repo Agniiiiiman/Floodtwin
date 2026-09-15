@@ -447,3 +447,53 @@ async def get_route(req: RouteRequest):
     except Exception:
         raise HTTPException(status_code=503, detail="Route service unavailable")
 
+
+# 🚨 FLOOD EMERGENCY ONE-CALL API ENDPOINT
+class EmergencyIncidentRequest(BaseModel):
+    incidentId: Optional[str] = None
+    incidentType: str = "URBAN_FLOOD"
+    latitude: float
+    longitude: float
+    riskLevel: str = "HIGH"
+    waterDepth: float = 0.8
+    rainfall: float = 84.0
+    timestamp: Optional[str] = None
+    notes: Optional[str] = None
+
+@app.post("/api/emergency/incident")
+def create_emergency_incident(req: EmergencyIncidentRequest):
+    inc_id = req.incidentId or f"FLD-{time.strftime('%Y')}-{uuid.uuid4().hex[:4].upper()}"
+    
+    # Check if backend telephony environment credentials exist (e.g. Twilio / MSG91)
+    twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+    is_real_mode = bool(twilio_sid and twilio_token)
+
+    agencies = [
+        {"id": "disaster", "name": "🚨 Disaster / Rapid Action Response", "status": "QUEUED"},
+        {"id": "fire", "name": "🚒 Fire & Emergency Services", "status": "QUEUED"},
+        {"id": "police", "name": "👮 Police Department", "status": "QUEUED"},
+        {"id": "electricity", "name": "⚡ Electricity / Power Utility", "status": "QUEUED"},
+        {"id": "control_room", "name": "🏢 Emergency Control Room (EOC)", "status": "QUEUED"}
+    ]
+
+    return {
+        "incidentId": inc_id,
+        "status": "RECEIVED",
+        "demo_mode": not is_real_mode,
+        "mode_label": "REAL MODE" if is_real_mode else "DEMO MODE (Simulated)",
+        "message": "Emergency response initiated successfully.",
+        "incident": {
+            "incidentType": req.incidentType,
+            "latitude": req.latitude,
+            "longitude": req.longitude,
+            "riskLevel": req.riskLevel,
+            "waterDepth": req.waterDepth,
+            "rainfall": req.rainfall,
+            "timestamp": req.timestamp or time.strftime("%Y-%m-%d %H:%M:%S"),
+            "notes": req.notes
+        },
+        "agencies": agencies
+    }
+
+

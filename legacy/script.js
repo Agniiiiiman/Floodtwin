@@ -171,14 +171,82 @@ function updateDepthTierUI(waterDepthM) {
     }
 }
 
+/* =====================================================
+   LIVE OPEN-METEO RAINFALL API (Kolkata, India)
+===================================================== */
+let latestSuccessfulRainfall = null;
+let latestSuccessfulTime = null;
+
+async function fetchLiveRainfall() {
+    const rainfallEl = document.getElementById("rainfall");
+    const rainfallUnitEl = document.getElementById("rainfallUnit");
+    const lastUpdatedEl = document.getElementById("rainfallLastUpdated");
+    const statusTagEl = document.getElementById("rainfallLiveTag");
+    const meterFillEl = document.getElementById("rainfallMeterFill");
+
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=22.5726&longitude=88.3639&current=precipitation&timezone=Asia%2FKolkata";
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Open-Meteo HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.current || typeof data.current.precipitation !== "number") {
+            throw new Error("Invalid or missing precipitation data field in Open-Meteo response");
+        }
+
+        const rainVal = data.current.precipitation;
+        const unitVal = (data.current_units && data.current_units.precipitation) ? data.current_units.precipitation : "mm";
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+
+        latestSuccessfulRainfall = rainVal;
+        latestSuccessfulTime = timeStr;
+
+        if (rainfallEl) rainfallEl.textContent = rainVal.toFixed(1);
+        if (rainfallUnitEl) rainfallUnitEl.textContent = unitVal;
+        if (lastUpdatedEl) lastUpdatedEl.textContent = `Last updated: ${timeStr}`;
+        if (statusTagEl) {
+            statusTagEl.textContent = "● LIVE";
+            statusTagEl.className = "status-tag live-tag";
+        }
+        if (meterFillEl) {
+            const pct = Math.min(100, Math.max(10, (rainVal / 50) * 100));
+            meterFillEl.style.width = `${pct}%`;
+        }
+
+        return rainVal;
+
+    } catch (error) {
+        console.error("Open-Meteo live rainfall fetch failed:", error);
+
+        if (latestSuccessfulRainfall !== null && latestSuccessfulTime !== null) {
+            showToast("Unable to fetch live rainfall data.");
+            if (rainfallEl) rainfallEl.textContent = latestSuccessfulRainfall.toFixed(1);
+            if (lastUpdatedEl) lastUpdatedEl.textContent = `Last updated: ${latestSuccessfulTime} (Cached)`;
+        } else {
+            showToast("Unable to fetch live rainfall data.");
+            if (rainfallEl) rainfallEl.textContent = "N/A";
+            if (lastUpdatedEl) lastUpdatedEl.textContent = "Rainfall data unavailable";
+            if (statusTagEl) {
+                statusTagEl.textContent = "● OFFLINE";
+                statusTagEl.className = "status-tag danger-tag";
+            }
+        }
+        return null;
+    }
+}
+
 async function updateLiveData() {
     try {
-        const res = await fetch("http://localhost:8000/api/forecast?lat=18.96&lng=72.82");
+        const res = await fetch("http://localhost:8000/api/forecast?lat=22.5726&lng=88.3639");
         const data = await res.json();
         
         const water = data.depth_m || 0.34;
         const load = data.risk === "Critical" ? 95 : data.risk === "High" ? 80 : data.risk === "Medium" ? 60 : 30;
-        const rainfall = data.rainfall_mm_hr || 48.5;
         
         const waterLevelEl = document.getElementById("waterLevel");
         if (waterLevelEl) waterLevelEl.innerHTML = `${water}<span> m</span>`;
@@ -186,18 +254,18 @@ async function updateLiveData() {
         const netLoadEl = document.getElementById("networkLoad");
         if (netLoadEl) netLoadEl.innerHTML = `${load}<span>%</span>`;
 
-        const rainfallEl = document.getElementById("rainfall");
-        if (rainfallEl) rainfallEl.textContent = rainfall;
-
         updateDepthTierUI(water);
         
     } catch (e) {
-        // Fallback simulation when backend server is offline
-        console.warn("Live telemetry fallback mode active.");
+        // Fallback simulation for simulated backend metrics when backend server is offline
+        console.warn("Live telemetry fallback mode active for simulated backend metrics.");
         updateDepthTierUI(0.34);
     }
 }
 
+// Automatic live rainfall refresh every 10 minutes (10 * 60 * 1000 ms)
+setInterval(fetchLiveRainfall, 10 * 60 * 1000);
+// Simulated metrics sync every 30 seconds
 setInterval(updateLiveData, 30000);
 
 
@@ -285,9 +353,11 @@ if (headerSimBtn) {
 
 const refreshBtn = document.getElementById("refreshBtn");
 if (refreshBtn) {
-    refreshBtn.addEventListener("click", () => {
+    refreshBtn.addEventListener("click", async () => {
+        showToast("Fetching live Open-Meteo rainfall telemetry...");
+        await fetchLiveRainfall();
         updateLiveData();
-        showToast("🔄 FloodTwin telemetry & digital twin synced.");
+        showToast("🔄 Live rainfall & network telemetry refreshed.");
     });
 }
 
@@ -608,10 +678,13 @@ function locateUserAndInitMap() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Immediately fetch live Open-Meteo rainfall telemetry on page load
+    fetchLiveRainfall();
+
     const mapContainer = document.getElementById("dashboardMap");
     if (!mapContainer) return;
 
-    // Immediately fetch live telemetry data on load
+    // Fetch simulated hydraulic telemetry data
     updateLiveData();
 
     locateUserAndInitMap();
@@ -624,4 +697,372 @@ document.addEventListener("DOMContentLoaded", () => {
             locateUserAndInitMap();
         });
     }
+
+    // Initialize 🚨 Emergency One-Call Rapid Response System
+    initEmergencyResponseSystem();
 });
+
+
+/* =====================================================
+   🚨 FLOOD EMERGENCY ONE-CALL / RAPID ACTION SYSTEM
+===================================================== */
+
+let activeEmergencyIncident = null;
+let emergencyMapMarker = null;
+let emergencyPulseCircle = null;
+let agencyStatusTimers = [];
+
+const EMERGENCY_AGENCIES = [
+    { id: "disaster", name: "🚨 Disaster / Rapid Action Response", desc: "Rescue & evacuation units queued" },
+    { id: "fire", name: "🚒 Fire & Emergency Services", desc: "Flood rescue & pumping units queued" },
+    { id: "police", name: "👮 Police Department", desc: "Traffic diversion & perimeter safety queued" },
+    { id: "electricity", name: "⚡ Electricity / Power Utility", desc: "Substation hazard isolation assessment queued" },
+    { id: "control_room", name: "🏢 Emergency Control Room (EOC)", desc: "Municipal dispatch coordination queued" }
+];
+
+function generateIncidentId() {
+    const year = new Date().getFullYear();
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return `FLD-${year}-${rand}`;
+}
+
+function getEmergencyTelemetry() {
+    // Get live water depth from DOM or default fallback
+    const peakDepthEl = document.getElementById("peakDepth");
+    const waterDepth = peakDepthEl ? parseFloat(peakDepthEl.textContent) || 0.8 : 0.8;
+
+    // Get live risk level
+    const riskBadge = document.getElementById("currentRiskBadge");
+    const riskLevel = riskBadge ? riskBadge.textContent.trim() : "HIGH";
+
+    // Get live rainfall
+    const rainfallEl = document.getElementById("rainfall");
+    const rainfall = rainfallEl && !isNaN(parseFloat(rainfallEl.textContent)) ? parseFloat(rainfallEl.textContent) : 84.0;
+
+    // Get location/coordinates
+    let lat = 22.5726;
+    let lng = 88.3639;
+    let locationName = "Kolkata, West Bengal";
+
+    if (globalDashboardMap) {
+        const center = globalDashboardMap.getCenter();
+        lat = center.lat;
+        lng = center.lng;
+    }
+
+    if (userLiveMarker) {
+        const userLatLng = userLiveMarker.getLatLng();
+        lat = userLatLng.lat;
+        lng = userLatLng.lng;
+        locationName = "Detected User Location (Live GPS)";
+    }
+
+    return {
+        lat,
+        lng,
+        locationName,
+        riskLevel,
+        waterDepth,
+        rainfall
+    };
+}
+
+function openEmergencyConfirmationModal() {
+    const modal = document.getElementById("emergencyModalOverlay");
+    if (!modal) return;
+
+    const telemetry = getEmergencyTelemetry();
+
+    const locEl = document.getElementById("confirmLoc");
+    const riskEl = document.getElementById("confirmRisk");
+    const depthEl = document.getElementById("confirmDepth");
+    const rainEl = document.getElementById("confirmRain");
+    const coordsEl = document.getElementById("confirmCoords");
+
+    if (locEl) locEl.textContent = telemetry.locationName;
+    if (riskEl) {
+        riskEl.textContent = telemetry.riskLevel;
+        riskEl.className = telemetry.riskLevel === "CRITICAL" ? "badge-risk-high" : "badge-risk-high";
+    }
+    if (depthEl) depthEl.textContent = `${telemetry.waterDepth.toFixed(2)} m`;
+    if (rainEl) rainEl.textContent = `${telemetry.rainfall.toFixed(1)} mm/hr`;
+    if (coordsEl) coordsEl.textContent = `${telemetry.lat.toFixed(4)}, ${telemetry.lng.toFixed(4)}`;
+
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden"; // Prevent scrolling behind modal
+}
+
+function closeEmergencyConfirmationModal() {
+    const modal = document.getElementById("emergencyModalOverlay");
+    if (!modal) return;
+    modal.classList.add("hidden");
+    document.body.style.overflow = "";
+}
+
+function renderAgencyStatuses(agencyStates) {
+    const listContainer = document.getElementById("agencyResponseList");
+    if (!listContainer) return;
+
+    listContainer.innerHTML = "";
+
+    agencyStates.forEach(agency => {
+        const item = document.createElement("div");
+        item.className = "agency-item";
+
+        let statusClass = "status-queued";
+        if (agency.status === "SENT") statusClass = "status-sent";
+        if (agency.status === "ACKNOWLEDGED") statusClass = "status-acknowledged";
+        if (agency.status === "RESPONDING") statusClass = "status-responding";
+        if (agency.status === "RESOLVED") statusClass = "status-resolved";
+        if (agency.status === "FAILED") statusClass = "status-failed";
+
+        item.innerHTML = `
+            <div class="agency-info">
+                <strong>${agency.name}</strong>
+            </div>
+            <span class="agency-status-badge ${statusClass}" id="agencyState_${agency.id}">
+                ${agency.status}
+            </span>
+        `;
+        listContainer.appendChild(item);
+    });
+}
+
+function addEmergencyIncidentToMap(incident) {
+    if (!globalDashboardMap) return;
+
+    // Clear previous emergency marker if exists
+    if (emergencyMapMarker) globalDashboardMap.removeLayer(emergencyMapMarker);
+    if (emergencyPulseCircle) globalDashboardMap.removeLayer(emergencyPulseCircle);
+
+    const lat = incident.location.latitude;
+    const lng = incident.location.longitude;
+
+    // Create red pulse circle
+    emergencyPulseCircle = L.circle([lat, lng], {
+        color: '#ef4444',
+        fillColor: '#ef4444',
+        fillOpacity: 0.25,
+        radius: 800
+    }).addTo(globalDashboardMap);
+
+    // Create custom Emergency Icon Marker
+    const emergencyIcon = L.divIcon({
+        className: 'custom-emergency-icon',
+        html: `
+            <div style="
+                background: #ef4444;
+                color: #ffffff;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                box-shadow: 0 0 15px rgba(239, 68, 68, 0.9);
+                border: 2px solid #ffffff;
+                animation: pulseRed 1.5s infinite;
+            ">🚨</div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+    });
+
+    emergencyMapMarker = L.marker([lat, lng], { icon: emergencyIcon }).addTo(globalDashboardMap);
+
+    const popupContent = `
+        <div style="font-family: Inter, sans-serif; padding: 4px; min-width: 180px;">
+            <div style="display:flex; align-items:center; gap:6px; color:#ef4444; font-weight:800; font-size:13px; margin-bottom:6px;">
+                <span>🚨</span> FLOOD INCIDENT
+            </div>
+            <div style="font-size:11.5px; line-height:1.6; color:#0f172a;">
+                <b>Incident ID:</b> <span style="font-family:monospace; font-weight:bold;">${incident.incidentId}</span><br>
+                <b>Location:</b> ${incident.location.address}<br>
+                <b>Risk Level:</b> <span style="color:#ef4444; font-weight:bold;">${incident.riskLevel}</span><br>
+                <b>Water Depth:</b> ${incident.estimatedWaterDepth} m<br>
+                <b>Status:</b> <span style="color:#2563eb; font-weight:bold;">${incident.status}</span><br>
+                <small style="color:#64748b;">Dispatched: ${incident.timestamp}</small>
+            </div>
+        </div>
+    `;
+
+    emergencyMapMarker.bindPopup(popupContent).openPopup();
+    globalDashboardMap.setView([lat, lng], 14, { animate: true });
+}
+
+async function initiateEmergencyResponse() {
+    const telemetry = getEmergencyTelemetry();
+    const notesInput = document.getElementById("emergencyNotes");
+    const userNotes = notesInput ? notesInput.value.trim() : "";
+
+    const incidentId = generateIncidentId();
+    const now = new Date();
+    const timeStr = `${now.toLocaleTimeString()} (${now.toLocaleDateString()})`;
+
+    const incidentPayload = {
+        incidentId: incidentId,
+        incidentType: "Urban Flood Emergency",
+        location: {
+            latitude: telemetry.lat,
+            longitude: telemetry.lng,
+            address: telemetry.locationName
+        },
+        riskLevel: telemetry.riskLevel,
+        estimatedWaterDepth: telemetry.waterDepth,
+        rainfall: telemetry.rainfall,
+        timestamp: timeStr,
+        notes: userNotes,
+        mode: "DEMO",
+        status: "ACTIVE"
+    };
+
+    activeEmergencyIncident = incidentPayload;
+
+    // Setup initial agency states as QUEUED
+    const agencyStates = EMERGENCY_AGENCIES.map(a => ({
+        id: a.id,
+        name: a.name,
+        status: "QUEUED"
+    }));
+
+    // Post to backend API if available
+    try {
+        await fetch("http://localhost:8000/api/emergency/incident", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                incidentId: incidentId,
+                latitude: telemetry.lat,
+                longitude: telemetry.lng,
+                riskLevel: telemetry.riskLevel,
+                waterDepth: telemetry.waterDepth,
+                rainfall: telemetry.rainfall,
+                timestamp: timeStr,
+                notes: userNotes
+            })
+        });
+    } catch (e) {
+        console.warn("Backend emergency API offline; continuing in local DEMO mode.");
+    }
+
+    closeEmergencyConfirmationModal();
+
+    // Show Incident Active summary card
+    const summaryBox = document.getElementById("emergencyStatusSummary");
+    const incidentIdEl = document.getElementById("summaryIncidentId");
+    const locEl = document.getElementById("summaryLoc");
+    const riskEl = document.getElementById("summaryRisk");
+    const depthEl = document.getElementById("summaryDepth");
+    const rainEl = document.getElementById("summaryRain");
+
+    if (incidentIdEl) incidentIdEl.textContent = incidentId;
+    if (locEl) locEl.textContent = telemetry.locationName;
+    if (riskEl) riskEl.textContent = telemetry.riskLevel;
+    if (depthEl) depthEl.textContent = `${telemetry.waterDepth.toFixed(2)} m`;
+    if (rainEl) rainEl.textContent = `${telemetry.rainfall.toFixed(1)} mm`;
+
+    renderAgencyStatuses(agencyStates);
+    if (summaryBox) summaryBox.classList.remove("hidden");
+
+    // Add marker & popup on GIS map
+    addEmergencyIncidentToMap(incidentPayload);
+
+    showToast(`🚨 FLOOD INCIDENT ${incidentId} CREATED IN DEMO MODE.`);
+
+    // Simulate agency status progression in DEMO MODE
+    agencyStatusTimers.forEach(t => clearTimeout(t));
+    agencyStatusTimers = [];
+
+    agencyStates.forEach((agency, index) => {
+        // Step 1: SENT after 1.5s - 3s
+        const timer1 = setTimeout(() => {
+            agency.status = "SENT";
+            renderAgencyStatuses(agencyStates);
+        }, 1500 + index * 800);
+
+        // Step 2: ACKNOWLEDGED after 3.5s - 6s
+        const timer2 = setTimeout(() => {
+            agency.status = "ACKNOWLEDGED";
+            renderAgencyStatuses(agencyStates);
+        }, 3500 + index * 1000);
+
+        // Step 3: RESPONDING after 6.5s - 10s
+        const timer3 = setTimeout(() => {
+            agency.status = "RESPONDING";
+            renderAgencyStatuses(agencyStates);
+        }, 6500 + index * 1200);
+
+        agencyStatusTimers.push(timer1, timer2, timer3);
+    });
+}
+
+function resolveEmergencyIncident() {
+    if (!activeEmergencyIncident) return;
+
+    if (emergencyMapMarker && globalDashboardMap) globalDashboardMap.removeLayer(emergencyMapMarker);
+    if (emergencyPulseCircle && globalDashboardMap) globalDashboardMap.removeLayer(emergencyPulseCircle);
+
+    emergencyMapMarker = null;
+    emergencyPulseCircle = null;
+
+    agencyStatusTimers.forEach(t => clearTimeout(t));
+    agencyStatusTimers = [];
+
+    const summaryBox = document.getElementById("emergencyStatusSummary");
+    if (summaryBox) summaryBox.classList.add("hidden");
+
+    showToast(`✅ Incident ${activeEmergencyIncident.incidentId} cleared.`);
+    activeEmergencyIncident = null;
+}
+
+function initEmergencyResponseSystem() {
+    const triggerBtn = document.getElementById("emergencyTriggerBtn");
+    const headerTriggerBtn = document.getElementById("headerEmergencyBtn");
+    const closeBtn = document.getElementById("modalCloseBtn");
+    const cancelBtn = document.getElementById("modalCancelBtn");
+    const initiateBtn = document.getElementById("modalInitiateBtn");
+    const viewMapBtn = document.getElementById("viewIncidentMapBtn");
+    const cancelIncidentBtn = document.getElementById("cancelIncidentBtn");
+    const modalOverlay = document.getElementById("emergencyModalOverlay");
+
+    if (triggerBtn) {
+        triggerBtn.addEventListener("click", openEmergencyConfirmationModal);
+    }
+
+    if (headerTriggerBtn) {
+        headerTriggerBtn.addEventListener("click", () => {
+            const dashSec = document.getElementById("dashboard");
+            if (dashSec) dashSec.scrollIntoView({ behavior: "smooth" });
+            openEmergencyConfirmationModal();
+        });
+    }
+
+    if (closeBtn) closeBtn.addEventListener("click", closeEmergencyConfirmationModal);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeEmergencyConfirmationModal);
+    if (initiateBtn) initiateBtn.addEventListener("click", initiateEmergencyResponse);
+
+    if (viewMapBtn) {
+        viewMapBtn.addEventListener("click", () => {
+            const mapEl = document.getElementById("dashboardMap");
+            if (mapEl) mapEl.scrollIntoView({ behavior: "smooth" });
+            if (emergencyMapMarker) emergencyMapMarker.openPopup();
+        });
+    }
+
+    if (cancelIncidentBtn) {
+        cancelIncidentBtn.addEventListener("click", resolveEmergencyIncident);
+    }
+
+    if (modalOverlay) {
+        modalOverlay.addEventListener("click", (e) => {
+            if (e.target === modalOverlay) closeEmergencyConfirmationModal();
+        });
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modalOverlay && !modalOverlay.classList.contains("hidden")) {
+            closeEmergencyConfirmationModal();
+        }
+    });
+}

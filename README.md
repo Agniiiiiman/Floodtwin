@@ -35,7 +35,57 @@
   - [3. Docker Compose (Full Stack)](#3-docker-compose-full-stack)
 - [⚙️ Environment Variables](#️-environment-variables)
 - [🌓 High-Contrast Dual Theme System](#-high-contrast-dual-theme-system)
-- [📄 License & Disclaimer](#-license--disclaimer)
+---
+
+## 🌧️ LIVE RAINFALL API
+
+### Provider & Telemetry Configuration
+
+- **Provider**: Open-Meteo (`https://api.open-meteo.com/v1/forecast`)
+- **Location**: Kolkata, West Bengal, India
+- **Latitude**: `22.5726`
+- **Longitude**: `88.3639`
+- **Timezone**: `Asia/Kolkata`
+- **Refresh Interval**: 10 minutes (`10 * 60 * 1000` ms)
+- **API Key**: Not required (Public Open API)
+- **Data Field**: `current.precipitation` (`mm`)
+
+---
+
+## ⚖️ System Status: Real vs Simulated Features
+
+### 🟢 REAL (Live Telemetry)
+- **Live Rainfall API**: Real-time precipitation telemetry fetched directly from Open-Meteo for Kolkata, India without random number fallbacks.
+
+### 🟡 SIMULATED / PROTOTYPE (Rule-Based Physics & Demo Models)
+- **Water Level Depth**: Node depth metrics modeled via baseline hydraulic specs.
+- **Network Load**: Drainage capacity utilization percentages.
+- **What-If Simulation**: Interactive Manning pipe blockage sandbox.
+- **Flood Map Visual**: Spatial inundation heatmap.
+- **Safe Routing**: Dynamic hazard exclusion routing.
+- **Other Placeholder Components**: Demo metrics for municipal command support.
+
+---
+
+## 🔄 End-to-End Processing Pipeline
+
+Live rainfall serves as the foundational trigger for the complete urban hydrology pipeline:
+
+```text
+Rainfall (Open-Meteo Live API)
+   ↓
+Runoff (Hydraulic Inflow Calculation)
+   ↓
+Drainage Digital Twin (SWMM Physics Engine)
+   ↓
+Flood Prediction (Subterranean Overtopping Model)
+   ↓
+Street-Level Risk (Inundation Depth Tiers)
+   ↓
+Safe Routing (OSRM Hazard Exclusion Navigation)
+   ↓
+Emergency Alerts (Citizen & EOC Notification Engine)
+```
 
 ---
 

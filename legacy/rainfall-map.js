@@ -616,7 +616,8 @@ function updateStats(data, dataTime) {
         const { color, label, badge, text } = rainfallColor(s.rain);
         return `
             <div class="sector-item"
-                 onclick="flyTo(${s.lat}, ${s.lon}, '${s.name}')">
+                 onclick="flyTo(${s.lat}, ${s.lon}, '${s.name}')"
+                 onmouseenter="flyTo(${s.lat}, ${s.lon}, '${s.name}')">
                 <span class="sector-rank">${i + 1}</span>
                 <div class="sector-info">
                     <div class="sector-name">${s.name}</div>

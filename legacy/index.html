@@ -698,6 +698,20 @@
 
             </button>
 
+            <button class="btn secondary"
+                    id="refreshBtn">
+
+                🔄 Refresh Data
+
+            </button>
+
+            <button class="btn emergency-header-btn"
+                    id="headerEmergencyBtn">
+
+                🚨 One-Call Emergency
+
+            </button>
+
         </div>
 
     </div>
@@ -796,6 +810,8 @@
             <aside class="metrics">
 
 
+
+
                 <!-- CRITICAL FLOOD METRIC 1 -->
                 <div class="metric-card depth-metric-card" id="depthMetricCard">
                     <div class="card-head">
@@ -818,21 +834,25 @@
 
 
 
-                <!-- METRIC 2: RAINFALL -->
-                <div class="metric-card">
+                <!-- METRIC 2: RAINFALL PRECIPITATION (LIVE API) -->
+                <div class="metric-card" id="rainfallCard">
 
                     <div class="card-head">
-                        <small>RAINFALL RATE</small>
-                        <span class="status-tag">Open-Meteo Live</span>
+                        <small>RAINFALL PRECIPITATION</small>
+                        <span class="status-tag live-tag" id="rainfallLiveTag">● LIVE</span>
                     </div>
 
                     <div class="card-body-stat">
-                        <strong id="rainfall">48.5</strong>
-                        <span class="unit">mm / hr</span>
+                        <strong id="rainfall">--</strong>
+                        <span class="unit" id="rainfallUnit">mm</span>
                     </div>
 
                     <div class="meter-bar">
-                        <div class="meter-fill" style="width:68%"></div>
+                        <div class="meter-fill" id="rainfallMeterFill" style="width: 0%"></div>
+                    </div>
+
+                    <div class="last-updated-text" id="rainfallLastUpdated">
+                        Last updated: Fetching...
                     </div>
 
                 </div>
@@ -1390,7 +1410,89 @@
 
 
 
+<!-- 🚨 EMERGENCY CONFIRMATION MODAL -->
+<div class="emergency-modal-overlay hidden" id="emergencyModalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="emergency-modal-content">
+        <div class="modal-header">
+            <div class="modal-title-group">
+                <span class="emergency-alert-icon">🚨</span>
+                <div>
+                    <h3 id="modalTitle">FLOOD EMERGENCY RESPONSE</h3>
+                    <span class="modal-subtitle">Coordinated Rapid Action Dispatch</span>
+                </div>
+            </div>
+            <button type="button" class="modal-close-btn" id="modalCloseBtn" aria-label="Close confirmation dialog">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <p class="modal-intro">
+                This will initiate a coordinated emergency response for the selected flood location.
+            </p>
+
+            <div class="incident-preview-card">
+                <div class="preview-row">
+                    <span class="lbl">📍 Location:</span>
+                    <strong id="confirmLoc">Kolkata</strong>
+                </div>
+                <div class="preview-row">
+                    <span class="lbl">⚠️ Risk Level:</span>
+                    <strong id="confirmRisk" class="badge-risk-high">HIGH</strong>
+                </div>
+                <div class="preview-row">
+                    <span class="lbl">🌊 Water Depth:</span>
+                    <strong id="confirmDepth">0.8 m</strong>
+                </div>
+                <div class="preview-row">
+                    <span class="lbl">🌧️ Rainfall:</span>
+                    <strong id="confirmRain">84 mm/hr</strong>
+                </div>
+                <div class="preview-row">
+                    <span class="lbl">🌐 GPS Coordinates:</span>
+                    <strong id="confirmCoords">22.5726, 88.3639</strong>
+                </div>
+            </div>
+
+            <div class="modal-input-group">
+                <label for="emergencyNotes">Additional Incident Message / Notes (Optional):</label>
+                <textarea id="emergencyNotes" class="form-control" rows="2" placeholder="Describe current situation (e.g. water rising rapidly, trapped vehicles...)"></textarea>
+            </div>
+
+            <div class="agencies-target-preview">
+                <small class="preview-label">CONFIGURED EMERGENCY AGENCIES TO BE NOTIFIED (5):</small>
+                <div class="agency-pills">
+                    <span>🚨 Disaster Response</span>
+                    <span>🚒 Fire &amp; Emergency</span>
+                    <span>👮 Police</span>
+                    <span>⚡ Electricity Dept</span>
+                    <span>🏢 Control Room</span>
+                </div>
+            </div>
+
+            <div class="modal-demo-notice">
+                <span class="notice-icon">⚠️</span>
+                <span><strong>DEMO MODE:</strong> Notifications will be queued and simulated for evaluation. No real emergency calls will be made.</span>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn secondary" id="modalCancelBtn">
+                CANCEL
+            </button>
+            <button type="button" class="btn btn-emergency-confirm" id="modalInitiateBtn">
+                INITIATE RESPONSE
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
+<!-- FLOATING EMERGENCY ACTION TRIGGER (BOTTOM RIGHT) -->
+<div class="emergency-floating-wrapper" id="emergencyFloatingWrapper">
+    <button type="button" class="btn-emergency-floating" id="emergencyTriggerBtn">
+        🚨 ONE-CALL FLOOD EMERGENCY
+    </button>
+</div>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>

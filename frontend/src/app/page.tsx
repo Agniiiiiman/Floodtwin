@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { HeroSection } from '@/components/hero/HeroSection';
+import { EmergencyActionSystem } from '@/components/dashboard/EmergencyActionSystem';
 import {
   Activity,
   Cpu,
@@ -324,6 +325,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 🚨 FLOOD EMERGENCY ONE-CALL FLOATING SYSTEM */}
+      <EmergencyActionSystem />
 
       {/* 3. 10-Second Operational Decision Matrix */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
