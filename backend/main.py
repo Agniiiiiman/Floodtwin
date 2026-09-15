@@ -454,6 +454,10 @@ class EmergencyIncidentRequest(BaseModel):
     incidentType: str = "URBAN_FLOOD"
     latitude: float
     longitude: float
+    locationName: Optional[str] = "High-Precision GIS Sector"
+    preciseAddress: Optional[str] = None
+    accuracyMeters: Optional[float] = 3.0
+    sectorCode: Optional[str] = "GIS-KLK-SEC5-02"
     riskLevel: str = "HIGH"
     waterDepth: float = 0.8
     rainfall: float = 84.0
@@ -480,9 +484,11 @@ def create_emergency_incident(req: EmergencyIncidentRequest):
     return {
         "incidentId": inc_id,
         "status": "RECEIVED",
+        "coordinates": {"lat": req.latitude, "lng": req.longitude, "accuracy_m": req.accuracyMeters},
+        "location": {"name": req.locationName, "address": req.preciseAddress, "sectorCode": req.sectorCode},
         "demo_mode": not is_real_mode,
         "mode_label": "REAL MODE" if is_real_mode else "DEMO MODE (Simulated)",
-        "message": "Emergency response initiated successfully.",
+        "message": f"Emergency response dispatched for precision target ({req.latitude:.6f}°, {req.longitude:.6f}°).",
         "incident": {
             "incidentType": req.incidentType,
             "latitude": req.latitude,
@@ -491,9 +497,10 @@ def create_emergency_incident(req: EmergencyIncidentRequest):
             "waterDepth": req.waterDepth,
             "rainfall": req.rainfall,
             "timestamp": req.timestamp or time.strftime("%Y-%m-%d %H:%M:%S"),
-            "notes": req.notes
+            "notes": req.notes,
         },
-        "agencies": agencies
+        "agencies": agencies,
     }
+
 
 
