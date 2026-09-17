@@ -81,6 +81,7 @@ export function AuthModal() {
       }, 700);
     } catch (err: any) {
       setLoading(false);
+      let msg = err?.message || 'Authentication failed. Please check your credentials.';
       if (err.code === 'auth/configuration-not-found') {
         msg = 'Firebase Authentication is not yet turned on in your Firebase Console. Go to Firebase Console → Authentication → click "Get Started" and enable Email/Password.';
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
