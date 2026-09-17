@@ -16,7 +16,7 @@ export function DataSourcesPanel({ rainfallMode, lastUpdated }: DataSourcesPanel
     { source: 'Elevation / terrain', value: 'Synthetic pilot elevations', status: 'ESTIMATED', qualifier: 'DEM unavailable' },
     { source: 'Road network', value: 'OpenStreetMap pilot extract', status: 'LOCAL', qualifier: 'South Mumbai bbox' },
     { source: 'Drainage network', value: 'Synthetic pilot graph', status: 'SYNTHETIC', qualifier: 'Unverified municipal topology' },
-    { source: 'Flood model', value: 'StreetFlood deterministic runoff-capacity model', status: 'UNCALIBRATED', qualifier: 'Indicative risk ranges' },
+    { source: 'Flood model', value: 'UrbanFlood deterministic runoff-capacity model', status: 'UNCALIBRATED', qualifier: 'Indicative risk ranges' },
     { source: 'Citizen reports', value: 'User-generated reports', status: 'USER-GENERATED', qualifier: '2-report corroboration' },
     { source: 'SUMO traffic', value: 'Traffic simulation extension', status: 'LOCAL', qualifier: 'Pilot baseline & detour simulation' },
   ];
