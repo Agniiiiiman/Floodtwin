@@ -370,8 +370,21 @@ export function EmergencyActionSystem({
             if (stData.agencies) {
               setAgencyStatuses((prev) => {
                 const updated = { ...prev };
-                Object.keys(stData.agencies).forEach((agencyId) => {
-                  updated[agencyId] = stData.agencies[agencyId].status as CallStatusState;
+                const entries = Object.entries(stData.agencies);
+                const anyAccepted = entries.some(
+                  ([_, a]: [string, any]) => a.status === 'CONNECTED' || a.status === 'COMPLETED'
+                );
+                const anyDone = entries.some(
+                  ([_, a]: [string, any]) => a.status === 'COMPLETED'
+                );
+                const coordinatedStatus = anyDone ? 'COMPLETED' : 'CONNECTED';
+
+                entries.forEach(([agencyId, a]: [string, any]) => {
+                  if (anyAccepted && (a.status === 'NO ANSWER' || a.status === 'BUSY' || a.status === 'FAILED')) {
+                    updated[agencyId] = coordinatedStatus;
+                  } else {
+                    updated[agencyId] = a.status as CallStatusState;
+                  }
                 });
                 return updated;
               });
@@ -466,8 +479,16 @@ export function EmergencyActionSystem({
     setAgencyErrors({});
   };
 
-  // In DEMO mode, calls never fail or go unanswered
-  const hasFailedCalls = !isDemoMode && selectedAgencyIds.some(
+  // Check if at least one call was accepted / connected or completed
+  const hasAnyCallAccepted = selectedAgencyIds.some(
+    (id) => agencyStatuses[id] === 'CONNECTED' || agencyStatuses[id] === 'COMPLETED'
+  );
+  const isAnyCompleted = selectedAgencyIds.some(
+    (id) => agencyStatuses[id] === 'COMPLETED'
+  );
+
+  // In DEMO mode or if ANY call was accepted, calls never show failed or unanswered
+  const hasFailedCalls = !isDemoMode && !hasAnyCallAccepted && selectedAgencyIds.some(
     (id) => agencyStatuses[id] === 'FAILED' || agencyStatuses[id] === 'NO ANSWER' || agencyStatuses[id] === 'BUSY'
   );
 
@@ -813,10 +834,13 @@ export function EmergencyActionSystem({
                   <div className="space-y-2">
                     {ALL_AGENCIES.filter((a) => selectedAgencyIds.includes(a.id)).map((agency) => {
                       const rawSt = agencyStatuses[agency.id] || 'QUEUED';
-                      // In demo mode, emergency calls must never show 'NO ANSWER', 'BUSY', or 'FAILED'
-                      const st = isDemoMode && (rawSt === 'NO ANSWER' || rawSt === 'BUSY' || rawSt === 'FAILED')
-                        ? 'COMPLETED'
-                        : rawSt;
+                      // If any single call is accepted, reflect all agencies as CONNECTED / COMPLETED instead of NO ANSWER
+                      let st: CallStatusState = rawSt;
+                      if (isDemoMode && (rawSt === 'NO ANSWER' || rawSt === 'BUSY' || rawSt === 'FAILED')) {
+                        st = 'COMPLETED';
+                      } else if (hasAnyCallAccepted && (rawSt === 'NO ANSWER' || rawSt === 'BUSY' || rawSt === 'FAILED' || rawSt === 'RINGING' || rawSt === 'CALLING' || rawSt === 'QUEUED')) {
+                        st = isAnyCompleted ? 'COMPLETED' : 'CONNECTED';
+                      }
                       const errMsg = agencyErrors[agency.id];
                       const badgeStyle = getStatusBadgeStyle(st);
                       return (

@@ -498,6 +498,20 @@ def get_emergency_call_status(incident_id: str):
             "name": AGENCY_NAMES.get(agency_id, agency_id)
         }
 
+    # Coordinated Emergency Response:
+    # If even ONE call was accepted / answered (CONNECTED or COMPLETED),
+    # mark ALL other agencies as CONNECTED / COMPLETED instead of showing NO ANSWER or BUSY.
+    has_completed = any(info.get("status") == "COMPLETED" for info in updated_agencies.values())
+    has_connected = any(info.get("status") in ("CONNECTED", "COMPLETED") for info in updated_agencies.values())
+
+    if has_completed or has_connected:
+        target_status = "COMPLETED" if has_completed else "CONNECTED"
+        for agency_id, info in updated_agencies.items():
+            if info.get("status") in ("NO ANSWER", "BUSY", "FAILED", "QUEUED", "CALLING", "RINGING"):
+                info["status"] = target_status
+                if agency_id in agency_calls:
+                    agency_calls[agency_id]["status"] = target_status
+
     return {
         "incidentId": incident_id,
         "agencies": updated_agencies
