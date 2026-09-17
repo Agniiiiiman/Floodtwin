@@ -15,7 +15,7 @@ export function Footer() {
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center space-x-1 font-extrabold tracking-wider text-base">
-                  <span className="text-sky-400">STREET</span>
+                  <span className="text-sky-400">URBAN</span>
                   <span className="text-white font-black">FLOOD</span>
                 </div>
                 <span className="text-[9px] tracking-widest uppercase font-semibold text-sky-300/80 -mt-0.5">
@@ -93,7 +93,7 @@ export function Footer() {
 
         {/* Bottom copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 space-y-4 sm:space-y-0">
-          <p>© {new Date().getFullYear()} StreetFlood. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} UrbanFlood. All rights reserved.</p>
           <div className="flex items-center space-x-6">
             <span>Built with Next.js 16, Leaflet & FastAPI</span>
             <span className="text-slate-400">|</span>
