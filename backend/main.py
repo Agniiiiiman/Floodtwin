@@ -282,6 +282,21 @@ async def initiate_emergency_calls(req: EmergencyCallRequest, request: Request):
         agency_name = AGENCY_NAMES.get(agency_id, agency_id.capitalize())
         recipient_phone = contacts.get(agency_id)
 
+        if not req.isLiveMode:
+            # DEMO Mode -> Simulated response (always succeeds cleanly, never FAILED or NO ANSWER)
+            INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                "callSid": f"SIM-{uuid.uuid4().hex[:8]}",
+                "status": "QUEUED",
+                "to": recipient_phone or "CONFIGURED_CONTACT"
+            }
+            return {
+                "agencyId": agency_id,
+                "name": agency_name,
+                "status": "QUEUED",
+                "simulated": True,
+                "mode": "DEMO"
+            }
+
         if not recipient_phone:
             return {
                 "agencyId": agency_id,
@@ -289,7 +304,7 @@ async def initiate_emergency_calls(req: EmergencyCallRequest, request: Request):
                 "status": "FAILED",
                 "error": "No phone number configured for recipient",
                 "callSid": None,
-                "mode": "LIVE" if req.isLiveMode else "DEMO"
+                "mode": "LIVE"
             }
 
         if req.isLiveMode:

@@ -143,7 +143,7 @@ export function EmergencyActionSystem({
   const [isInitiating, setIsInitiating] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
+  const demoTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
   // Telemetry State
   const telemetry = {
@@ -152,10 +152,12 @@ export function EmergencyActionSystem({
     rainfall: 84.0,
   };
 
-  // Clean up polling interval on unmount
+  // Clean up polling interval and demo timeouts on unmount
   useEffect(() => {
     return () => {
       if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+      demoTimeoutsRef.current.forEach(clearTimeout);
+      demoTimeoutsRef.current = [];
     };
   }, []);
 
@@ -230,6 +232,12 @@ export function EmergencyActionSystem({
     setShowConfirmModal(false);
     setIsInitiating(true);
 
+    // Clear any existing polling interval or demo timeouts
+    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    demoTimeoutsRef.current.forEach(clearTimeout);
+    demoTimeoutsRef.current = [];
+    setAgencyErrors({});
+
     const incId = activeIncident ? activeIncident.incidentId : generateIncidentId();
     const now = new Date();
     const timeStr = `${now.toLocaleTimeString()} (${now.toLocaleDateString()})`;
@@ -254,11 +262,7 @@ export function EmergencyActionSystem({
     // Initial status setup for selected agencies
     const initialStatusObj: { [key: string]: CallStatusState } = {};
     ALL_AGENCIES.forEach((agency) => {
-      if (selectedAgencyIds.includes(agency.id)) {
-        initialStatusObj[agency.id] = 'QUEUED';
-      } else {
-        initialStatusObj[agency.id] = 'QUEUED';
-      }
+      initialStatusObj[agency.id] = 'QUEUED';
     });
     setAgencyStatuses(initialStatusObj);
 
@@ -304,7 +308,8 @@ export function EmergencyActionSystem({
 
       if (callRes.ok) {
         const callData = await callRes.json();
-        if (callData.results) {
+        // Live mode: apply real backend statuses
+        if (callData.results && !isDemoMode) {
           const newStatuses = { ...initialStatusObj };
           const newErrors: { [key: string]: string } = {};
           callData.results.forEach((res: any) => {
@@ -314,7 +319,7 @@ export function EmergencyActionSystem({
           setAgencyStatuses(newStatuses);
           setAgencyErrors(newErrors);
         }
-      } else {
+      } else if (!isDemoMode) {
         const errJson = await callRes.json().catch(() => ({}));
         const globalErr = errJson.detail || 'Backend service connection error';
         const errObj: { [key: string]: string } = {};
@@ -324,29 +329,34 @@ export function EmergencyActionSystem({
         setAgencyErrors(errObj);
       }
     } catch (err: any) {
-      console.warn('Backend call initiation warning:', err);
-      const errObj: { [key: string]: string } = {};
-      selectedAgencyIds.forEach((id) => {
-        errObj[id] = 'Backend API server offline (http://localhost:8000)';
-      });
-      setAgencyErrors(errObj);
+      if (!isDemoMode) {
+        console.warn('Backend call initiation warning:', err);
+        const errObj: { [key: string]: string } = {};
+        selectedAgencyIds.forEach((id) => {
+          errObj[id] = 'Backend API server offline (http://localhost:8000)';
+        });
+        setAgencyErrors(errObj);
+      }
     } finally {
       setIsInitiating(false);
     }
 
-
     // Handle Mode-specific workflow
     if (isDemoMode) {
       // Demo Mode: Simulate call state progression cleanly
+      // In DEMO mode, emergency calls must never show 'NO ANSWER' or failure.
+      // All calls progress smoothly from CALLING -> RINGING -> CONNECTED -> COMPLETED.
+      setAgencyErrors({});
       const statesSequence: CallStatusState[] = ['CALLING', 'RINGING', 'CONNECTED', 'COMPLETED'];
       selectedAgencyIds.forEach((agencyId, index) => {
         statesSequence.forEach((st, stIdx) => {
-          setTimeout(() => {
+          const t = setTimeout(() => {
             setAgencyStatuses((prev) => ({
               ...prev,
               [agencyId]: st,
             }));
           }, (index + 1) * 1200 + (stIdx + 1) * 1800);
+          demoTimeoutsRef.current.push(t);
         });
       });
     } else {
@@ -374,7 +384,7 @@ export function EmergencyActionSystem({
     }
   };
 
-  // Step 3: Handle Call Retries for Failed / Unanswered Calls
+  // Step 3: Handle Call Retries for Failed / Unanswered Calls (Live Mode)
   const handleRetryFailedCalls = async () => {
     if (!activeIncident) return;
     setIsRetrying(true);
@@ -407,7 +417,7 @@ export function EmergencyActionSystem({
 
       if (res.ok) {
         const data = await res.json();
-        if (data.results) {
+        if (data.results && !isDemoMode) {
           setAgencyStatuses((prev) => {
             const updated = { ...prev };
             data.results.forEach((r: any) => {
@@ -424,14 +434,17 @@ export function EmergencyActionSystem({
     }
 
     if (isDemoMode) {
+      demoTimeoutsRef.current.forEach(clearTimeout);
+      demoTimeoutsRef.current = [];
       targetAgencies.forEach((agencyId, index) => {
         ['CALLING', 'RINGING', 'CONNECTED', 'COMPLETED'].forEach((st, stIdx) => {
-          setTimeout(() => {
+          const t = setTimeout(() => {
             setAgencyStatuses((prev) => ({
               ...prev,
               [agencyId]: st as CallStatusState,
             }));
           }, (index + 1) * 1000 + (stIdx + 1) * 1500);
+          demoTimeoutsRef.current.push(t);
         });
       });
     }
@@ -439,6 +452,8 @@ export function EmergencyActionSystem({
 
   const handleClearIncident = () => {
     if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    demoTimeoutsRef.current.forEach(clearTimeout);
+    demoTimeoutsRef.current = [];
     setActiveIncident(null);
     setUserNotes('');
     setAgencyStatuses({
@@ -448,9 +463,11 @@ export function EmergencyActionSystem({
       electricity: 'QUEUED',
       control_room: 'QUEUED',
     });
+    setAgencyErrors({});
   };
 
-  const hasFailedCalls = selectedAgencyIds.some(
+  // In DEMO mode, calls never fail or go unanswered
+  const hasFailedCalls = !isDemoMode && selectedAgencyIds.some(
     (id) => agencyStatuses[id] === 'FAILED' || agencyStatuses[id] === 'NO ANSWER' || agencyStatuses[id] === 'BUSY'
   );
 
@@ -795,7 +812,11 @@ export function EmergencyActionSystem({
 
                   <div className="space-y-2">
                     {ALL_AGENCIES.filter((a) => selectedAgencyIds.includes(a.id)).map((agency) => {
-                      const st = agencyStatuses[agency.id] || 'QUEUED';
+                      const rawSt = agencyStatuses[agency.id] || 'QUEUED';
+                      // In demo mode, emergency calls must never show 'NO ANSWER', 'BUSY', or 'FAILED'
+                      const st = isDemoMode && (rawSt === 'NO ANSWER' || rawSt === 'BUSY' || rawSt === 'FAILED')
+                        ? 'COMPLETED'
+                        : rawSt;
                       const errMsg = agencyErrors[agency.id];
                       const badgeStyle = getStatusBadgeStyle(st);
                       return (
@@ -825,7 +846,7 @@ export function EmergencyActionSystem({
                               </span>
                             </div>
                           </div>
-                          {errMsg && st === 'FAILED' && (
+                          {errMsg && st === 'FAILED' && !isDemoMode && (
                             <div className="text-[10px] text-rose-400/90 font-mono bg-rose-950/30 p-1.5 rounded-lg border border-rose-500/20 mt-1">
                               ⚠️ {errMsg}
                             </div>
