@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -109,7 +109,13 @@ const workflowSteps = [
 
 export default function LandingPage() {
   const router = useRouter();
-  const { user, isAuthenticated, openAuthModal, loginAsPreset } = useAuth();
+  const { user, isAuthenticated, loading, openAuthModal, loginAsPreset } = useAuth();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [loading, isAuthenticated, router]);
 
   // Interactive Live Hydraulic Sandbox State
   const [rainIntensity, setRainIntensity] = useState(50); // mm/hr
@@ -137,6 +143,25 @@ export default function LandingPage() {
     await loginAsPreset(presetKey);
     router.push('/dashboard');
   };
+
+  // If resolving auth state or already authenticated (redirecting), render a clean loader to avoid flash
+  if (loading || isAuthenticated) {
+    return (
+      <div className="min-h-[85vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-xl shadow-sky-500/10">
+          <Activity className="w-7 h-7 animate-spin text-sky-400" />
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-sm font-semibold text-white tracking-wide">
+            {isAuthenticated ? 'Redirecting to Command Dashboard...' : 'Connecting to UrbanFlood Mesh...'}
+          </p>
+          <p className="text-xs text-slate-400">
+            {isAuthenticated ? 'Authenticated session detected' : 'Verifying local session clearance'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-24 pb-28 overflow-hidden">
