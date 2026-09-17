@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import {
   Siren,
   ShieldAlert,
@@ -95,6 +96,7 @@ interface EmergencyActionSystemProps {
   initialLat?: number;
   initialLng?: number;
   initialLocationName?: string;
+  isEmbedded?: boolean;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -103,6 +105,7 @@ export function EmergencyActionSystem({
   initialLat = 22.572648,
   initialLng = 88.433912,
   initialLocationName = 'Kolkata Sector V - Salt Lake Bypass Gate 2',
+  isEmbedded = false,
 }: EmergencyActionSystemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -472,40 +475,26 @@ export function EmergencyActionSystem({
     }
   };
 
+  // If not embedded, render only the small circular floating warning icon
+  if (!isEmbedded) {
+    return (
+      <Link
+        href="/emergency"
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-rose-600 via-red-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white shadow-2xl shadow-rose-600/50 hover:shadow-rose-600/80 transition-all duration-300 transform hover:scale-110 border-2 border-rose-400/50 group"
+        aria-label="Flood Emergency"
+      >
+        <span className="absolute inset-0 rounded-full animate-ping bg-rose-500/30"></span>
+        <AlertTriangle className="w-7 h-7 text-white drop-shadow-lg relative z-10 group-hover:animate-pulse" />
+      </Link>
+    );
+  }
+
   return (
     <>
-      {/* Floating Emergency Action Button (Bottom Right) */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 group">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="relative flex items-center space-x-3 px-5 py-3.5 rounded-full bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-2xl shadow-rose-600/50 hover:shadow-rose-600/80 transition-all duration-300 transform hover:scale-105 border border-rose-400/40"
-        >
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-200 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-          </span>
-          <Siren className="w-5 h-5 animate-pulse text-white shrink-0" />
-          <span>🚨 ONE-CALL FLOOD EMERGENCY</span>
-          {activeIncident ? (
-            <span className="ml-1 px-2.5 py-0.5 rounded-full bg-rose-950/90 text-[10px] text-rose-300 font-mono font-bold border border-rose-500/50 animate-pulse">
-              CALLS ACTIVE
-            </span>
-          ) : isDemoMode ? (
-            <span className="ml-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px] text-amber-300 font-mono font-bold border border-amber-500/30">
-              DEMO MODE
-            </span>
-          ) : (
-            <span className="ml-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-[10px] text-emerald-300 font-mono font-bold border border-emerald-500/30 animate-pulse">
-              LIVE MODE
-            </span>
-          )}
-        </button>
-      </div>
 
-      {/* Primary Emergency Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[99998] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-xl rounded-3xl glass-panel border border-rose-500/40 bg-slate-900 shadow-2xl overflow-hidden p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+      {/* Embedded Emergency Panel */}
+        <div className="w-full">
+          <div className="relative w-full rounded-3xl glass-panel border border-rose-500/40 bg-slate-900 shadow-2xl overflow-hidden p-6 space-y-6">
             
             {/* Header with Mode Toggle */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -543,13 +532,6 @@ export function EmergencyActionSystem({
                     LIVE
                   </button>
                 </div>
-
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
             </div>
 
@@ -883,19 +865,11 @@ export function EmergencyActionSystem({
                   >
                     🛑 Clear Active Incident
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all"
-                  >
-                    CLOSE
-                  </button>
                 </div>
               </div>
             )}
           </div>
         </div>
-      )}
 
       {/* Confirmation Modal - Explicit Outbound Calling Warning */}
       {showConfirmModal && (
