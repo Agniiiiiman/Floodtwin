@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { AuthProvider } from '@/context/AuthContext';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
@@ -12,7 +14,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'UrbanFlood | Street-Level Urban Flood Risk',
+  title: 'UrbanFlood | Street-Level Urban Flood Risk & Digital Twin',
   description:
     'Explainable street-level urban flood risk, indicative depth ranges, safe routing, and citizen corroboration for Smart India Hackathon 2026.',
   keywords: [
@@ -43,9 +45,12 @@ export default function RootLayout({
       </head>
       <body className="antialiased min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
         <ThemeProvider>
-          <Navbar />
-          <main className="flex-grow pt-20">{children}</main>
-          <Footer />
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-grow pt-20">{children}</main>
+            <Footer />
+            <AuthModal />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
