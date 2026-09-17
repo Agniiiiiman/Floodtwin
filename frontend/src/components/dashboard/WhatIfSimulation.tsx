@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { Sliders, Play, RotateCcw, AlertTriangle } from 'lucide-react';
 import { calculateSwmmOutput } from '@/lib/swmmModel';
+import { useRainfall } from '@/context/RainfallContext';
 
 export function WhatIfSimulation() {
+  const { setRainfallIntensity } = useRainfall();
   const [rainIntensity, setRainIntensity] = useState<number>(80); // mm/hr
   const [blockage, setBlockage] = useState<number>(0); // % blockage
   const [isSimulating, setIsSimulating] = useState(false);
@@ -100,7 +102,11 @@ export function WhatIfSimulation() {
             max="120"
             step="5"
             value={rainIntensity}
-            onChange={(e) => setRainIntensity(Number(e.target.value))}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setRainIntensity(val);
+              setRainfallIntensity(val);
+            }}
             className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
           />
           <div className="flex justify-between text-[10px] text-slate-400 mt-1">
