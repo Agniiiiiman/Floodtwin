@@ -16,7 +16,25 @@ export function AuthGuard({
   moduleName = 'Operational Module',
   requiredClearance = 'Municipal Clearance Level 1+',
 }: AuthGuardProps) {
-  const { isAuthenticated, openAuthModal, loginAsPreset } = useAuth();
+  const { isAuthenticated, loading, openAuthModal, loginAsPreset } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-[75vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-xl shadow-sky-500/10">
+          <Activity className="w-7 h-7 animate-spin text-sky-400" />
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-sm font-semibold text-white tracking-wide">
+            Verifying Operational Clearance...
+          </p>
+          <p className="text-xs text-slate-400">
+            Authorizing access to {moduleName}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isAuthenticated) {
     return <>{children}</>;
