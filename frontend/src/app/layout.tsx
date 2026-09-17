@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'StreetFlood | Street-Level Urban Flood Risk',
+  title: 'UrbanFlood | Street-Level Urban Flood Risk',
   description:
     'Explainable street-level urban flood risk, indicative depth ranges, safe routing, and citizen corroboration for Smart India Hackathon 2026.',
   keywords: [
