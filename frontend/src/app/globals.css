@@ -4,8 +4,8 @@
   :root {
     --bg-primary: #060f1c;
     --bg-secondary: #0b192e;
-    --bg-card: rgba(13, 27, 49, 0.75);
-    --border-color: rgba(56, 189, 248, 0.15);
+    --bg-card: rgba(8, 17, 34, 0.82);
+    --border-color: rgba(56, 189, 248, 0.22);
     --text-primary: #f0f6fc;
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
@@ -17,10 +17,10 @@
   }
 
   [data-theme="light"] {
-    --bg-primary: #f1f5f9;
+    --bg-primary: #cbd5e1;
     --bg-secondary: #e2e8f0;
-    --bg-card: #ffffff;
-    --border-color: #cbd5e1;
+    --bg-card: rgba(255, 255, 255, 0.88);
+    --border-color: rgba(148, 163, 184, 0.45);
     --text-primary: #0f172a;
     --text-secondary: #334155;
     --text-muted: #475569;
@@ -32,54 +32,64 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background-color: var(--bg-primary);
+  background-color: transparent;
   color: var(--text-primary);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: color 0.3s ease;
 }
 
-/* Glassmorphism Panel in Dark & Light */
+/* ----------------------------------------------------
+   GLASSMORPHISM & FLOATING PANELS (DARK & LIGHT)
+   ---------------------------------------------------- */
 .glass-panel {
   background: var(--bg-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 [data-theme="light"] .glass-panel {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(148, 163, 184, 0.45) !important;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 6px -4px rgba(15, 23, 42, 0.05) !important;
 }
 
 .glass-panel-glow {
   background: var(--bg-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  box-shadow: 0 0 25px rgba(56, 189, 248, 0.12), inset 0 0 15px rgba(56, 189, 248, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.18), inset 0 0 15px rgba(56, 189, 248, 0.06);
 }
 
 [data-theme="light"] .glass-panel-glow {
-  background: #ffffff !important;
-  border: 1px solid rgba(2, 132, 199, 0.35) !important;
-  box-shadow: 0 10px 30px -4px rgba(2, 132, 199, 0.12), 0 0 0 1px rgba(2, 132, 199, 0.1) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(2, 132, 199, 0.45) !important;
+  box-shadow: 0 12px 32px -4px rgba(2, 132, 199, 0.16), 0 0 0 1px rgba(2, 132, 199, 0.12) !important;
 }
 
 /* ----------------------------------------------------
-   LIGHT THEME: Complete Visibility & Typography Fixes
+   LIGHT THEME: Overcast Rainy Atmosphere & Contrast
    ---------------------------------------------------- */
 [data-theme="light"] {
   color-scheme: light;
 }
 
 [data-theme="light"] body {
-  background-color: #f8fafc !important;
+  background-color: transparent !important;
   color: #0f172a !important;
 }
 
@@ -142,7 +152,7 @@ body {
 }
 
 /* Overriding stray white texts in light mode, except on filled buttons */
-[data-theme="light"] .text-white:not(button):not(button *):not(a.bg-sky-500):not(a.bg-sky-500 *):not(a.bg-gradient-to-r):not(a.bg-gradient-to-r *) {
+[data-theme="light"] .text-white:not(button):not(button *):not(a.bg-sky-500):not(a.bg-sky-500 *):not(a.bg-gradient-to-r):not(a.bg-gradient-to-r *):not(.bg-gradient-to-tr *):not(.bg-sky-500 *) {
   color: #000000 !important;
 }
 
@@ -170,17 +180,11 @@ body {
 /* 
    LIGHT THEME: Card Backgrounds & Inputs
 */
-[data-theme="light"] .glass-panel {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #0f172a !important;
-}
-
 [data-theme="light"] [class*="bg-slate-900"],
 [data-theme="light"] [class*="bg-slate-950"],
 [data-theme="light"] [class*="bg-slate-800"] {
-  background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
   color: #0f172a !important;
 }
 
@@ -188,14 +192,14 @@ body {
 [data-theme="light"] [class*="bg-slate-900"]:hover,
 [data-theme="light"] [class*="bg-slate-950"]:hover,
 [data-theme="light"] [class*="bg-slate-800"]:hover {
-  background-color: #f8fafc !important;
-  border-color: #94a3b8 !important;
+  background-color: rgba(241, 245, 249, 0.95) !important;
+  border-color: #64748b !important;
 }
 
 [data-theme="light"] [class*="border-slate-800"],
 [data-theme="light"] [class*="border-slate-700"],
 [data-theme="light"] [class*="border-slate-900"] {
-  border-color: #cbd5e1 !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
 }
 
 /* Header & Navigation */
@@ -204,14 +208,14 @@ header {
 }
 
 [data-theme="light"] header.glass-panel {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border-bottom: 1px solid #cbd5e1 !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.45) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08) !important;
 }
 
 [data-theme="light"] header nav {
-  background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
+  background-color: rgba(241, 245, 249, 0.88) !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
 }
 
 [data-theme="light"] header nav a:not(.bg-sky-500) {
@@ -228,23 +232,23 @@ header {
 [data-theme="light"] input:not([type="range"]),
 [data-theme="light"] select,
 [data-theme="light"] textarea {
-  background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(148, 163, 184, 0.55) !important;
   color: #0f172a !important;
 }
 
 [data-theme="light"] input::placeholder,
 [data-theme="light"] textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
 
 [data-theme="light"] input[type="range"] {
-  background-color: #e2e8f0 !important;
+  background-color: #cbd5e1 !important;
 }
 
 [data-theme="light"] details {
-  background-color: #f8fafc !important;
-  border-color: #cbd5e1 !important;
+  background-color: rgba(248, 250, 252, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
   color: #0f172a !important;
 }
 
@@ -283,7 +287,7 @@ header {
 [data-theme="light"] .bg-rose-950\/40,
 [data-theme="light"] .bg-rose-50,
 [data-theme="light"] .bg-rose-500\/10 {
-  background-color: #fef2f2 !important;
+  background-color: rgba(254, 242, 242, 0.92) !important;
   border-color: #fca5a5 !important;
   color: #991b1b !important;
 }
@@ -292,32 +296,32 @@ header {
 [data-theme="light"] .bg-emerald-950\/40,
 [data-theme="light"] .bg-emerald-50,
 [data-theme="light"] .bg-emerald-500\/10 {
-  background-color: #f0fdf4 !important;
+  background-color: rgba(240, 253, 244, 0.92) !important;
   border-color: #86efac !important;
 }
 
 [data-theme="light"] .bg-amber-500\/10,
 [data-theme="light"] .bg-amber-50 {
-  background-color: #fffbeb !important;
+  background-color: rgba(255, 251, 235, 0.92) !important;
   border-color: #fde68a !important;
 }
 
 [data-theme="light"] .bg-sky-500\/10,
 [data-theme="light"] .bg-sky-50 {
-  background-color: #f0f9ff !important;
+  background-color: rgba(240, 249, 255, 0.92) !important;
   border-color: #bae6fd !important;
 }
 
 [data-theme="light"] .bg-purple-500\/10,
 [data-theme="light"] .bg-purple-50 {
-  background-color: #faf5ff !important;
+  background-color: rgba(250, 245, 255, 0.92) !important;
   border-color: #e9d5ff !important;
 }
 
 /* Footer in Light Mode */
 [data-theme="light"] footer {
-  background-color: #ffffff !important;
-  border-top-color: #cbd5e1 !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-top-color: rgba(148, 163, 184, 0.45) !important;
   color: #334155 !important;
 }
 
@@ -325,7 +329,9 @@ header {
   color: #0369a1 !important;
 }
 
-/* Leaflet Customizations */
+/* ----------------------------------------------------
+   LEAFLET GIS MAP CONTAINER & OVERLAYS
+   ---------------------------------------------------- */
 .leaflet-container {
   width: 100%;
   height: 100%;
@@ -335,30 +341,31 @@ header {
 }
 
 [data-theme="light"] .leaflet-container {
-  background: #e2e8f0 !important;
+  background: #cbd5e1 !important;
 }
 
 [data-theme="dark"] .leaflet-tile-pane {
-  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  filter: brightness(0.65) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.35) brightness(0.72);
 }
 
 [data-theme="light"] .leaflet-tile-pane {
-  filter: saturate(1.15) contrast(1.05);
+  filter: saturate(1.1) contrast(1.05);
 }
 
 .leaflet-popup-content-wrapper {
-  background: #0b192e !important;
+  background: rgba(11, 25, 46, 0.95) !important;
   color: #f1f5f9 !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(56, 189, 248, 0.3) !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
 }
 
 [data-theme="light"] .leaflet-popup-content-wrapper {
-  background: #ffffff !important;
+  background: rgba(255, 255, 255, 0.96) !important;
   color: #0f172a !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12) !important;
+  border: 1px solid rgba(148, 163, 184, 0.5) !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16) !important;
 }
 
 .leaflet-popup-tip {
@@ -376,9 +383,9 @@ header {
     opacity: 0.8;
   }
   50% {
-    transform: scale(1.08);
+    transform: scale(1.05);
     opacity: 1;
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
   }
 }
 
@@ -406,26 +413,26 @@ header {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 [data-theme="light"] ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.3);
+  background: rgba(56, 189, 248, 0.35);
   border-radius: 4px;
 }
 
 [data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(2, 132, 199, 0.3);
+  background: rgba(2, 132, 199, 0.35);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.6);
+  background: rgba(56, 189, 248, 0.65);
 }
 
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(2, 132, 199, 0.6);
+  background: rgba(2, 132, 199, 0.65);
 }
