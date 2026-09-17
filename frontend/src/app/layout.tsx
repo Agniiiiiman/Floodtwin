@@ -2,8 +2,10 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { RainfallProvider } from '@/context/RainfallContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { RainEnvironment } from '@/components/environment/RainEnvironment';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
@@ -43,14 +45,22 @@ export default function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body className="antialiased min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+      <body className="antialiased min-h-screen flex flex-col selection:bg-sky-500 selection:text-white relative bg-slate-950">
         <ThemeProvider>
-          <AuthProvider>
-            <Navbar />
-            <main className="flex-grow pt-20">{children}</main>
-            <Footer />
-            <AuthModal />
-          </AuthProvider>
+          <RainfallProvider>
+            <AuthProvider>
+              {/* Photorealistic Multi-Layer Rainy Urban Environment */}
+              <RainEnvironment />
+
+              {/* Application UI (Floating on top of environment) */}
+              <div className="relative z-10 flex flex-col min-h-screen pointer-events-auto">
+                <Navbar />
+                <main className="flex-grow pt-20">{children}</main>
+                <Footer />
+              </div>
+              <AuthModal />
+            </AuthProvider>
+          </RainfallProvider>
         </ThemeProvider>
       </body>
     </html>

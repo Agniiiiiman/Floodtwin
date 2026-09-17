@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth, PRESET_PERSONAS } from '@/context/AuthContext';
+import { useRainfall } from '@/context/RainfallContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { EmergencyActionSystem } from '@/components/dashboard/EmergencyActionSystem';
 import {
@@ -118,6 +119,7 @@ const mockLiveReports = [
 
 export default function DashboardPage() {
   const { user, isAuthenticated, logout, openAuthModal, loginAsPreset } = useAuth();
+  const { setRainfallIntensity } = useRainfall();
 
   // Interactive Live Hydraulic Sandbox State
   const [rainIntensity, setRainIntensity] = useState(45); // mm/hr
@@ -377,7 +379,11 @@ export default function DashboardPage() {
                   max="120"
                   step="5"
                   value={rainIntensity}
-                  onChange={(e) => setRainIntensity(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setRainIntensity(val);
+                    setRainfallIntensity(val);
+                  }}
                   className="w-full accent-sky-400 cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-slate-500 font-mono">
@@ -414,19 +420,19 @@ export default function DashboardPage() {
                 <span className="text-[11px] text-slate-400 font-mono block">Scenarios:</span>
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => { setRainIntensity(25); setPipeBlockage(10); }}
+                    onClick={() => { setRainIntensity(25); setRainfallIntensity(25); setPipeBlockage(10); }}
                     className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300 hover:text-white hover:border-sky-500/40 cursor-pointer"
                   >
                     Moderate Rain
                   </button>
                   <button
-                    onClick={() => { setRainIntensity(65); setPipeBlockage(35); }}
+                    onClick={() => { setRainIntensity(65); setRainfallIntensity(65); setPipeBlockage(35); }}
                     className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-amber-300 hover:text-white hover:border-amber-500/40 cursor-pointer"
                   >
                     Heavy Monsoon
                   </button>
                   <button
-                    onClick={() => { setRainIntensity(110); setPipeBlockage(70); }}
+                    onClick={() => { setRainIntensity(110); setRainfallIntensity(110); setPipeBlockage(70); }}
                     className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-rose-300 hover:text-white hover:border-rose-500/40 cursor-pointer"
                   >
                     Extreme Cloudburst
