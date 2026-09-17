@@ -1,6 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  User as FirebaseUser,
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 
 export interface UserProfile {
   id: string;
@@ -52,11 +61,14 @@ export const PRESET_PERSONAS: Record<string, UserProfile> = {
 
 interface AuthContextType {
   user: UserProfile | null;
+  firebaseUser: FirebaseUser | null;
   isAuthenticated: boolean;
-  login: (email: string, role?: 'commander' | 'engineer' | 'citizen', customName?: string) => Promise<void>;
+  isFirebaseActive: boolean;
+  loading: boolean;
+  login: (email: string, password?: string, role?: 'commander' | 'engineer' | 'citizen', customName?: string) => Promise<void>;
   loginAsPreset: (presetKey: 'commander' | 'engineer' | 'citizen') => Promise<void>;
-  signup: (name: string, email: string, role: 'commander' | 'engineer' | 'citizen', ward?: string) => Promise<void>;
-  logout: () => void;
+  signup: (name: string, email: string, password?: string, role?: 'commander' | 'engineer' | 'citizen', ward?: string) => Promise<void>;
+  logout: () => Promise<void>;
   isAuthModalOpen: boolean;
   authModalMode: 'signin' | 'signup';
   openAuthModal: (mode?: 'signin' | 'signup') => void;
@@ -69,24 +81,83 @@ const AUTH_STORAGE_KEY = 'urbanflood_auth_user';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
-  const [isInitialized, setIsInitialized] = useState(false);
 
+  // Listen to Firebase Auth state change if configured
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        setUser(JSON.parse(stored));
+    if (!isFirebaseConfigured) {
+      // Local demo mode: restore from localStorage
+      try {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored) {
+          setUser(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.warn('Could not read auth state from localStorage', e);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.warn('Could not read auth state from localStorage', e);
-    } finally {
-      setIsInitialized(true);
+      return;
     }
+
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setFirebaseUser(fbUser);
+      if (fbUser) {
+        try {
+          // Fetch user profile from Firestore
+          const userDocRef = doc(db, 'users', fbUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const data = userDoc.data() as UserProfile;
+            setUser(data);
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+          } else {
+            // Fallback profile if Firestore doc hasn't been written yet
+            const defaultProfile: UserProfile = {
+              id: fbUser.uid,
+              name: fbUser.displayName || fbUser.email?.split('@')[0] || 'Officer',
+              email: fbUser.email || '',
+              role: 'commander',
+              roleTitle: 'Disaster Incident Commander',
+              ward: 'Ward A / South Mumbai',
+              avatar: '👨‍✈️',
+              clearanceLevel: 'Level 4 (Emergency Surcharge Override)',
+              agency: 'National Disaster Response Force (NDRF)',
+            };
+            setUser(defaultProfile);
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(defaultProfile));
+          }
+        } catch (err) {
+          console.error('Error loading user profile from Firestore:', err);
+        }
+      } else {
+        // Only clear if not using a demo persona stored in localStorage
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed.id.startsWith('user-')) {
+              setUser(parsed);
+            } else {
+              setUser(null);
+            }
+          } catch {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const saveUser = (u: UserProfile | null) => {
+  const saveLocalSession = (u: UserProfile | null) => {
     setUser(u);
     try {
       if (u) {
@@ -101,68 +172,144 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (
     email: string,
+    password?: string,
     role: 'commander' | 'engineer' | 'citizen' = 'commander',
     customName?: string
   ) => {
-    // Simulate brief network latency
+    // If Firebase is configured and password is provided, perform real Firebase Auth
+    if (isFirebaseConfigured && password && password.length >= 6) {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const fbUser = userCredential.user;
+      
+      // Attempt to retrieve profile from Firestore
+      try {
+        const userDocRef = doc(db, 'users', fbUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const profile = userDoc.data() as UserProfile;
+          saveLocalSession(profile);
+          setIsAuthModalOpen(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Firestore doc read error:', err);
+      }
+      
+      const template = PRESET_PERSONAS[role];
+      const newProfile: UserProfile = {
+        id: fbUser.uid,
+        name: customName || fbUser.displayName || email.split('@')[0],
+        email,
+        role,
+        roleTitle: template.roleTitle,
+        ward: 'Ward A / South Mumbai',
+        avatar: template.avatar,
+        clearanceLevel: template.clearanceLevel,
+        agency: template.agency,
+      };
+      saveLocalSession(newProfile);
+      setIsAuthModalOpen(false);
+      return;
+    }
+
+    // Local fallback / preset simulator
     await new Promise((resolve) => setTimeout(resolve, 400));
-    
-    // Check if matches a preset persona
     const matchedPreset = Object.values(PRESET_PERSONAS).find(
       (p) => p.email.toLowerCase() === email.toLowerCase()
     );
 
     if (matchedPreset) {
-      saveUser(matchedPreset);
+      saveLocalSession(matchedPreset);
     } else {
-      const presetTemplate = PRESET_PERSONAS[role];
+      const template = PRESET_PERSONAS[role];
       const newUser: UserProfile = {
         id: `user-${Date.now()}`,
         name: customName || email.split('@')[0],
         email,
         role,
-        roleTitle: presetTemplate.roleTitle,
+        roleTitle: template.roleTitle,
         ward: 'Ward A / South Mumbai',
-        avatar: presetTemplate.avatar,
-        clearanceLevel: presetTemplate.clearanceLevel,
-        agency: presetTemplate.agency,
+        avatar: template.avatar,
+        clearanceLevel: template.clearanceLevel,
+        agency: template.agency,
       };
-      saveUser(newUser);
+      saveLocalSession(newUser);
     }
     setIsAuthModalOpen(false);
   };
 
   const loginAsPreset = async (presetKey: 'commander' | 'engineer' | 'citizen') => {
     await new Promise((resolve) => setTimeout(resolve, 300));
-    saveUser(PRESET_PERSONAS[presetKey]);
+    saveLocalSession(PRESET_PERSONAS[presetKey]);
     setIsAuthModalOpen(false);
   };
 
   const signup = async (
     name: string,
     email: string,
+    password?: string,
     role: 'commander' | 'engineer' | 'citizen' = 'citizen',
     ward: string = 'Ward A - South Mumbai'
   ) => {
+    const template = PRESET_PERSONAS[role];
+
+    // If Firebase is configured and password is provided, create in Firebase Auth + Firestore
+    if (isFirebaseConfigured && password && password.length >= 6) {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const fbUser = userCredential.user;
+
+      const profile: UserProfile = {
+        id: fbUser.uid,
+        name,
+        email,
+        role,
+        roleTitle: template.roleTitle,
+        ward: ward || 'Ward A / South Mumbai',
+        avatar: template.avatar,
+        clearanceLevel: template.clearanceLevel,
+        agency: template.agency,
+      };
+
+      // Store in Firestore database
+      try {
+        await setDoc(doc(db, 'users', fbUser.uid), profile);
+      } catch (err) {
+        console.warn('Could not save user profile to Firestore:', err);
+      }
+
+      saveLocalSession(profile);
+      setIsAuthModalOpen(false);
+      return;
+    }
+
+    // Local fallback simulator
     await new Promise((resolve) => setTimeout(resolve, 400));
-    const presetTemplate = PRESET_PERSONAS[role];
     const newUser: UserProfile = {
       id: `user-${Date.now()}`,
       name,
       email,
       role,
-      roleTitle: presetTemplate.roleTitle,
+      roleTitle: template.roleTitle,
       ward: ward || 'Ward A / South Mumbai',
-      avatar: presetTemplate.avatar,
-      clearanceLevel: presetTemplate.clearanceLevel,
-      agency: presetTemplate.agency,
+      avatar: template.avatar,
+      clearanceLevel: template.clearanceLevel,
+      agency: template.agency,
     };
-    saveUser(newUser);
+    saveLocalSession(newUser);
     setIsAuthModalOpen(false);
   };
 
-  const logout = () => {
-    saveUser(null);
+  const logout = async () => {
+    try {
+      if (isFirebaseConfigured) {
+        await signOut(auth);
+      }
+    } catch (e) {
+      console.warn('Firebase sign out error:', e);
+    } finally {
+      saveLocalSession(null);
+      setFirebaseUser(null);
+    }
   };
 
   const openAuthModal = (mode: 'signin' | 'signup' = 'signin') => {
@@ -178,7 +325,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        firebaseUser,
         isAuthenticated: !!user,
+        isFirebaseActive: isFirebaseConfigured,
+        loading,
         login,
         loginAsPreset,
         signup,
