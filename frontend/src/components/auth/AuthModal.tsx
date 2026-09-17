@@ -81,8 +81,9 @@ export function AuthModal() {
       }, 700);
     } catch (err: any) {
       setLoading(false);
-      let msg = err.message || 'Authentication failed. Please verify credentials.';
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/configuration-not-found') {
+        msg = 'Firebase Authentication is not yet turned on in your Firebase Console. Go to Firebase Console → Authentication → click "Get Started" and enable Email/Password.';
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
         msg = 'Invalid email or password. Please try again.';
       } else if (err.code === 'auth/email-already-in-use') {
         msg = 'This email is already registered. Please sign in.';
@@ -90,6 +91,8 @@ export function AuthModal() {
         msg = 'Password is too weak. Please use at least 6 characters.';
       } else if (err.code === 'auth/invalid-email') {
         msg = 'Please enter a valid email address.';
+      } else if (err.code === 'auth/operation-not-allowed') {
+        msg = 'Email/Password sign-in is disabled. Enable it under Firebase Console → Authentication → Sign-in method.';
       }
       setError(msg);
     }
