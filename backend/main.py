@@ -172,11 +172,7 @@ def create_emergency_incident(req: EmergencyIncidentRequest):
     return incident_data
 
 
-@app.get("/api/emergency/twiml/{incident_id}")
-def generate_twiml_voice(incident_id: str):
-    """Generate dynamic TwiML XML voice response for automated emergency calls.
-    Omits unavailable details cleanly without fabricating info.
-    """
+def build_twiml_text(incident_id: str) -> str:
     incident = INCIDENT_STORE.get(incident_id, {})
     inc_details = incident.get("incident", {})
     loc_details = incident.get("location", {})
@@ -192,7 +188,6 @@ def generate_twiml_voice(incident_id: str):
     rainfall = inc_details.get("rainfall") if inc_details.get("rainfall") is not None else incident.get("rainfall")
     notes = inc_details.get("notes") or incident.get("notes")
 
-    # Build prompt speech strictly avoiding fabrication
     parts = [
         "Emergency alert from Flood Twin.",
         f"Incident ID: {incident_id}.",
@@ -222,10 +217,15 @@ def generate_twiml_voice(incident_id: str):
 
     speech_text = " ".join(parts)
     
-    twiml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Say voice="alice" language="en-US">{speech_text}</Say>
 </Response>"""
+
+@app.get("/api/emergency/twiml/{incident_id}")
+def generate_twiml_voice(incident_id: str):
+    """Generate dynamic TwiML XML voice response for automated emergency calls."""
+    twiml_content = build_twiml_text(incident_id)
     return Response(content=twiml_content, media_type="application/xml")
 
 @app.post("/api/emergency/call")
@@ -331,10 +331,11 @@ async def initiate_emergency_calls(req: EmergencyCallRequest, request: Request):
             try:
                 twilio_url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Calls.json"
                 auth = (twilio_sid, twilio_token)
+                call_twiml_url = os.getenv("TWILIO_TWIML_URL") or f"{base_url}/api/emergency/twiml/{inc_id}"
                 data = {
                     "From": twilio_phone,
                     "To": recipient_phone,
-                    "Url": twiml_url,
+                    "Url": call_twiml_url,
                 }
                 resp = await http_client.post(twilio_url, auth=auth, data=data)
                     
@@ -489,7 +490,7 @@ def get_emergency_call_status(incident_id: str):
 
 
 @app.post("/api/emergency/retry")
-def retry_failed_calls(req: RetryCallRequest, request: Request):
+async def retry_failed_calls(req: RetryCallRequest, request: Request):
     """Retry failed or no-answer emergency calls for specified or automatically identified failed agencies."""
     incident = INCIDENT_STORE.get(req.incidentId)
     if not incident:
@@ -523,7 +524,7 @@ def retry_failed_calls(req: RetryCallRequest, request: Request):
         notes=incident.get("notes")
     )
 
-    return initiate_emergency_calls(call_req, request)
+    return await initiate_emergency_calls(call_req, request)
 
     text: str = ""
     image_url: Optional[str] = None
@@ -925,59 +926,7 @@ async def get_route(req: RouteRequest):
         raise HTTPException(status_code=503, detail="Route service unavailable")
 
 
-# 🚨 FLOOD EMERGENCY ONE-CALL API ENDPOINT
-class EmergencyIncidentRequest(BaseModel):
-    incidentId: Optional[str] = None
-    incidentType: str = "URBAN_FLOOD"
-    latitude: float
-    longitude: float
-    locationName: Optional[str] = "High-Precision GIS Sector"
-    preciseAddress: Optional[str] = None
-    accuracyMeters: Optional[float] = 3.0
-    sectorCode: Optional[str] = "GIS-KLK-SEC5-02"
-    riskLevel: str = "HIGH"
-    waterDepth: float = 0.8
-    rainfall: float = 84.0
-    timestamp: Optional[str] = None
-    notes: Optional[str] = None
 
-@app.post("/api/emergency/incident")
-def create_emergency_incident(req: EmergencyIncidentRequest):
-    inc_id = req.incidentId or f"FLD-{time.strftime('%Y')}-{uuid.uuid4().hex[:4].upper()}"
-    
-    # Check if backend telephony environment credentials exist (e.g. Twilio / MSG91)
-    twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
-    twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
-    is_real_mode = bool(twilio_sid and twilio_token)
-
-    agencies = [
-        {"id": "disaster", "name": "🚨 Disaster / Rapid Action Response", "status": "QUEUED"},
-        {"id": "fire", "name": "🚒 Fire & Emergency Services", "status": "QUEUED"},
-        {"id": "police", "name": "👮 Police Department", "status": "QUEUED"},
-        {"id": "electricity", "name": "⚡ Electricity / Power Utility", "status": "QUEUED"},
-        {"id": "control_room", "name": "🏢 Emergency Control Room (EOC)", "status": "QUEUED"}
-    ]
-
-    return {
-        "incidentId": inc_id,
-        "status": "RECEIVED",
-        "coordinates": {"lat": req.latitude, "lng": req.longitude, "accuracy_m": req.accuracyMeters},
-        "location": {"name": req.locationName, "address": req.preciseAddress, "sectorCode": req.sectorCode},
-        "demo_mode": not is_real_mode,
-        "mode_label": "REAL MODE" if is_real_mode else "DEMO MODE (Simulated)",
-        "message": f"Emergency response dispatched for precision target ({req.latitude:.6f}°, {req.longitude:.6f}°).",
-        "incident": {
-            "incidentType": req.incidentType,
-            "latitude": req.latitude,
-            "longitude": req.longitude,
-            "riskLevel": req.riskLevel,
-            "waterDepth": req.waterDepth,
-            "rainfall": req.rainfall,
-            "timestamp": req.timestamp or time.strftime("%Y-%m-%d %H:%M:%S"),
-            "notes": req.notes,
-        },
-        "agencies": agencies,
-    }
 
 
 
