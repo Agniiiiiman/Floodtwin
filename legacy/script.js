@@ -995,6 +995,22 @@ async function initiateEmergencyResponse() {
                 notes: userNotes
             })
         });
+
+        await fetch("http://localhost:8000/api/emergency/call", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                incidentId: incidentId,
+                selectedAgencies: EMERGENCY_AGENCIES.map(a => a.id),
+                isLiveMode: false,
+                latitude: telemetry.lat,
+                longitude: telemetry.lng,
+                riskLevel: telemetry.riskLevel,
+                waterDepth: telemetry.waterDepth,
+                rainfall: telemetry.rainfall,
+                notes: userNotes
+            })
+        });
     } catch (e) {
         console.warn("Backend emergency API offline; continuing in local DEMO mode.");
     }

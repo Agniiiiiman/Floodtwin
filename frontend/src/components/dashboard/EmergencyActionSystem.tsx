@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Siren,
   ShieldAlert,
@@ -18,16 +18,32 @@ import {
   Sparkles,
   Crosshair,
   Compass,
-  Check
+  Check,
+  PhoneCall,
+  RotateCcw,
+  Volume2,
+  CheckCircle,
+  XCircle,
+  PhoneOff,
+  PhoneForwarded
 } from 'lucide-react';
 
-interface AgencyState {
+export type CallStatusState = 'QUEUED' | 'CALLING' | 'RINGING' | 'CONNECTED' | 'COMPLETED' | 'BUSY' | 'NO ANSWER' | 'FAILED';
+
+interface AgencyConfig {
   id: string;
   name: string;
   icon: any;
-  status: 'QUEUED' | 'SENT' | 'ACKNOWLEDGED' | 'RESPONDING' | 'RESOLVED' | 'FAILED';
   role: string;
 }
+
+const ALL_AGENCIES: AgencyConfig[] = [
+  { id: 'police', name: 'Police Department', icon: ShieldCheck, role: 'Road closure & perimeter safety' },
+  { id: 'fire', name: 'Fire & Emergency Services', icon: Flame, role: 'Submersible water pumping & rescue' },
+  { id: 'disaster', name: 'Disaster Response Force', icon: Siren, role: 'Flood rescue & rapid evacuation' },
+  { id: 'electricity', name: 'Electricity / Power Utility', icon: Zap, role: 'Substation isolation assessment' },
+  { id: 'control_room', name: 'Emergency Control Room', icon: Building, role: 'Inter-agency dispatch coordination' },
+];
 
 interface IncidentPayload {
   incidentId: string;
@@ -81,12 +97,24 @@ interface EmergencyActionSystemProps {
   initialLocationName?: string;
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export function EmergencyActionSystem({
   initialLat = 22.572648,
   initialLng = 88.433912,
   initialLocationName = 'Kolkata Sector V - Salt Lake Bypass Gate 2',
 }: EmergencyActionSystemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
+  const [selectedAgencyIds, setSelectedAgencyIds] = useState<string[]>([
+    'police',
+    'fire',
+    'disaster',
+    'electricity',
+    'control_room',
+  ]);
+
   const [userNotes, setUserNotes] = useState('');
   const [activeIncident, setActiveIncident] = useState<IncidentPayload | null>(null);
 
@@ -100,13 +128,19 @@ export function EmergencyActionSystem({
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [locationSource, setLocationSource] = useState<'GPS' | 'HOTSPOT' | 'MANUAL'>('HOTSPOT');
 
-  const [agencies, setAgencies] = useState<AgencyState[]>([
-    { id: 'disaster', name: '🚨 Disaster Response Force', icon: Siren, status: 'QUEUED', role: 'Flood rescue & rapid evacuation' },
-    { id: 'fire', name: '🚒 Fire & Emergency Services', icon: Flame, status: 'QUEUED', role: 'Submersible water pumping & rescue' },
-    { id: 'police', name: '👮 Police Department', icon: ShieldCheck, status: 'QUEUED', role: 'Road closure & perimeter safety' },
-    { id: 'electricity', name: '⚡ Electricity / Power Utility', icon: Zap, status: 'QUEUED', role: 'Substation isolation assessment' },
-    { id: 'control_room', name: '🏢 Emergency Control Room', icon: Building, status: 'QUEUED', role: 'Inter-agency dispatch coordination' },
-  ]);
+  // Calling & status state
+  const [agencyStatuses, setAgencyStatuses] = useState<{ [key: string]: CallStatusState }>({
+    police: 'QUEUED',
+    fire: 'QUEUED',
+    disaster: 'QUEUED',
+    electricity: 'QUEUED',
+    control_room: 'QUEUED',
+  });
+  const [agencyErrors, setAgencyErrors] = useState<{ [key: string]: string }>({});
+  const [isInitiating, setIsInitiating] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
 
   // Telemetry State
   const telemetry = {
@@ -114,6 +148,13 @@ export function EmergencyActionSystem({
     waterDepth: 0.8,
     rainfall: 84.0,
   };
+
+  // Clean up polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    };
+  }, []);
 
   const handleFetchPreciseGPS = () => {
     if (!navigator.geolocation) {
@@ -160,14 +201,33 @@ export function EmergencyActionSystem({
     setLocationSource('HOTSPOT');
   };
 
+  const toggleAgencySelection = (id: string) => {
+    setSelectedAgencyIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
   const generateIncidentId = () => {
     const year = new Date().getFullYear();
     const rand = Math.floor(1000 + Math.random() * 9000);
-    return `FLD-${year}-${rand}`;
+    return `FT-${year}-${rand}`;
   };
 
-  const handleInitiateResponse = async () => {
-    const incId = generateIncidentId();
+  // Step 1: User clicks "INITIATE RESPONSE" button -> Open Confirmation Modal
+  const handleInitiateClick = () => {
+    if (selectedAgencyIds.length === 0) {
+      alert('Please select at least one emergency contact agency.');
+      return;
+    }
+    setShowConfirmModal(true);
+  };
+
+  // Step 2: User clicks "CONFIRM & CALL" inside Confirmation Modal -> Execute Calls
+  const handleConfirmAndCall = async () => {
+    setShowConfirmModal(false);
+    setIsInitiating(true);
+
+    const incId = activeIncident ? activeIncident.incidentId : generateIncidentId();
     const now = new Date();
     const timeStr = `${now.toLocaleTimeString()} (${now.toLocaleDateString()})`;
 
@@ -187,11 +247,21 @@ export function EmergencyActionSystem({
     };
 
     setActiveIncident(incident);
-    setIsModalOpen(false);
 
-    // Call backend API with extremely precise coordinates & metadata
+    // Initial status setup for selected agencies
+    const initialStatusObj: { [key: string]: CallStatusState } = {};
+    ALL_AGENCIES.forEach((agency) => {
+      if (selectedAgencyIds.includes(agency.id)) {
+        initialStatusObj[agency.id] = 'QUEUED';
+      } else {
+        initialStatusObj[agency.id] = 'QUEUED';
+      }
+    });
+    setAgencyStatuses(initialStatusObj);
+
     try {
-      await fetch('http://localhost:8000/api/emergency/incident', {
+      // 1. Register Incident
+      await fetch(`${API_BASE}/api/emergency/incident`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -209,33 +279,197 @@ export function EmergencyActionSystem({
           notes: userNotes,
         }),
       });
-    } catch (e) {
-      // Backend offline fallback handled cleanly
+
+      // 2. Trigger Outbound Calls API
+      const callRes = await fetch(`${API_BASE}/api/emergency/call`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          incidentId: incId,
+          selectedAgencies: selectedAgencyIds,
+          isLiveMode: !isDemoMode,
+          latitude: lat,
+          longitude: lng,
+          locationName,
+          preciseAddress,
+          riskLevel: telemetry.riskLevel,
+          waterDepth: telemetry.waterDepth,
+          rainfall: telemetry.rainfall,
+          notes: userNotes,
+        }),
+      });
+
+      if (callRes.ok) {
+        const callData = await callRes.json();
+        if (callData.results) {
+          const newStatuses = { ...initialStatusObj };
+          const newErrors: { [key: string]: string } = {};
+          callData.results.forEach((res: any) => {
+            newStatuses[res.agencyId] = res.status as CallStatusState;
+            if (res.error) newErrors[res.agencyId] = res.error;
+          });
+          setAgencyStatuses(newStatuses);
+          setAgencyErrors(newErrors);
+        }
+      } else {
+        const errJson = await callRes.json().catch(() => ({}));
+        const globalErr = errJson.detail || 'Backend service connection error';
+        const errObj: { [key: string]: string } = {};
+        selectedAgencyIds.forEach((id) => {
+          errObj[id] = globalErr;
+        });
+        setAgencyErrors(errObj);
+      }
+    } catch (err: any) {
+      console.warn('Backend call initiation warning:', err);
+      const errObj: { [key: string]: string } = {};
+      selectedAgencyIds.forEach((id) => {
+        errObj[id] = 'Backend API server offline (http://localhost:8000)';
+      });
+      setAgencyErrors(errObj);
+    } finally {
+      setIsInitiating(false);
     }
 
-    // Reset agency statuses to QUEUED
-    setAgencies((prev) => prev.map((a) => ({ ...a, status: 'QUEUED' })));
 
-    // Simulate step-by-step agency dispatch queue in DEMO MODE
-    const statuses: ('SENT' | 'ACKNOWLEDGED' | 'RESPONDING')[] = ['SENT', 'ACKNOWLEDGED', 'RESPONDING'];
-    
-    statuses.forEach((st, stepIdx) => {
-      setTimeout(() => {
-        setAgencies((prev) =>
-          prev.map((agency, aIdx) => {
-            if (stepIdx === 0) return { ...agency, status: 'SENT' };
-            if (stepIdx === 1) return { ...agency, status: 'ACKNOWLEDGED' };
-            return { ...agency, status: 'RESPONDING' };
-          })
-        );
-      }, (stepIdx + 1) * 2200);
+    // Handle Mode-specific workflow
+    if (isDemoMode) {
+      // Demo Mode: Simulate call state progression cleanly
+      const statesSequence: CallStatusState[] = ['CALLING', 'RINGING', 'CONNECTED', 'COMPLETED'];
+      selectedAgencyIds.forEach((agencyId, index) => {
+        statesSequence.forEach((st, stIdx) => {
+          setTimeout(() => {
+            setAgencyStatuses((prev) => ({
+              ...prev,
+              [agencyId]: st,
+            }));
+          }, (index + 1) * 1200 + (stIdx + 1) * 1800);
+        });
+      });
+    } else {
+      // Live Mode: Poll real status from Twilio backend status endpoint
+      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = setInterval(async () => {
+        try {
+          const stRes = await fetch(`${API_BASE}/api/emergency/status/${incId}`);
+          if (stRes.ok) {
+            const stData = await stRes.json();
+            if (stData.agencies) {
+              setAgencyStatuses((prev) => {
+                const updated = { ...prev };
+                Object.keys(stData.agencies).forEach((agencyId) => {
+                  updated[agencyId] = stData.agencies[agencyId].status as CallStatusState;
+                });
+                return updated;
+              });
+            }
+          }
+        } catch (e) {
+          // Silent catch during background polling
+        }
+      }, 2500);
+    }
+  };
+
+  // Step 3: Handle Call Retries for Failed / Unanswered Calls
+  const handleRetryFailedCalls = async () => {
+    if (!activeIncident) return;
+    setIsRetrying(true);
+
+    const failedAgencyIds = selectedAgencyIds.filter(
+      (id) => agencyStatuses[id] === 'FAILED' || agencyStatuses[id] === 'NO ANSWER' || agencyStatuses[id] === 'BUSY'
+    );
+
+    const targetAgencies = failedAgencyIds.length > 0 ? failedAgencyIds : selectedAgencyIds;
+
+    // Reset status of target agencies to QUEUED
+    setAgencyStatuses((prev) => {
+      const updated = { ...prev };
+      targetAgencies.forEach((id) => {
+        updated[id] = 'QUEUED';
+      });
+      return updated;
     });
+
+    try {
+      const res = await fetch(`${API_BASE}/api/emergency/retry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          incidentId: activeIncident.incidentId,
+          selectedAgencies: targetAgencies,
+          isLiveMode: !isDemoMode,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.results) {
+          setAgencyStatuses((prev) => {
+            const updated = { ...prev };
+            data.results.forEach((r: any) => {
+              updated[r.agencyId] = r.status as CallStatusState;
+            });
+            return updated;
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Retry API call error:', e);
+    } finally {
+      setIsRetrying(false);
+    }
+
+    if (isDemoMode) {
+      targetAgencies.forEach((agencyId, index) => {
+        ['CALLING', 'RINGING', 'CONNECTED', 'COMPLETED'].forEach((st, stIdx) => {
+          setTimeout(() => {
+            setAgencyStatuses((prev) => ({
+              ...prev,
+              [agencyId]: st as CallStatusState,
+            }));
+          }, (index + 1) * 1000 + (stIdx + 1) * 1500);
+        });
+      });
+    }
   };
 
   const handleClearIncident = () => {
+    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
     setActiveIncident(null);
     setUserNotes('');
-    setAgencies((prev) => prev.map((a) => ({ ...a, status: 'QUEUED' })));
+    setAgencyStatuses({
+      police: 'QUEUED',
+      fire: 'QUEUED',
+      disaster: 'QUEUED',
+      electricity: 'QUEUED',
+      control_room: 'QUEUED',
+    });
+  };
+
+  const hasFailedCalls = selectedAgencyIds.some(
+    (id) => agencyStatuses[id] === 'FAILED' || agencyStatuses[id] === 'NO ANSWER' || agencyStatuses[id] === 'BUSY'
+  );
+
+  const getStatusBadgeStyle = (status: CallStatusState) => {
+    switch (status) {
+      case 'QUEUED':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'CALLING':
+      case 'RINGING':
+        return 'bg-sky-500/20 text-sky-300 border-sky-500/40 animate-pulse';
+      case 'CONNECTED':
+        return 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 font-extrabold animate-pulse';
+      case 'COMPLETED':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'BUSY':
+      case 'NO ANSWER':
+        return 'bg-orange-500/15 text-orange-400 border-orange-500/30';
+      case 'FAILED':
+        return 'bg-rose-500/20 text-rose-400 border-rose-500/40 font-bold';
+      default:
+        return 'bg-slate-800 text-slate-400 border-slate-700';
+    }
   };
 
   return (
@@ -254,37 +488,65 @@ export function EmergencyActionSystem({
           <span>🚨 ONE-CALL FLOOD EMERGENCY</span>
           {activeIncident ? (
             <span className="ml-1 px-2.5 py-0.5 rounded-full bg-rose-950/90 text-[10px] text-rose-300 font-mono font-bold border border-rose-500/50 animate-pulse">
-              ACTIVE
+              CALLS ACTIVE
+            </span>
+          ) : isDemoMode ? (
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px] text-amber-300 font-mono font-bold border border-amber-500/30">
+              DEMO MODE
             </span>
           ) : (
-            <span className="ml-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px] text-amber-300 font-mono font-bold border border-amber-500/30">
-              DEMO
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-[10px] text-emerald-300 font-mono font-bold border border-emerald-500/30 animate-pulse">
+              LIVE MODE
             </span>
           )}
         </button>
       </div>
 
-      {/* Confirmation & Status Dialog Modal */}
+      {/* Primary Emergency Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[99998] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
           <div className="relative w-full max-w-xl rounded-3xl glass-panel border border-rose-500/40 bg-slate-900 shadow-2xl overflow-hidden p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+            
+            {/* Header with Mode Toggle */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center space-x-3">
                 <span className="p-2.5 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-400">
-                  <Siren className="w-6 h-6 animate-pulse" />
+                  <PhoneCall className="w-6 h-6 animate-pulse" />
                 </span>
                 <div>
-                  <h3 className="text-lg font-bold text-white tracking-wide">FLOOD EMERGENCY RESPONSE</h3>
-                  <p className="text-xs text-slate-400">Single-action multi-agency rapid dispatch</p>
+                  <h3 className="text-lg font-bold text-white tracking-wide">FLOOD EMERGENCY VOICE CALLING</h3>
+                  <p className="text-xs text-slate-400">Automated multi-agency outbound emergency voice response</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                  DEMO MODE
-                </span>
+
+              <div className="flex items-center space-x-3">
+                {/* Mode Selector Switch */}
+                <div className="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono font-bold">
+                  <button
+                    onClick={() => setIsDemoMode(true)}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${
+                      isDemoMode
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    DEMO
+                  </button>
+                  <button
+                    onClick={() => setIsDemoMode(false)}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${
+                      !isDemoMode
+                        ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 shadow-sm animate-pulse'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    LIVE
+                  </button>
+                </div>
+
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -293,11 +555,30 @@ export function EmergencyActionSystem({
 
             {!activeIncident ? (
               <>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  Coordinates rapid disaster response force, fire &amp; rescue, police traffic diversion, power utility isolation, and municipal control room in one click.
-                </p>
+                {/* Mode Banner */}
+                {isDemoMode ? (
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-300 flex items-start space-x-2.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block text-amber-200 uppercase font-mono tracking-wide text-[11px]">
+                        DEMO MODE ACTIVE
+                      </strong>
+                      Emergency calls are simulated. No real phone calls will be placed.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-xs text-rose-200 flex items-start space-x-2.5 animate-pulse">
+                    <ShieldAlert className="w-4.5 h-4.5 text-rose-400 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block text-rose-300 uppercase font-mono tracking-wide text-[11px]">
+                        LIVE MODE WARNING
+                      </strong>
+                      Confirming this action will place real phone calls to the selected configured contacts.
+                    </div>
+                  </div>
+                )}
 
-                {/* Extremely Precise Location Telemetry Box */}
+                {/* Precision Location Telemetry Box */}
                 <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-rose-500/30 text-xs">
                   <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
                     <div className="flex items-center space-x-2 text-rose-400 font-bold font-mono text-[11px] uppercase tracking-wider">
@@ -404,11 +685,14 @@ export function EmergencyActionSystem({
 
                     <div className="flex justify-between text-xs pt-1">
                       <span className="text-slate-400">Risk Level / Hydraulics:</span>
-                      <span className="text-rose-400 font-bold">{telemetry.riskLevel} ({telemetry.waterDepth}m depth, {telemetry.rainfall} mm/hr)</span>
+                      <span className="text-rose-400 font-bold">
+                        {telemetry.riskLevel} ({telemetry.waterDepth}m depth, {telemetry.rainfall} mm/hr)
+                      </span>
                     </div>
                   </div>
                 </div>
 
+                {/* Incident Notes */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-300 block">
                     Additional Incident Details (Optional):
@@ -422,40 +706,65 @@ export function EmergencyActionSystem({
                   />
                 </div>
 
+                {/* Emergency Contact Selection List */}
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
-                    Configured Emergency Agencies to be Notified (5):
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                      Select Emergency Agencies to Call ({selectedAgencyIds.length}/{ALL_AGENCIES.length}):
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Configured Emergency Contacts
+                    </span>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    {agencies.map((agency) => (
-                      <div
-                        key={agency.id}
-                        className="flex items-center space-x-2 p-2 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-300"
-                      >
-                        <agency.icon className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                        <span className="truncate text-[11px] font-medium">{agency.name}</span>
-                      </div>
-                    ))}
+                    {ALL_AGENCIES.map((agency) => {
+                      const isSelected = selectedAgencyIds.includes(agency.id);
+                      return (
+                        <button
+                          key={agency.id}
+                          type="button"
+                          onClick={() => toggleAgencySelection(agency.id)}
+                          className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
+                            isSelected
+                              ? 'bg-rose-950/30 border-rose-500/50 text-white font-medium'
+                              : 'bg-slate-950/40 border-slate-800/80 text-slate-400 hover:bg-slate-900/60'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2.5 truncate">
+                            <agency.icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-rose-400' : 'text-slate-500'}`} />
+                            <div className="truncate">
+                              <span className="block text-[11px] font-semibold">{agency.name}</span>
+                              <span className="block text-[10px] text-slate-400 font-mono">Configured Contact</span>
+                            </div>
+                          </div>
+                          <div
+                            className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ml-1 ${
+                              isSelected ? 'bg-rose-600 border-rose-400 text-white' : 'border-slate-700 bg-slate-900'
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 flex items-start space-x-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>DEMO MODE:</strong> Notifications will be queued and simulated for evaluation. No real emergency call will be made.
-                  </span>
-                </div>
-
+                {/* Bottom Trigger Actions */}
                 <div className="flex items-center justify-end space-x-3 pt-2">
                   <button
+                    type="button"
                     onClick={() => setIsModalOpen(false)}
                     className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-all"
                   >
                     CANCEL
                   </button>
                   <button
-                    onClick={handleInitiateResponse}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-extrabold text-xs tracking-wide shadow-lg shadow-rose-600/30 transition-all border border-rose-400/30 flex items-center space-x-2"
+                    type="button"
+                    onClick={handleInitiateClick}
+                    disabled={isInitiating || selectedAgencyIds.length === 0}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 disabled:opacity-50 text-white font-extrabold text-xs tracking-wide shadow-lg shadow-rose-600/30 transition-all border border-rose-400/30 flex items-center space-x-2"
                   >
                     <Siren className="w-4 h-4" />
                     <span>INITIATE RESPONSE</span>
@@ -463,109 +772,193 @@ export function EmergencyActionSystem({
                 </div>
               </>
             ) : (
+              /* Active Call Tracking Panel */
               <div className="space-y-4">
                 {/* Active Incident Header */}
                 <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-rose-500/30 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-                    <span className="text-xs font-mono font-bold text-rose-400">INCIDENT DISPATCH ACTIVE</span>
+                    <span className="text-xs font-mono font-bold text-rose-400">
+                      EMERGENCY RESPONSE CALLS ACTIVE
+                    </span>
                   </div>
                   <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-white">
                     {activeIncident.incidentId}
                   </span>
                 </div>
 
-                {/* Incident Meta Grid with Extremely Precise Geolocation */}
-                <div className="grid grid-cols-2 gap-2.5 text-xs bg-slate-950 p-3.5 rounded-2xl border border-rose-500/20">
-                  <div className="col-span-2 flex items-center space-x-2 pb-2 border-b border-slate-800/80">
-                    <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
-                    <div>
-                      <span className="text-slate-400 text-[10px] uppercase font-mono block">Target Location</span>
-                      <span className="text-white font-bold text-xs">{activeIncident.locationName}</span>
-                      <span className="text-slate-400 text-[11px] block">{activeIncident.preciseAddress}</span>
-                    </div>
+                {/* Telemetry Summary */}
+                <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                  <div className="col-span-2 text-slate-300 font-bold truncate">
+                    📍 {activeIncident.locationName} ({activeIncident.preciseAddress})
                   </div>
-
-                  <div>
-                    <span className="text-slate-500 block text-[10px] uppercase font-mono">GPS Coordinates</span>
-                    <span className="text-emerald-400 font-mono font-bold text-[11px]">
-                      {activeIncident.lat.toFixed(6)}°, {activeIncident.lng.toFixed(6)}°
-                    </span>
+                  <div className="text-slate-400 font-mono text-[11px]">
+                    GPS: <span className="text-emerald-400">{activeIncident.lat.toFixed(5)}°, {activeIncident.lng.toFixed(5)}°</span>
                   </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px] uppercase font-mono">GIS Sector / Accuracy</span>
-                    <span className="text-amber-400 font-mono font-bold text-[11px]">
-                      {activeIncident.sectorCode} (±{activeIncident.accuracyMeters || 3}m)
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px] uppercase font-mono">Risk Level</span>
-                    <span className="text-rose-400 font-bold">{activeIncident.riskLevel}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px] uppercase font-mono">Telemetry</span>
-                    <span className="text-slate-200 font-semibold">{activeIncident.waterDepth}m depth | {activeIncident.rainfall}mm/hr</span>
+                  <div className="text-slate-400 font-mono text-[11px]">
+                    Telemetry: <span className="text-rose-400">{activeIncident.waterDepth}m depth | {activeIncident.rainfall}mm/hr</span>
                   </div>
                 </div>
 
-                {/* Agency List */}
+                {/* Real-time Call Status List */}
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
-                    Coordinated Agency Status (5):
-                  </span>
-                  {agencies.map((agency) => (
-                    <div
-                      key={agency.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <agency.icon className="w-3.5 h-3.5 text-rose-400" />
-                        <span className="text-slate-200 font-medium">{agency.name}</span>
-                      </div>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                          agency.status === 'QUEUED'
-                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                            : agency.status === 'SENT'
-                            ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                            : agency.status === 'ACKNOWLEDGED'
-                            ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                            : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse'
-                        }`}
-                      >
-                        {agency.status}
-                      </span>
-                    </div>
-                  ))}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                      Agency Outbound Call Status ({selectedAgencyIds.length}):
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      {isDemoMode ? 'SIMULATED TELEPHONY' : 'TWILIO LIVE CALLS'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {ALL_AGENCIES.filter((a) => selectedAgencyIds.includes(a.id)).map((agency) => {
+                      const st = agencyStatuses[agency.id] || 'QUEUED';
+                      const errMsg = agencyErrors[agency.id];
+                      const badgeStyle = getStatusBadgeStyle(st);
+                      return (
+                        <div
+                          key={agency.id}
+                          className="flex flex-col space-y-1 p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <agency.icon className="w-4 h-4 text-rose-400 shrink-0" />
+                              <div>
+                                <span className="text-slate-100 font-semibold block text-xs">{agency.name}</span>
+                                <span className="text-[10px] text-slate-400 font-mono block">Configured Contact</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              {isDemoMode && (
+                                <span className="text-[10px] font-mono text-slate-500 uppercase">
+                                  SIMULATED
+                                </span>
+                              )}
+                              <span
+                                className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold border transition-all ${badgeStyle}`}
+                              >
+                                {st}
+                              </span>
+                            </div>
+                          </div>
+                          {errMsg && st === 'FAILED' && (
+                            <div className="text-[10px] text-rose-400/90 font-mono bg-rose-950/30 p-1.5 rounded-lg border border-rose-500/20 mt-1">
+                              ⚠️ {errMsg}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                  </div>
                 </div>
 
+                {/* Failure Retry Action */}
+                {hasFailedCalls && (
+                  <div className="p-3 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-xs flex items-center justify-between">
+                    <div className="flex items-center space-x-2 text-rose-300">
+                      <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>One or more calls failed or went unanswered.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRetryFailedCalls}
+                      disabled={isRetrying}
+                      className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all shadow-md flex items-center space-x-1.5 shrink-0"
+                    >
+                      <RotateCcw className={`w-3.5 h-3.5 ${isRetrying ? 'animate-spin' : ''}`} />
+                      <span>{isRetrying ? 'Retrying...' : 'RETRY FAILED CALLS'}</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Control Actions */}
                 <div className="flex items-center space-x-3 pt-2">
                   <button
+                    type="button"
                     onClick={handleClearIncident}
                     className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all"
                   >
                     🛑 Clear Active Incident
                   </button>
                   <button
+                    type="button"
                     onClick={() => setIsModalOpen(false)}
                     className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all"
                   >
                     CLOSE
                   </button>
                 </div>
-
-                <div className="p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-[11px] text-amber-300/80 flex items-start space-x-2">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>DEMO MODE:</strong> Notifications are simulated. No real emergency call has been placed.
-                  </span>
-                </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal - Explicit Outbound Calling Warning */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-lg animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md rounded-3xl glass-panel border border-rose-500/60 bg-slate-900 shadow-2xl p-6 space-y-5">
+            <div className="flex items-center space-x-3 text-rose-400">
+              <div className="p-3 rounded-2xl bg-rose-500/20 border border-rose-500/40">
+                <ShieldAlert className="w-7 h-7 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white tracking-wide uppercase font-mono">
+                  CONFIRM EMERGENCY RESPONSE
+                </h3>
+                <p className="text-xs text-rose-300 font-medium">Explicit outbound voice dispatch authorization</p>
+              </div>
+            </div>
+
+            {isDemoMode ? (
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-1">
+                <strong className="block text-amber-300 font-mono text-[11px] uppercase">DEMO MODE ACTIVE</strong>
+                <p>Emergency calls will be simulated. No real phone calls will be placed.</p>
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-rose-500/20 border border-rose-500/50 text-xs text-rose-100 space-y-2">
+                <strong className="block text-rose-300 font-mono text-[11px] uppercase tracking-wider">
+                  ⚠️ LIVE MODE WARNING
+                </strong>
+                <p className="leading-relaxed">
+                  You are about to place <strong>REAL outbound phone calls</strong> to:
+                </p>
+                <ul className="list-disc list-inside space-y-1 font-semibold text-white pl-1 text-[11px]">
+                  {ALL_AGENCIES.filter((a) => selectedAgencyIds.includes(a.id)).map((agency) => (
+                    <li key={agency.id}>{agency.name}</li>
+                  ))}
+                </ul>
+                <p className="text-[11px] text-rose-200 pt-1 font-semibold">
+                  These are real outbound calls.
+                </p>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all"
+              >
+                CANCEL
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAndCall}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 hover:from-rose-500 hover:to-red-600 text-white text-xs font-extrabold shadow-lg shadow-rose-600/40 transition-all border border-rose-400/40 flex items-center space-x-2"
+              >
+                <PhoneCall className="w-4 h-4" />
+                <span>CONFIRM &amp; CALL</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
     </>
   );
 }
+
 

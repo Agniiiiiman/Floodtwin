@@ -188,3 +188,71 @@ def test_flagged_street_explanation_contains_model_values():
     assert "slope" in explanation
     assert "contributing area" in explanation
     assert "node_03" in explanation
+
+
+def test_emergency_incident_creation_and_twiml():
+    res = client.post("/api/emergency/incident", json={
+        "latitude": 22.572648,
+        "longitude": 88.433912,
+        "locationName": "Kolkata Sector V",
+        "preciseAddress": "Salt Lake Bypass Gate 2",
+        "riskLevel": "HIGH",
+        "waterDepth": 0.8,
+        "rainfall": 84.0,
+        "notes": "Water rising rapidly near exit"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    inc_id = data["incidentId"]
+    assert inc_id.startswith("FLD-") or inc_id.startswith("FT-")
+    assert len(data["agencies"]) == 5
+
+    # Check TwiML endpoint
+    twiml_res = client.get(f"/api/emergency/twiml/{inc_id}")
+    assert twiml_res.status_code == 200
+    assert "xml" in twiml_res.headers["content-type"]
+    assert "<Say voice=\"alice\"" in twiml_res.text
+    assert "Emergency alert from Flood Twin" in twiml_res.text
+    assert "Kolkata Sector V" in twiml_res.text
+    assert "Salt Lake Bypass Gate 2" in twiml_res.text
+    assert "0.8 meters" in twiml_res.text
+    assert "84.0 millimeters per hour" in twiml_res.text
+
+
+def test_emergency_call_initiation_and_retry():
+    call_payload = {
+        "selectedAgencies": ["police", "fire", "disaster"],
+        "isLiveMode": False,
+        "latitude": 22.572648,
+        "longitude": 88.433912,
+        "locationName": "Kolkata Sector V",
+        "preciseAddress": "Salt Lake Bypass Gate 2",
+        "riskLevel": "HIGH",
+        "waterDepth": 0.8,
+        "rainfall": 84.0,
+        "notes": "Test call notes"
+    }
+    res = client.post("/api/emergency/call", json=call_payload)
+    assert res.status_code == 200
+    data = res.json()
+    inc_id = data["incidentId"]
+    assert data["mode"] == "DEMO"
+    assert len(data["results"]) == 3
+
+    # Status check
+    status_res = client.get(f"/api/emergency/status/{inc_id}")
+    assert status_res.status_code == 200
+    status_data = status_res.json()
+    assert "police" in status_data["agencies"]
+
+    # Retry call endpoint
+    retry_res = client.post("/api/emergency/retry", json={
+        "incidentId": inc_id,
+        "selectedAgencies": ["police"],
+        "isLiveMode": False
+    })
+    assert retry_res.status_code == 200
+    retry_data = retry_res.json()
+    assert len(retry_data["results"]) == 1
+    assert retry_data["results"][0]["agencyId"] == "police"
+

@@ -1,13 +1,36 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import httpx
 import json
 import math
 import os
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import time
 import uuid
+import asyncio
+try:
+
+    from dotenv import load_dotenv
+    root_env = os.path.join(os.path.dirname(__file__), "..", ".env")
+    if os.path.exists(root_env):
+        load_dotenv(dotenv_path=root_env)
+    load_dotenv()
+except ImportError:
+    # Manual .env parser fallback if python-dotenv is not installed
+    def _parse_env_file(path):
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        k, v = k.strip(), v.strip()
+                        if k and not os.environ.get(k):
+                            os.environ[k] = v
+    _parse_env_file(os.path.join(os.path.dirname(__file__), "..", ".env"))
+    _parse_env_file(os.path.join(os.path.dirname(__file__), ".env"))
+
 
 app = FastAPI(title="StreetFlood API")
 
@@ -48,6 +71,460 @@ class ReportModel(BaseModel):
     lat: float
     lng: float
     severity: str = "Moderate"
+    description: str = ""
+
+# --- In-Memory Emergency Incident & Call Tracking Stores ---
+INCIDENT_STORE: Dict[str, Dict[str, Any]] = {}
+IDEMPOTENCY_STORE: Dict[str, Dict[str, Any]] = {}
+
+def get_emergency_contacts() -> Dict[str, str]:
+    """Retrieve configured emergency contact numbers from backend environment variables."""
+    return {
+        "police": os.getenv("POLICE_PHONE", "+917044277303"),
+        "fire": os.getenv("FIRE_EMERGENCY_PHONE", "+918585045232"),
+        "disaster": os.getenv("DISASTER_RESPONSE_PHONE", "+917439549556"),
+        "electricity": os.getenv("ELECTRICITY_UTILITY_PHONE", "+918282019555"),
+        "control_room": os.getenv("EMERGENCY_CONTROL_ROOM_PHONE", "+918900471168"),
+    }
+
+AGENCY_NAMES = {
+    "police": "Police Department",
+    "fire": "Fire & Emergency Services",
+    "disaster": "Disaster Response Force",
+    "electricity": "Electricity / Power Utility",
+    "control_room": "Emergency Control Room",
+}
+
+# 🚨 FLOOD EMERGENCY ONE-CALL API ENDPOINT
+class EmergencyIncidentRequest(BaseModel):
+    incidentId: Optional[str] = None
+    incidentType: str = "URBAN_FLOOD"
+    latitude: float
+    longitude: float
+    locationName: Optional[str] = "High-Precision GIS Sector"
+    preciseAddress: Optional[str] = None
+    accuracyMeters: Optional[float] = 3.0
+    sectorCode: Optional[str] = "GIS-KLK-SEC5-02"
+    riskLevel: str = "HIGH"
+    waterDepth: Optional[float] = 0.8
+    rainfall: Optional[float] = 84.0
+    timestamp: Optional[str] = None
+    notes: Optional[str] = None
+
+class EmergencyCallRequest(BaseModel):
+    incidentId: Optional[str] = None
+    selectedAgencies: List[str]  # e.g. ["police", "fire", "disaster", "electricity", "control_room"]
+    isLiveMode: bool = False
+    idempotencyKey: Optional[str] = None
+    latitude: float
+    longitude: float
+    locationName: Optional[str] = "High-Precision GIS Sector"
+    preciseAddress: Optional[str] = None
+    riskLevel: str = "HIGH"
+    waterDepth: Optional[float] = None
+    rainfall: Optional[float] = None
+    notes: Optional[str] = None
+
+class RetryCallRequest(BaseModel):
+    incidentId: str
+    selectedAgencies: Optional[List[str]] = None
+    isLiveMode: bool = False
+
+@app.post("/api/emergency/incident")
+def create_emergency_incident(req: EmergencyIncidentRequest):
+    inc_id = req.incidentId or f"FLD-{time.strftime('%Y')}-{uuid.uuid4().hex[:4].upper()}"
+    
+    twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+    twilio_phone = os.getenv("TWILIO_PHONE_NUMBER")
+    is_real_mode_available = bool(twilio_sid and twilio_token and twilio_phone)
+
+    agencies = [
+        {"id": "disaster", "name": "🚨 Disaster Response Force", "status": "QUEUED"},
+        {"id": "fire", "name": "🚒 Fire & Emergency Services", "status": "QUEUED"},
+        {"id": "police", "name": "👮 Police Department", "status": "QUEUED"},
+        {"id": "electricity", "name": "⚡ Electricity / Power Utility", "status": "QUEUED"},
+        {"id": "control_room", "name": "🏢 Emergency Control Room", "status": "QUEUED"}
+    ]
+
+    incident_data = {
+        "incidentId": inc_id,
+        "status": "RECEIVED",
+        "coordinates": {"lat": req.latitude, "lng": req.longitude, "accuracy_m": req.accuracyMeters},
+        "location": {"name": req.locationName, "address": req.preciseAddress, "sectorCode": req.sectorCode},
+        "live_mode_available": is_real_mode_available,
+        "mode_label": "LIVE MODE READY" if is_real_mode_available else "DEMO MODE (Simulated)",
+        "message": f"Emergency incident registered for target ({req.latitude:.6f}°, {req.longitude:.6f}°).",
+        "incident": {
+            "incidentType": req.incidentType,
+            "latitude": req.latitude,
+            "longitude": req.longitude,
+            "riskLevel": req.riskLevel,
+            "waterDepth": req.waterDepth,
+            "rainfall": req.rainfall,
+            "timestamp": req.timestamp or time.strftime("%Y-%m-%d %H:%M:%S"),
+            "notes": req.notes,
+        },
+        "agencies": agencies,
+    }
+    
+    INCIDENT_STORE[inc_id] = incident_data
+    return incident_data
+
+
+@app.get("/api/emergency/twiml/{incident_id}")
+def generate_twiml_voice(incident_id: str):
+    """Generate dynamic TwiML XML voice response for automated emergency calls.
+    Omits unavailable details cleanly without fabricating info.
+    """
+    incident = INCIDENT_STORE.get(incident_id, {})
+    inc_details = incident.get("incident", {})
+    loc_details = incident.get("location", {})
+    
+    loc_name = loc_details.get("name") or incident.get("locationName") or "unspecified target location"
+    precise_addr = loc_details.get("address") or incident.get("preciseAddress")
+    
+    lat = inc_details.get("latitude") or incident.get("latitude")
+    lng = inc_details.get("longitude") or incident.get("longitude")
+    
+    risk_level = inc_details.get("riskLevel") or incident.get("riskLevel") or "HIGH"
+    water_depth = inc_details.get("waterDepth") if inc_details.get("waterDepth") is not None else incident.get("waterDepth")
+    rainfall = inc_details.get("rainfall") if inc_details.get("rainfall") is not None else incident.get("rainfall")
+    notes = inc_details.get("notes") or incident.get("notes")
+
+    # Build prompt speech strictly avoiding fabrication
+    parts = [
+        "Emergency alert from Flood Twin.",
+        f"Incident ID: {incident_id}.",
+        "An urban flood incident has been reported.",
+        f"Location: {loc_name}."
+    ]
+    
+    if precise_addr:
+        parts.append(f"Street: {precise_addr}.")
+        
+    if lat is not None and lng is not None:
+        parts.append(f"Coordinates: {lat:.6f} degrees north, {lng:.6f} degrees east.")
+        
+    parts.append(f"Risk level: {risk_level}.")
+    
+    if water_depth is not None:
+        parts.append(f"Water depth: {water_depth} meters.")
+        
+    if rainfall is not None:
+        parts.append(f"Rainfall: {rainfall} millimeters per hour.")
+        
+    if notes and notes.strip():
+        parts.append(f"Additional incident information: {notes.strip()}.")
+        
+    parts.append("Please verify the incident and initiate the appropriate response.")
+    parts.append("This message was generated by Flood Twin.")
+
+    speech_text = " ".join(parts)
+    
+    twiml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="alice" language="en-US">{speech_text}</Say>
+</Response>"""
+    return Response(content=twiml_content, media_type="application/xml")
+
+@app.post("/api/emergency/call")
+async def initiate_emergency_calls(req: EmergencyCallRequest, request: Request):
+
+    """Initiate emergency voice calling for selected agencies.
+    Handles Live Mode via Twilio and Demo Mode via safe simulation.
+    Includes request idempotency & duplicate protection.
+    """
+    # 1. Idempotency Check
+    idem_key = req.idempotencyKey or f"{req.incidentId}_{','.join(sorted(req.selectedAgencies))}"
+    now_ts = time.time()
+    if idem_key in IDEMPOTENCY_STORE:
+        existing = IDEMPOTENCY_STORE[idem_key]
+        if now_ts - existing["timestamp"] < 30:  # 30s window
+            return existing["response"]
+
+    inc_id = req.incidentId or f"FT-{time.strftime('%Y')}-{uuid.uuid4().hex[:4].upper()}"
+    
+    # Store/update incident details
+    INCIDENT_STORE[inc_id] = {
+        "incidentId": inc_id,
+        "latitude": req.latitude,
+        "longitude": req.longitude,
+        "locationName": req.locationName,
+        "preciseAddress": req.preciseAddress,
+        "riskLevel": req.riskLevel,
+        "waterDepth": req.waterDepth,
+        "rainfall": req.rainfall,
+        "notes": req.notes,
+        "location": {"name": req.locationName, "address": req.preciseAddress},
+        "incident": {
+            "latitude": req.latitude,
+            "longitude": req.longitude,
+            "riskLevel": req.riskLevel,
+            "waterDepth": req.waterDepth,
+            "rainfall": req.rainfall,
+            "notes": req.notes,
+        },
+        "agency_calls": {}
+    }
+
+    contacts = get_emergency_contacts()
+    twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+    twilio_phone = os.getenv("TWILIO_PHONE_NUMBER")
+
+    is_real_call = req.isLiveMode and bool(twilio_sid and twilio_token and twilio_phone)
+
+    base_url = str(request.base_url).rstrip("/")
+    twiml_url = f"{base_url}/api/emergency/twiml/{inc_id}"
+
+    async def call_single_agency(http_client: httpx.AsyncClient, agency_id: str):
+        agency_name = AGENCY_NAMES.get(agency_id, agency_id.capitalize())
+        recipient_phone = contacts.get(agency_id)
+
+        if not recipient_phone:
+            return {
+                "agencyId": agency_id,
+                "name": agency_name,
+                "status": "FAILED",
+                "error": "No phone number configured for recipient",
+                "callSid": None,
+                "mode": "LIVE" if req.isLiveMode else "DEMO"
+            }
+
+        if req.isLiveMode:
+            if not (twilio_sid and twilio_token):
+                err_msg = "Twilio credentials missing in backend .env (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)"
+                INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                    "callSid": None,
+                    "status": "FAILED",
+                    "to": recipient_phone,
+                    "error": err_msg
+                }
+                return {
+                    "agencyId": agency_id,
+                    "name": agency_name,
+                    "status": "FAILED",
+                    "error": err_msg,
+                    "callSid": None,
+                    "mode": "LIVE"
+                }
+
+            if not twilio_phone:
+                err_msg = "Twilio caller phone number missing in backend .env (TWILIO_PHONE_NUMBER). Add your Twilio number (e.g. TWILIO_PHONE_NUMBER=+1xxxxxxxxxx) from console.twilio.com"
+                INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                    "callSid": None,
+                    "status": "FAILED",
+                    "to": recipient_phone,
+                    "error": err_msg
+                }
+                return {
+                    "agencyId": agency_id,
+                    "name": agency_name,
+                    "status": "FAILED",
+                    "error": err_msg,
+                    "callSid": None,
+                    "mode": "LIVE"
+                }
+
+            # Place real Twilio outbound call
+            try:
+                twilio_url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Calls.json"
+                auth = (twilio_sid, twilio_token)
+                data = {
+                    "From": twilio_phone,
+                    "To": recipient_phone,
+                    "Url": twiml_url,
+                }
+                resp = await http_client.post(twilio_url, auth=auth, data=data)
+                    
+                if resp.status_code in (200, 201):
+                    call_data = resp.json()
+                    call_sid = call_data.get("sid")
+                    twilio_status = call_data.get("status", "queued").upper()
+                    
+                    status_map = {
+                        "QUEUED": "QUEUED",
+                        "INITIATED": "CALLING",
+                        "RINGING": "RINGING",
+                        "IN-PROGRESS": "CONNECTED",
+                        "COMPLETED": "COMPLETED",
+                        "BUSY": "BUSY",
+                        "NO-ANSWER": "NO ANSWER",
+                        "FAILED": "FAILED",
+                        "CANCELED": "FAILED"
+                    }
+                    mapped_status = status_map.get(twilio_status, "CALLING")
+                    
+                    INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                        "callSid": call_sid,
+                        "status": mapped_status,
+                        "to": recipient_phone,
+                    }
+
+                    return {
+                        "agencyId": agency_id,
+                        "name": agency_name,
+                        "status": mapped_status,
+                        "callSid": call_sid,
+                        "mode": "LIVE"
+                    }
+                else:
+                    err_msg = resp.json().get("message", "Twilio API error")
+                    INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                        "callSid": None,
+                        "status": "FAILED",
+                        "to": recipient_phone,
+                        "error": err_msg
+                    }
+                    return {
+                        "agencyId": agency_id,
+                        "name": agency_name,
+                        "status": "FAILED",
+                        "error": err_msg,
+                        "callSid": None,
+                        "mode": "LIVE"
+                    }
+            except Exception as e:
+                INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                    "callSid": None,
+                    "status": "FAILED",
+                    "to": recipient_phone,
+                    "error": str(e)
+                }
+                return {
+                    "agencyId": agency_id,
+                    "name": agency_name,
+                    "status": "FAILED",
+                    "error": str(e),
+                    "callSid": None,
+                    "mode": "LIVE"
+                }
+        else:
+            # DEMO Mode -> Simulated response
+            INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                "callSid": f"SIM-{uuid.uuid4().hex[:8]}",
+                "status": "QUEUED",
+                "to": "CONFIGURED_CONTACT"
+            }
+            return {
+                "agencyId": agency_id,
+                "name": agency_name,
+                "status": "QUEUED",
+                "simulated": True,
+                "mode": "DEMO"
+            }
+
+    async with httpx.AsyncClient(timeout=15.0) as http_client:
+        tasks = [call_single_agency(http_client, agency_id) for agency_id in req.selectedAgencies]
+        results = await asyncio.gather(*tasks)
+
+    response_payload = {
+        "incidentId": inc_id,
+        "isLiveMode": is_real_call,
+        "mode": "LIVE" if is_real_call else "DEMO",
+        "results": results,
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    # Store in idempotency cache
+    return response_payload
+
+
+@app.get("/api/emergency/status/{incident_id}")
+
+def get_emergency_call_status(incident_id: str):
+    """Fetch updated call statuses for an emergency incident."""
+    incident = INCIDENT_STORE.get(incident_id)
+    if not incident:
+        # Return fallback if incident not found yet
+        return {"incidentId": incident_id, "agencies": {}}
+
+    agency_calls = incident.get("agency_calls", {})
+    twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+
+    updated_agencies = {}
+
+    for agency_id, call_info in agency_calls.items():
+        call_sid = call_info.get("callSid")
+        curr_status = call_info.get("status", "QUEUED")
+
+        # Query Twilio if live call Sid present
+        if call_sid and not call_sid.startswith("SIM-") and twilio_sid and twilio_token:
+            try:
+                twilio_url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Calls/{call_sid}.json"
+                auth = (twilio_sid, twilio_token)
+                with httpx.Client(timeout=5.0) as client:
+                    resp = client.get(twilio_url, auth=auth)
+                if resp.status_code == 200:
+                    tw_data = resp.json()
+                    raw_status = tw_data.get("status", "").upper()
+                    status_map = {
+                        "QUEUED": "QUEUED",
+                        "INITIATED": "CALLING",
+                        "RINGING": "RINGING",
+                        "IN-PROGRESS": "CONNECTED",
+                        "COMPLETED": "COMPLETED",
+                        "BUSY": "BUSY",
+                        "NO-ANSWER": "NO ANSWER",
+                        "FAILED": "FAILED",
+                        "CANCELED": "FAILED"
+                    }
+                    curr_status = status_map.get(raw_status, curr_status)
+                    call_info["status"] = curr_status
+            except Exception:
+                pass
+
+        updated_agencies[agency_id] = {
+            "status": curr_status,
+            "callSid": call_sid,
+            "name": AGENCY_NAMES.get(agency_id, agency_id)
+        }
+
+    return {
+        "incidentId": incident_id,
+        "agencies": updated_agencies
+    }
+
+
+@app.post("/api/emergency/retry")
+def retry_failed_calls(req: RetryCallRequest, request: Request):
+    """Retry failed or no-answer emergency calls for specified or automatically identified failed agencies."""
+    incident = INCIDENT_STORE.get(req.incidentId)
+    if not incident:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    agency_calls = incident.get("agency_calls", {})
+    agencies_to_retry = req.selectedAgencies
+
+    if not agencies_to_retry:
+        # Auto-detect failed or no-answer agencies
+        agencies_to_retry = [
+            a_id for a_id, info in agency_calls.items()
+            if info.get("status") in ("FAILED", "NO ANSWER", "BUSY")
+        ]
+
+    if not agencies_to_retry:
+        return {"message": "No failed agencies to retry.", "results": []}
+
+    call_req = EmergencyCallRequest(
+        incidentId=req.incidentId,
+        selectedAgencies=agencies_to_retry,
+        isLiveMode=req.isLiveMode,
+        idempotencyKey=f"RETRY_{req.incidentId}_{time.time()}",
+        latitude=incident.get("latitude", 22.572648),
+        longitude=incident.get("longitude", 88.433912),
+        locationName=incident.get("locationName"),
+        preciseAddress=incident.get("preciseAddress"),
+        riskLevel=incident.get("riskLevel", "HIGH"),
+        waterDepth=incident.get("waterDepth"),
+        rainfall=incident.get("rainfall"),
+        notes=incident.get("notes")
+    )
+
+    return initiate_emergency_calls(call_req, request)
+
     text: str = ""
     image_url: Optional[str] = None
     status: str = "submitted"
