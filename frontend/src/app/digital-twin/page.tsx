@@ -9,6 +9,7 @@ import { getFloodForecast, getWardDrainage, getHealthCheck } from '@/lib/api';
 import { ForecastResponse, DrainageGeoJSON, DataMode } from '@/types';
 import { Activity, RefreshCw, Layers, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 // Dynamic import for Digital Twin Map to avoid SSR leaflet issues
 const DigitalTwinMap = dynamic(
@@ -58,94 +59,96 @@ export default function DigitalTwinPage() {
   }, [loadWardData]);
 
   return (
-    <div className="min-h-screen pb-16 pt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold uppercase tracking-wider">
-              <Activity className="w-3.5 h-3.5" />
-              <span>Real-Time Hydraulic Operations</span>
+    <AuthGuard moduleName="South Mumbai Pilot Ward Digital Twin">
+      <div className="min-h-screen pb-16 pt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold uppercase tracking-wider">
+                <Activity className="w-3.5 h-3.5" />
+                <span>Real-Time Hydraulic Operations</span>
+              </div>
+              <DataStatusBadge mode={backendMode} lastUpdated={forecast?.last_updated} />
             </div>
-            <DataStatusBadge mode={backendMode} lastUpdated={forecast?.last_updated} />
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              South Mumbai Pilot Ward Digital Twin
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-2xl">
+              Live Manning equation solver simulating subterranean drainage flow, pipe saturation, and surface water inundation across Ward A/B.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            South Mumbai Pilot Ward Digital Twin
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-2xl">
-            Live Manning equation solver simulating subterranean drainage flow, pipe saturation, and surface water inundation across Ward A/B.
-          </p>
-        </div>
 
-        <div className="flex items-center space-x-3">
-          <div className="text-right hidden sm:block">
-            <div className="text-[10px] text-slate-400 uppercase font-mono">PILOT COORDINATES</div>
-            <div className="text-xs text-sky-400 font-mono font-semibold">18.96° N, 72.82° E</div>
+          <div className="flex items-center space-x-3">
+            <div className="text-right hidden sm:block">
+              <div className="text-[10px] text-slate-400 uppercase font-mono">PILOT COORDINATES</div>
+              <div className="text-xs text-sky-400 font-mono font-semibold">18.96° N, 72.82° E</div>
+            </div>
+            <button
+              onClick={loadWardData}
+              disabled={loading}
+              className="p-3 rounded-xl glass-panel text-sky-400 hover:text-white hover:border-sky-400/50 transition-colors disabled:opacity-50 cursor-pointer"
+              title="Refresh telemetry"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-          <button
-            onClick={loadWardData}
-            disabled={loading}
-            className="p-3 rounded-xl glass-panel text-sky-400 hover:text-white hover:border-sky-400/50 transition-colors disabled:opacity-50"
-            title="Refresh telemetry"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
         </div>
-      </div>
 
-      {/* Live Gauges & Telemetry */}
-      <LiveMetrics
-        data={forecast}
-        loading={loading}
-        onRefresh={loadWardData}
-      />
-
-      {/* Interactive Leaflet Digital Twin Map */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-            <Layers className="w-4 h-4 text-sky-400" />
-            <span>Drainage Network Mesh & Subterranean Pipe Inundation</span>
-          </h2>
-          <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-            Live Simulation Sync
-          </span>
-        </div>
-        <DigitalTwinMap
-          drainageData={drainage}
-          pilotCoords={[18.96, 72.82]}
+        {/* Live Gauges & Telemetry */}
+        <LiveMetrics
+          data={forecast}
+          loading={loading}
+          onRefresh={loadWardData}
         />
-      </div>
 
-      {/* Data Sources & Provenance Panel */}
-      <DataSourcesPanel
-        rainfallMode={backendMode}
-        lastUpdated={forecast?.last_updated}
-      />
+        {/* Interactive Leaflet Digital Twin Map */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+              <Layers className="w-4 h-4 text-sky-400" />
+              <span>Drainage Network Mesh & Subterranean Pipe Inundation</span>
+            </h2>
+            <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+              Live Simulation Sync
+            </span>
+          </div>
+          <DigitalTwinMap
+            drainageData={drainage}
+            pilotCoords={[18.96, 72.82]}
+          />
+        </div>
 
-      {/* Quick Navigation Footer */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-slate-800">
-        <Link
-          href="/simulation"
-          className="glass-panel p-5 rounded-xl hover:border-sky-500/40 transition-all group flex items-center justify-between"
-        >
-          <div>
-            <div className="text-xs font-mono uppercase text-sky-400">Next Subsystem</div>
-            <div className="text-base font-bold text-white group-hover:text-sky-300">Run What-If Hydraulic Simulation</div>
-          </div>
-          <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
-        </Link>
-        <Link
-          href="/safe-route"
-          className="glass-panel p-5 rounded-xl hover:border-emerald-500/40 transition-all group flex items-center justify-between"
-        >
-          <div>
-            <div className="text-xs font-mono uppercase text-emerald-400">Emergency Routing</div>
-            <div className="text-base font-bold text-white group-hover:text-emerald-300">Plan Safe Evacuation Route</div>
-          </div>
-          <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
-        </Link>
+        {/* Data Sources & Provenance Panel */}
+        <DataSourcesPanel
+          rainfallMode={backendMode}
+          lastUpdated={forecast?.last_updated}
+        />
+
+        {/* Quick Navigation Footer */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-slate-800">
+          <Link
+            href="/simulation"
+            className="glass-panel p-5 rounded-xl hover:border-sky-500/40 transition-all group flex items-center justify-between"
+          >
+            <div>
+              <div className="text-xs font-mono uppercase text-sky-400">Next Subsystem</div>
+              <div className="text-base font-bold text-white group-hover:text-sky-300">Run What-If Hydraulic Simulation</div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+          </Link>
+          <Link
+            href="/safe-route"
+            className="glass-panel p-5 rounded-xl hover:border-emerald-500/40 transition-all group flex items-center justify-between"
+          >
+            <div>
+              <div className="text-xs font-mono uppercase text-emerald-400">Emergency Routing</div>
+              <div className="text-base font-bold text-white group-hover:text-emerald-300">Plan Safe Evacuation Route</div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+          </Link>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

@@ -7,6 +7,7 @@ import { SectorWithRainfall } from '@/types';
 import { RainfallStatusBar } from '@/components/rainfall/RainfallStatusBar';
 import { SectorListSidebar } from '@/components/rainfall/SectorListSidebar';
 import { Globe, Layers, AlertCircle, RefreshCw } from 'lucide-react';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 // Dynamic import for Leaflet map component to prevent SSR DOM errors
 const RainfallMap = dynamic(
@@ -71,52 +72,54 @@ export default function RainfallMapPage() {
   }, [loadData]);
 
   return (
-    <div className="min-h-screen pb-16 pt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-2">
-            <Globe className="w-3.5 h-3.5" />
-            <span>Open-Meteo Real-Time Radar Mesh</span>
+    <AuthGuard moduleName="Global Rainfall Radar">
+      <div className="min-h-screen pb-16 pt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
+              <Globe className="w-3.5 h-3.5" />
+              <span>Real-Time Meteorological Radar</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              Global Rainfall & Cloudburst Radar
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-2xl">
+              Live precipitation telemetry from Open-Meteo across 130+ global high-risk metropolitan sectors and monsoon hubs.
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
-            Global Rainfall & Flood Risk Monitor
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Live precipitation sampled continuously across 130+ global metropolitan hubs and high-monsoon sectors.
-          </p>
+        </div>
+
+        {/* Global Status Bar */}
+        <RainfallStatusBar
+          sectors={sectors}
+          loading={loading}
+          lastUpdated={lastUpdated}
+          onRefresh={loadData}
+          secondsRemaining={secondsRemaining}
+        />
+
+        {/* Main Grid Layout: Sidebar + Leaflet Map */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Explorer Sidebar */}
+          <div className="lg:col-span-4 h-[650px] lg:h-[720px]">
+            <SectorListSidebar
+              sectors={sectors}
+              selectedSector={selectedSector}
+              onSelectSector={(sector) => setSelectedSector(sector)}
+            />
+          </div>
+
+          {/* Right Map Canvas */}
+          <div className="lg:col-span-8 h-[650px] lg:h-[720px]">
+            <RainfallMap
+              sectors={sectors}
+              selectedSector={selectedSector}
+              onSelectSector={(sector) => setSelectedSector(sector)}
+            />
+          </div>
         </div>
       </div>
-
-      {/* Global Summary Status Bar */}
-      <RainfallStatusBar
-        sectors={sectors}
-        loading={loading}
-        lastUpdated={lastUpdated}
-        onRefresh={loadData}
-        secondsRemaining={secondsRemaining}
-      />
-
-      {/* Main Grid Layout: Sidebar + Leaflet Map */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Explorer Sidebar */}
-        <div className="lg:col-span-4 h-[650px] lg:h-[720px]">
-          <SectorListSidebar
-            sectors={sectors}
-            selectedSector={selectedSector}
-            onSelectSector={(sector) => setSelectedSector(sector)}
-          />
-        </div>
-
-        {/* Right Map Canvas */}
-        <div className="lg:col-span-8 h-[650px] lg:h-[720px]">
-          <RainfallMap
-            sectors={sectors}
-            selectedSector={selectedSector}
-            onSelectSector={(sector) => setSelectedSector(sector)}
-          />
-        </div>
-      </div>
-    </div>
+    </AuthGuard>
   );
 }
