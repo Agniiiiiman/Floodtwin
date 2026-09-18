@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 
 const SafeRouteMap = dynamic(
-  () => import('./SafeRouteMap').then((module) => module.SafeRouteMap),
+  () => import('./SafeRouteMap'),
   { ssr: false }
 );
 

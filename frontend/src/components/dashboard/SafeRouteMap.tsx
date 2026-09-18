@@ -23,7 +23,7 @@ const FLOOD_HAZARD_ZONES: { name: string; coords: [number, number]; radius: numb
   { name: 'Colaba Causeway Low Point', coords: [18.9180, 72.8260], radius: 300 },
 ];
 
-export function SafeRouteMap({
+export default function SafeRouteMap({
   routeResult,
   origin,
   destination,
