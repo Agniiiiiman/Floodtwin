@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useAuth, PRESET_PERSONAS } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { Lock, ShieldAlert, ArrowRight, Sparkles, Activity, Home } from 'lucide-react';
 
 interface AuthGuardProps {
@@ -16,7 +16,7 @@ export function AuthGuard({
   moduleName = 'Operational Module',
   requiredClearance = 'Municipal Clearance Level 1+',
 }: AuthGuardProps) {
-  const { isAuthenticated, loading, openAuthModal, loginAsPreset } = useAuth();
+  const { isAuthenticated, loading, openAuthModal } = useAuth();
 
   if (loading) {
     return (
@@ -80,36 +80,6 @@ export function AuthGuard({
             <Sparkles className="w-4 h-4 text-sky-400" />
             <span>Create Free Account</span>
           </button>
-        </div>
-
-        {/* 1-Click Demo Persona Fast-Pass */}
-        <div className="pt-4 border-t border-slate-800 text-left">
-          <span className="text-[10px] uppercase font-mono text-slate-400 block mb-2 font-bold">
-            Or test instantly as demo persona:
-          </span>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => loginAsPreset('commander')}
-              className="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-sky-500 text-center text-xs transition-all cursor-pointer"
-            >
-              <div className="text-base">{PRESET_PERSONAS.commander.avatar}</div>
-              <div className="text-[10px] font-bold text-white mt-0.5">Commander</div>
-            </button>
-            <button
-              onClick={() => loginAsPreset('engineer')}
-              className="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-center text-xs transition-all cursor-pointer"
-            >
-              <div className="text-base">{PRESET_PERSONAS.engineer.avatar}</div>
-              <div className="text-[10px] font-bold text-white mt-0.5">Engineer</div>
-            </button>
-            <button
-              onClick={() => loginAsPreset('citizen')}
-              className="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-purple-500 text-center text-xs transition-all cursor-pointer"
-            >
-              <div className="text-base">{PRESET_PERSONAS.citizen.avatar}</div>
-              <div className="text-[10px] font-bold text-white mt-0.5">Citizen</div>
-            </button>
-          </div>
         </div>
 
         <div className="mt-6">

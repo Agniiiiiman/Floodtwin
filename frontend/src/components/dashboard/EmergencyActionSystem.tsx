@@ -109,7 +109,6 @@ export function EmergencyActionSystem({
 }: EmergencyActionSystemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
   const [selectedAgencyIds, setSelectedAgencyIds] = useState<string[]>([
     'police',
     'fire',
@@ -143,7 +142,6 @@ export function EmergencyActionSystem({
   const [isInitiating, setIsInitiating] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const demoTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
   // Telemetry State
   const telemetry = {
@@ -152,12 +150,10 @@ export function EmergencyActionSystem({
     rainfall: 84.0,
   };
 
-  // Clean up polling interval and demo timeouts on unmount
+  // Clean up polling interval on unmount
   useEffect(() => {
     return () => {
       if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-      demoTimeoutsRef.current.forEach(clearTimeout);
-      demoTimeoutsRef.current = [];
     };
   }, []);
 
@@ -232,10 +228,8 @@ export function EmergencyActionSystem({
     setShowConfirmModal(false);
     setIsInitiating(true);
 
-    // Clear any existing polling interval or demo timeouts
+    // Clear any existing polling interval
     if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-    demoTimeoutsRef.current.forEach(clearTimeout);
-    demoTimeoutsRef.current = [];
     setAgencyErrors({});
 
     const incId = activeIncident ? activeIncident.incidentId : generateIncidentId();
@@ -285,16 +279,14 @@ export function EmergencyActionSystem({
           timestamp: timeStr,
           notes: userNotes,
         }),
-      });
-
-      // 2. Trigger Outbound Calls API
+      });      // 2. Trigger Outbound Calls API
       const callRes = await fetch(`${API_BASE}/api/emergency/call`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           incidentId: incId,
           selectedAgencies: selectedAgencyIds,
-          isLiveMode: !isDemoMode,
+          isLiveMode: true,
           latitude: lat,
           longitude: lng,
           locationName,
@@ -308,8 +300,7 @@ export function EmergencyActionSystem({
 
       if (callRes.ok) {
         const callData = await callRes.json();
-        // Live mode: apply real backend statuses
-        if (callData.results && !isDemoMode) {
+        if (callData.results) {
           const newStatuses = { ...initialStatusObj };
           const newErrors: { [key: string]: string } = {};
           callData.results.forEach((res: any) => {
@@ -319,7 +310,7 @@ export function EmergencyActionSystem({
           setAgencyStatuses(newStatuses);
           setAgencyErrors(newErrors);
         }
-      } else if (!isDemoMode) {
+      } else {
         const errJson = await callRes.json().catch(() => ({}));
         const globalErr = errJson.detail || 'Backend service connection error';
         const errObj: { [key: string]: string } = {};
@@ -329,72 +320,50 @@ export function EmergencyActionSystem({
         setAgencyErrors(errObj);
       }
     } catch (err: any) {
-      if (!isDemoMode) {
-        console.warn('Backend call initiation warning:', err);
-        const errObj: { [key: string]: string } = {};
-        selectedAgencyIds.forEach((id) => {
-          errObj[id] = 'Backend API server offline (http://localhost:8000)';
-        });
-        setAgencyErrors(errObj);
-      }
+      console.warn('Backend call initiation warning:', err);
+      const errObj: { [key: string]: string } = {};
+      selectedAgencyIds.forEach((id) => {
+        errObj[id] = 'Backend API server offline (http://localhost:8000)';
+      });
+      setAgencyErrors(errObj);
     } finally {
       setIsInitiating(false);
     }
 
-    // Handle Mode-specific workflow
-    if (isDemoMode) {
-      // Demo Mode: Simulate call state progression cleanly
-      // In DEMO mode, emergency calls must never show 'NO ANSWER' or failure.
-      // All calls progress smoothly from CALLING -> RINGING -> CONNECTED -> COMPLETED.
-      setAgencyErrors({});
-      const statesSequence: CallStatusState[] = ['CALLING', 'RINGING', 'CONNECTED', 'COMPLETED'];
-      selectedAgencyIds.forEach((agencyId, index) => {
-        statesSequence.forEach((st, stIdx) => {
-          const t = setTimeout(() => {
-            setAgencyStatuses((prev) => ({
-              ...prev,
-              [agencyId]: st,
-            }));
-          }, (index + 1) * 1200 + (stIdx + 1) * 1800);
-          demoTimeoutsRef.current.push(t);
-        });
-      });
-    } else {
-      // Live Mode: Poll real status from Twilio backend status endpoint
-      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = setInterval(async () => {
-        try {
-          const stRes = await fetch(`${API_BASE}/api/emergency/status/${incId}`);
-          if (stRes.ok) {
-            const stData = await stRes.json();
-            if (stData.agencies) {
-              setAgencyStatuses((prev) => {
-                const updated = { ...prev };
-                const entries = Object.entries(stData.agencies);
-                const anyAccepted = entries.some(
-                  ([_, a]: [string, any]) => a.status === 'CONNECTED' || a.status === 'COMPLETED'
-                );
-                const anyDone = entries.some(
-                  ([_, a]: [string, any]) => a.status === 'COMPLETED'
-                );
-                const coordinatedStatus = anyDone ? 'COMPLETED' : 'CONNECTED';
+    // Live Mode: Poll real status from Twilio backend status endpoint
+    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const stRes = await fetch(`${API_BASE}/api/emergency/status/${incId}`);
+        if (stRes.ok) {
+          const stData = await stRes.json();
+          if (stData.agencies) {
+            setAgencyStatuses((prev) => {
+              const updated = { ...prev };
+              const entries = Object.entries(stData.agencies);
+              const anyAccepted = entries.some(
+                ([_, a]: [string, any]) => a.status === 'CONNECTED' || a.status === 'COMPLETED'
+              );
+              const anyDone = entries.some(
+                ([_, a]: [string, any]) => a.status === 'COMPLETED'
+              );
+              const coordinatedStatus = anyDone ? 'COMPLETED' : 'CONNECTED';
 
-                entries.forEach(([agencyId, a]: [string, any]) => {
-                  if (anyAccepted && (a.status === 'NO ANSWER' || a.status === 'BUSY' || a.status === 'FAILED')) {
-                    updated[agencyId] = coordinatedStatus;
-                  } else {
-                    updated[agencyId] = a.status as CallStatusState;
-                  }
-                });
-                return updated;
+              entries.forEach(([agencyId, a]: [string, any]) => {
+                if (anyAccepted && (a.status === 'NO ANSWER' || a.status === 'BUSY' || a.status === 'FAILED')) {
+                  updated[agencyId] = coordinatedStatus;
+                } else {
+                  updated[agencyId] = a.status as CallStatusState;
+                }
               });
-            }
+              return updated;
+            });
           }
-        } catch (e) {
-          // Silent catch during background polling
         }
-      }, 2500);
-    }
+      } catch (e) {
+        // Silent catch during background polling
+      }
+    }, 2500);
   };
 
   // Step 3: Handle Call Retries for Failed / Unanswered Calls (Live Mode)
@@ -402,20 +371,9 @@ export function EmergencyActionSystem({
     if (!activeIncident) return;
     setIsRetrying(true);
 
-    const failedAgencyIds = selectedAgencyIds.filter(
-      (id) => agencyStatuses[id] === 'FAILED' || agencyStatuses[id] === 'NO ANSWER' || agencyStatuses[id] === 'BUSY'
+    const targetAgencies = selectedAgencyIds.filter(
+      (id) => agencyStatuses[id] === 'FAILED' || agencyStatuses[id] === 'QUEUED'
     );
-
-    const targetAgencies = failedAgencyIds.length > 0 ? failedAgencyIds : selectedAgencyIds;
-
-    // Reset status of target agencies to QUEUED
-    setAgencyStatuses((prev) => {
-      const updated = { ...prev };
-      targetAgencies.forEach((id) => {
-        updated[id] = 'QUEUED';
-      });
-      return updated;
-    });
 
     try {
       const res = await fetch(`${API_BASE}/api/emergency/retry`, {
@@ -424,13 +382,13 @@ export function EmergencyActionSystem({
         body: JSON.stringify({
           incidentId: activeIncident.incidentId,
           selectedAgencies: targetAgencies,
-          isLiveMode: !isDemoMode,
+          isLiveMode: true,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        if (data.results && !isDemoMode) {
+        if (data.results) {
           setAgencyStatuses((prev) => {
             const updated = { ...prev };
             data.results.forEach((r: any) => {
@@ -445,28 +403,10 @@ export function EmergencyActionSystem({
     } finally {
       setIsRetrying(false);
     }
-
-    if (isDemoMode) {
-      demoTimeoutsRef.current.forEach(clearTimeout);
-      demoTimeoutsRef.current = [];
-      targetAgencies.forEach((agencyId, index) => {
-        ['CALLING', 'RINGING', 'CONNECTED', 'COMPLETED'].forEach((st, stIdx) => {
-          const t = setTimeout(() => {
-            setAgencyStatuses((prev) => ({
-              ...prev,
-              [agencyId]: st as CallStatusState,
-            }));
-          }, (index + 1) * 1000 + (stIdx + 1) * 1500);
-          demoTimeoutsRef.current.push(t);
-        });
-      });
-    }
   };
 
   const handleClearIncident = () => {
     if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-    demoTimeoutsRef.current.forEach(clearTimeout);
-    demoTimeoutsRef.current = [];
     setActiveIncident(null);
     setUserNotes('');
     setAgencyStatuses({
@@ -487,8 +427,7 @@ export function EmergencyActionSystem({
     (id) => agencyStatuses[id] === 'COMPLETED'
   );
 
-  // In DEMO mode or if ANY SMS was sent, never show failed
-  const hasFailedCalls = !isDemoMode && !hasAnyCallAccepted && selectedAgencyIds.some(
+  const hasFailedCalls = !hasAnyCallAccepted && selectedAgencyIds.some(
     (id) => agencyStatuses[id] === 'FAILED'
   );
 
@@ -530,7 +469,7 @@ export function EmergencyActionSystem({
         <div className="w-full">
           <div className="relative w-full rounded-3xl glass-panel border border-rose-500/40 bg-slate-900 shadow-2xl overflow-hidden p-6 space-y-6">
             
-            {/* Header with Mode Toggle */}
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center space-x-3">
                 <span className="p-2.5 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-400">
@@ -542,57 +481,24 @@ export function EmergencyActionSystem({
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3">
-                {/* Mode Selector Switch */}
-                <div className="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono font-bold">
-                  <button
-                    onClick={() => setIsDemoMode(true)}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${
-                      isDemoMode
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    DEMO
-                  </button>
-                  <button
-                    onClick={() => setIsDemoMode(false)}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${
-                      !isDemoMode
-                        ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 shadow-sm animate-pulse'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    LIVE
-                  </button>
-                </div>
+              <div className="flex items-center space-x-2 px-3 py-1 rounded-xl bg-rose-500/10 border border-rose-500/30 text-[11px] font-mono font-bold text-rose-300">
+                <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+                <span>LIVE DISPATCH</span>
               </div>
             </div>
 
             {!activeIncident ? (
               <>
                 {/* Mode Banner */}
-                {isDemoMode ? (
-                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-300 flex items-start space-x-2.5">
-                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="block text-amber-200 uppercase font-mono tracking-wide text-[11px]">
-                        DEMO MODE ACTIVE
-                      </strong>
-                      Voice calls are simulated. No real calls will be placed.
-                    </div>
+                <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-xs text-rose-200 flex items-start space-x-2.5 animate-pulse">
+                  <ShieldAlert className="w-4.5 h-4.5 text-rose-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-rose-300 uppercase font-mono tracking-wide text-[11px]">
+                      LIVE MODE WARNING
+                    </strong>
+                    Confirming this action will place real VOICE CALLS to your configured number (+917044277303).
                   </div>
-                ) : (
-                  <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-xs text-rose-200 flex items-start space-x-2.5 animate-pulse">
-                    <ShieldAlert className="w-4.5 h-4.5 text-rose-400 shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="block text-rose-300 uppercase font-mono tracking-wide text-[11px]">
-                        LIVE MODE WARNING
-                      </strong>
-                      Confirming this action will place real VOICE CALLS to your configured number (+917044277303).
-                    </div>
-                  </div>
-                )}
+                </div>
 
                 {/* Precision Location Telemetry Box */}
                 <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-rose-500/30 text-xs">
@@ -823,7 +729,7 @@ export function EmergencyActionSystem({
                       Agency Voice Call Status ({selectedAgencyIds.length}):
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">
-                    {isDemoMode ? 'SIMULATED CALL' : 'TWILIO LIVE CALL'}
+                      TWILIO LIVE CALL
                     </span>
                   </div>
 
@@ -832,9 +738,7 @@ export function EmergencyActionSystem({
                       const rawSt = agencyStatuses[agency.id] || 'QUEUED';
                       // If any single call is accepted, reflect all agencies as CONNECTED / COMPLETED instead of NO ANSWER
                       let st: CallStatusState = rawSt;
-                      if (isDemoMode && rawSt === 'FAILED') {
-                        st = 'COMPLETED';
-                      } else if (hasAnyCallAccepted && (rawSt === 'FAILED' || rawSt === 'QUEUED' || rawSt === 'SENDING')) {
+                      if (hasAnyCallAccepted && (rawSt === 'FAILED' || rawSt === 'QUEUED' || rawSt === 'SENDING')) {
                         st = isAnyCompleted ? 'COMPLETED' : 'SENT';
                       }
                       const errMsg = agencyErrors[agency.id];
@@ -854,11 +758,6 @@ export function EmergencyActionSystem({
                             </div>
 
                             <div className="flex items-center space-x-2">
-                              {isDemoMode && (
-                                <span className="text-[10px] font-mono text-slate-500 uppercase">
-                                  SIMULATED
-                                </span>
-                              )}
                               <span
                                 className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold border transition-all ${badgeStyle}`}
                               >
@@ -866,7 +765,7 @@ export function EmergencyActionSystem({
                               </span>
                             </div>
                           </div>
-                          {errMsg && st === 'FAILED' && !isDemoMode && (
+                          {errMsg && st === 'FAILED' && (
                             <div className="text-[10px] text-rose-400/90 font-mono bg-rose-950/30 p-1.5 rounded-lg border border-rose-500/20 mt-1">
                               ⚠️ {errMsg}
                             </div>
@@ -928,29 +827,22 @@ export function EmergencyActionSystem({
               </div>
             </div>
 
-            {isDemoMode ? (
-              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-1">
-                <strong className="block text-amber-300 font-mono text-[11px] uppercase">DEMO MODE ACTIVE</strong>
-                Voice calls will be simulated. No real calls will be placed.
-              </div>
-            ) : (
-              <div className="p-3.5 rounded-2xl bg-rose-500/20 border border-rose-500/50 text-xs text-rose-100 space-y-2">
-                <strong className="block text-rose-300 font-mono text-[11px] uppercase tracking-wider">
-                  ⚠️ LIVE MODE WARNING
-                </strong>
-                <p className="leading-relaxed">
-                   You are about to place <strong>REAL VOICE CALLS</strong> to:
-                </p>
-                <ul className="list-disc list-inside space-y-1 font-semibold text-white pl-1 text-[11px]">
-                  {ALL_AGENCIES.filter((a) => selectedAgencyIds.includes(a.id)).map((agency) => (
-                    <li key={agency.id}>{agency.name}</li>
-                  ))}
-                </ul>
-                <p className="text-[11px] text-rose-200 pt-1 font-semibold">
-                  All voice calls will be delivered to <span className="text-white font-mono">+91 70442 77303</span>.
-                </p>
-              </div>
-            )}
+            <div className="p-3.5 rounded-2xl bg-rose-500/20 border border-rose-500/50 text-xs text-rose-100 space-y-2">
+              <strong className="block text-rose-300 font-mono text-[11px] uppercase tracking-wider">
+                ⚠️ LIVE MODE WARNING
+              </strong>
+              <p className="leading-relaxed">
+                 You are about to place <strong>REAL VOICE CALLS</strong> to:
+              </p>
+              <ul className="list-disc list-inside space-y-1 font-semibold text-white pl-1 text-[11px]">
+                {ALL_AGENCIES.filter((a) => selectedAgencyIds.includes(a.id)).map((agency) => (
+                  <li key={agency.id}>{agency.name}</li>
+                ))}
+              </ul>
+              <p className="text-[11px] text-rose-200 pt-1 font-semibold">
+                All voice calls will be delivered to <span className="text-white font-mono">+91 70442 77303</span>.
+              </p>
+            </div>
 
             <div className="flex items-center justify-end space-x-3 pt-2">
               <button

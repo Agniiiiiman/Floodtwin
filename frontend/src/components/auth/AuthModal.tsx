@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth, PRESET_PERSONAS } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import {
   X,
   Lock,
@@ -27,7 +27,6 @@ export function AuthModal() {
     closeAuthModal,
     openAuthModal,
     login,
-    loginAsPreset,
     signup,
   } = useAuth();
 
@@ -96,25 +95,6 @@ export function AuthModal() {
         msg = 'Email/Password sign-in is disabled. Enable it under Firebase Console → Authentication → Sign-in method.';
       }
       setError(msg);
-    }
-  };
-
-  const handlePresetSelect = async (presetKey: 'commander' | 'engineer' | 'citizen') => {
-    setError(null);
-    setLoading(true);
-    const persona = PRESET_PERSONAS[presetKey];
-    setSuccessMessage(`Authenticating as ${persona.name} (${persona.roleTitle})...`);
-
-    try {
-      await loginAsPreset(presetKey);
-      setTimeout(() => {
-        setLoading(false);
-        closeAuthModal();
-        router.push('/dashboard');
-      }, 600);
-    } catch (err: any) {
-      setLoading(false);
-      setError('Unable to authenticate persona.');
     }
   };
 
@@ -187,74 +167,6 @@ export function AuthModal() {
           >
             Create Account
           </button>
-        </div>
-
-        {/* 1-Click Quick Persona Logins */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-[11px] font-mono uppercase text-slate-400 font-semibold tracking-wider">
-              1-Click Demo Personas
-            </span>
-            <span className="text-[10px] text-sky-400 font-mono">Instant Role Access</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            {/* Commander */}
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('commander')}
-              disabled={loading}
-              className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-sky-500/50 hover:bg-sky-950/20 text-left transition-all group flex flex-col justify-between"
-            >
-              <div className="text-lg mb-1">{PRESET_PERSONAS.commander.avatar}</div>
-              <div>
-                <div className="text-[11px] font-bold text-white group-hover:text-sky-300 truncate">
-                  Commander
-                </div>
-                <div className="text-[9px] text-slate-400 truncate">Disaster Lead</div>
-              </div>
-            </button>
-
-            {/* Engineer */}
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('engineer')}
-              disabled={loading}
-              className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 hover:bg-emerald-950/20 text-left transition-all group flex flex-col justify-between"
-            >
-              <div className="text-lg mb-1">{PRESET_PERSONAS.engineer.avatar}</div>
-              <div>
-                <div className="text-[11px] font-bold text-white group-hover:text-emerald-300 truncate">
-                  Hydro Eng.
-                </div>
-                <div className="text-[9px] text-slate-400 truncate">Drainage Dept</div>
-              </div>
-            </button>
-
-            {/* Citizen */}
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('citizen')}
-              disabled={loading}
-              className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-purple-500/50 hover:bg-purple-950/20 text-left transition-all group flex flex-col justify-between"
-            >
-              <div className="text-lg mb-1">{PRESET_PERSONAS.citizen.avatar}</div>
-              <div>
-                <div className="text-[11px] font-bold text-white group-hover:text-purple-300 truncate">
-                  Citizen
-                </div>
-                <div className="text-[9px] text-slate-400 truncate">Responder</div>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <div className="relative flex py-2 items-center mb-4">
-          <div className="flex-grow border-t border-slate-800"></div>
-          <span className="flex-shrink mx-3 text-[10px] uppercase font-mono text-slate-400">
-            or continue with credentials
-          </span>
-          <div className="flex-grow border-t border-slate-800"></div>
         </div>
 
         {/* Error / Success Alerts */}
