@@ -639,9 +639,9 @@ export function EmergencyActionSystem({
                   </div>
 
                   {/* Micro Location Details */}
-                  <div className="space-y-2 pt-2 border-t border-slate-800/80">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Sector / Landmark:</span>
+                  <div className="space-y-2.5 pt-2 border-t border-slate-800/80">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+                      <span className="text-slate-400 text-[11px] sm:text-xs">Sector / Landmark:</span>
                       <input
                         type="text"
                         value={locationName}
@@ -649,24 +649,24 @@ export function EmergencyActionSystem({
                           setLocationName(e.target.value);
                           setLocationSource('MANUAL');
                         }}
-                        className="bg-slate-900 border border-slate-700 text-white text-right text-xs rounded px-2 py-0.5 w-60 focus:outline-none focus:border-rose-500"
+                        className="bg-slate-900 border border-slate-700 text-white text-left sm:text-right text-xs rounded-lg px-2.5 py-1.5 w-full sm:w-64 focus:outline-none focus:border-rose-500"
                       />
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Street / Micro Address:</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+                      <span className="text-slate-400 text-[11px] sm:text-xs">Street / Micro Address:</span>
                       <input
                         type="text"
                         value={preciseAddress}
                         onChange={(e) => setPreciseAddress(e.target.value)}
                         placeholder="e.g. Metro Exit Gate 3, Submerged Junction"
-                        className="bg-slate-900 border border-slate-700 text-slate-200 text-right text-xs rounded px-2 py-0.5 w-60 focus:outline-none focus:border-rose-500"
+                        className="bg-slate-900 border border-slate-700 text-slate-200 text-left sm:text-right text-xs rounded-lg px-2.5 py-1.5 w-full sm:w-64 focus:outline-none focus:border-rose-500"
                       />
                     </div>
 
-                    <div className="flex justify-between items-center font-mono text-[11px]">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 font-mono text-[11px]">
                       <span className="text-slate-400">Exact GPS Coordinates:</span>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
                         <input
                           type="number"
                           step="0.000001"
@@ -675,7 +675,7 @@ export function EmergencyActionSystem({
                             setLat(parseFloat(e.target.value) || 0);
                             setLocationSource('MANUAL');
                           }}
-                          className="bg-slate-900 border border-slate-700 text-emerald-400 font-bold text-center text-[11px] rounded px-1.5 py-0.5 w-24"
+                          className="bg-slate-900 border border-slate-700 text-emerald-400 font-bold text-center text-[11px] rounded-lg px-2 py-1 flex-1 sm:w-24"
                         />
                         <span className="text-slate-500">,</span>
                         <input
@@ -686,24 +686,24 @@ export function EmergencyActionSystem({
                             setLng(parseFloat(e.target.value) || 0);
                             setLocationSource('MANUAL');
                           }}
-                          className="bg-slate-900 border border-slate-700 text-emerald-400 font-bold text-center text-[11px] rounded px-1.5 py-0.5 w-24"
+                          className="bg-slate-900 border border-slate-700 text-emerald-400 font-bold text-center text-[11px] rounded-lg px-2 py-1 flex-1 sm:w-24"
                         />
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center text-[11px]">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-[11px]">
                       <span className="text-slate-400">GIS Sector ID &amp; Accuracy:</span>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center flex-wrap gap-1.5">
                         <span className="px-2 py-0.5 rounded bg-slate-900 text-amber-400 font-mono font-bold border border-slate-800">
                           {sectorCode}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono font-semibold border border-emerald-500/20">
-                          ±{accuracyMeters ? accuracyMeters : 3.0}m accuracy ({locationSource})
+                          ±{accuracyMeters ? accuracyMeters : 3.0}m ({locationSource})
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex justify-between text-xs pt-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs pt-1">
                       <span className="text-slate-400">Risk Level / Hydraulics:</span>
                       <span className="text-rose-400 font-bold">
                         {telemetry.riskLevel} ({telemetry.waterDepth}m depth, {telemetry.rainfall} mm/hr)

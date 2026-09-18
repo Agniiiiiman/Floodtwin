@@ -50,12 +50,12 @@ export function SectorListSidebar({
   }, [sectors, searchQuery, selectedRisk, selectedRegion]);
 
   return (
-    <div className="glass-panel p-5 rounded-2xl border border-sky-500/20 shadow-xl flex flex-col h-full max-h-[750px] space-y-4">
+    <div className="glass-panel p-3.5 sm:p-5 rounded-2xl border border-sky-500/20 shadow-xl flex flex-col h-full max-h-[500px] lg:max-h-[750px] space-y-3 sm:space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 sm:pb-3">
         <div className="flex items-center space-x-2">
           <Globe className="w-4 h-4 text-sky-400" />
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+          <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
             Sector Explorer ({filteredSectors.length})
           </h3>
         </div>

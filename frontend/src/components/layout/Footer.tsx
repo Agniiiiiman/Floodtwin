@@ -92,11 +92,11 @@ export function Footer() {
         </div>
 
         {/* Bottom copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 space-y-4 sm:space-y-0">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4 text-center sm:text-left">
           <p>© {new Date().getFullYear()} UrbanFlood. All rights reserved.</p>
-          <div className="flex items-center space-x-6">
-            <span>Built with Next.js 16, Leaflet & FastAPI</span>
-            <span className="text-slate-400">|</span>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4">
+            <span>Next.js 16, Leaflet &amp; FastAPI</span>
+            <span className="text-slate-600 hidden sm:inline">•</span>
             <span className="text-sky-400/90 font-medium">Urban Disaster Resilience Engine</span>
           </div>
         </div>

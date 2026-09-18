@@ -244,16 +244,16 @@ export function SafeRoutePlanner() {
   };
 
   return (
-    <div id="safe-route" className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-500/25 shadow-2xl space-y-6">
-      {/* Header */}
+    <div id="safe-route" className="glass-panel p-4 sm:p-7 rounded-3xl border border-sky-500/20 shadow-2xl space-y-5 sm:space-y-6">
+      {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-            <Navigation className="w-5 h-5" />
+          <div className="p-2 sm:p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+            <Navigation className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-slate-950 dark:text-white tracking-tight">
-              Emergency Flood-Safe Corridor Routing & Simulation
+            <h3 className="text-base sm:text-lg font-black text-slate-950 dark:text-white tracking-tight">
+              Emergency Flood-Safe Corridor Routing
             </h3>
             <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
               Powered by OSRM graph search with real-time hydraulic exclusion zones
@@ -261,9 +261,9 @@ export function SafeRoutePlanner() {
           </div>
         </div>
 
-        <span className="text-[11px] uppercase font-mono px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border border-emerald-500/30 font-black self-start sm:self-auto flex items-center gap-1.5 shrink-0 shadow-sm">
+        <span className="text-[10px] sm:text-[11px] uppercase font-mono px-2.5 sm:px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border border-emerald-500/30 font-black self-start sm:self-auto flex items-center gap-1.5 shrink-0 shadow-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
-          OSRM ENGINE ACTIVE
+          OSRM ACTIVE
         </span>
       </div>
 
@@ -281,7 +281,7 @@ export function SafeRoutePlanner() {
                 key={idx}
                 type="button"
                 onClick={() => handleSelectPreset(preset)}
-                className={`text-xs p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                className={`text-xs p-2.5 sm:p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                   isCurrent
                     ? 'bg-sky-50 dark:bg-sky-500/20 border-sky-500 text-sky-950 dark:text-sky-300 font-black shadow-sm ring-1 ring-sky-400'
                     : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-900 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:border-sky-500 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm'
@@ -289,7 +289,7 @@ export function SafeRoutePlanner() {
               >
                 <div className="flex items-center space-x-2 truncate">
                   <Milestone className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-amber-600 dark:text-amber-400' : 'text-sky-600 dark:text-sky-400'}`} />
-                  <span className="truncate font-bold">{preset.label}</span>
+                  <span className="truncate font-bold text-[11px] sm:text-xs">{preset.label}</span>
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0 ml-1.5" />
               </button>
@@ -463,13 +463,13 @@ export function SafeRoutePlanner() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white text-sm font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75"
+          className="w-full py-3.5 sm:py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white text-xs sm:text-sm font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 text-center leading-normal"
         >
-          <Compass className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-          <span>
+          <Compass className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isLoading ? 'animate-spin' : ''}`} />
+          <span className="line-clamp-2 sm:line-clamp-none">
             {isLoading
               ? 'Computing Flood-Free Corridor Simulation...'
-              : `CALCULATE INUNDATION-FREE SAFE ROUTE: ${fromPlaceName.split(' - ')[0].split(' [')[0]} ➔ ${toPlaceName.split(' - ')[0].split(' [')[0]}`}
+              : `CALCULATE SAFE ROUTE: ${fromPlaceName.split(' - ')[0].split(' [')[0]} ➔ ${toPlaceName.split(' - ')[0].split(' [')[0]}`}
           </span>
         </button>
       </form>

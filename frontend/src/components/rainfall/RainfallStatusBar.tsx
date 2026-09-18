@@ -30,55 +30,58 @@ export function RainfallStatusBar({
   ).length;
 
   return (
-    <div className="glass-panel p-4 rounded-2xl border border-sky-500/20 shadow-xl flex flex-wrap items-center justify-between gap-4">
-      {/* Sector Count & Sync status */}
-      <div className="flex items-center space-x-3">
-        <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
-        <div>
-          <div className="text-xs text-slate-400">MONITORED SECTORS</div>
-          <div className="text-base font-extrabold text-white">
-            {totalSectors} <span className="text-xs font-normal text-sky-400">Global Cities</span>
+    <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-sky-500/20 shadow-xl space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+      {/* 4 Telemetry Items in Responsive Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full sm:w-auto flex-1">
+        {/* Sector Count & Sync status */}
+        <div className="flex items-center space-x-2.5 sm:space-x-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
+          <div className="truncate">
+            <div className="text-[10px] sm:text-xs text-slate-400">MONITORED</div>
+            <div className="text-sm sm:text-base font-extrabold text-white truncate">
+              {totalSectors} <span className="text-[10px] sm:text-xs font-normal text-sky-400">Hubs</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Max Rainfall */}
-      <div className="flex items-center space-x-3 border-l border-slate-800 pl-4">
-        <Droplets className="w-4 h-4 text-sky-400" />
-        <div>
-          <div className="text-xs text-slate-400">MAX PRECIPITATION</div>
-          <div className="text-base font-extrabold text-white">
-            {maxRainfall.toFixed(1)} <span className="text-xs font-normal text-sky-400">mm/hr</span>
+        {/* Max Rainfall */}
+        <div className="flex items-center space-x-2.5 sm:space-x-3 sm:border-l sm:border-slate-800 sm:pl-3">
+          <Droplets className="w-4 h-4 text-sky-400 shrink-0" />
+          <div className="truncate">
+            <div className="text-[10px] sm:text-xs text-slate-400">MAX PRECIP</div>
+            <div className="text-sm sm:text-base font-extrabold text-white truncate">
+              {maxRainfall.toFixed(1)} <span className="text-[10px] sm:text-xs font-normal text-sky-400">mm/h</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Avg Rainfall */}
-      <div className="flex items-center space-x-3 border-l border-slate-800 pl-4">
-        <TrendingUp className="w-4 h-4 text-blue-400" />
-        <div>
-          <div className="text-xs text-slate-400">AVERAGE GLOBAL RATE</div>
-          <div className="text-base font-extrabold text-white">
-            {avgRainfall} <span className="text-xs font-normal text-blue-400">mm/hr</span>
+        {/* Avg Rainfall */}
+        <div className="flex items-center space-x-2.5 sm:space-x-3 sm:border-l sm:border-slate-800 sm:pl-3">
+          <TrendingUp className="w-4 h-4 text-blue-400 shrink-0" />
+          <div className="truncate">
+            <div className="text-[10px] sm:text-xs text-slate-400">AVG RATE</div>
+            <div className="text-sm sm:text-base font-extrabold text-white truncate">
+              {avgRainfall} <span className="text-[10px] sm:text-xs font-normal text-blue-400">mm/h</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* High Risk Count */}
-      <div className="flex items-center space-x-3 border-l border-slate-800 pl-4">
-        <AlertTriangle className="w-4 h-4 text-rose-400" />
-        <div>
-          <div className="text-xs text-slate-400">HIGH-RISK SECTORS</div>
-          <div className="text-base font-extrabold text-rose-400">
-            {highRiskCount} <span className="text-xs font-normal text-slate-400">/ {totalSectors}</span>
+        {/* High Risk Count */}
+        <div className="flex items-center space-x-2.5 sm:space-x-3 sm:border-l sm:border-slate-800 sm:pl-3">
+          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+          <div className="truncate">
+            <div className="text-[10px] sm:text-xs text-slate-400">HIGH-RISK</div>
+            <div className="text-sm sm:text-base font-extrabold text-rose-400 truncate">
+              {highRiskCount} <span className="text-[10px] sm:text-xs font-normal text-slate-400">/ {totalSectors}</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Auto Refresh & Last updated */}
-      <div className="flex items-center space-x-3 ml-auto">
-        <div className="text-right hidden sm:block">
-          <div className="text-[10px] text-slate-400">AUTO-REFRESH IN</div>
+      <div className="flex items-center justify-between sm:justify-end space-x-3 pt-2 sm:pt-0 border-t border-slate-800/80 sm:border-t-0 shrink-0">
+        <div className="text-left sm:text-right">
+          <div className="text-[9px] sm:text-[10px] text-slate-400">AUTO-REFRESH</div>
           <div className="text-xs font-mono font-bold text-sky-400">
             {secondsRemaining}s
           </div>
@@ -88,10 +91,10 @@ export function RainfallStatusBar({
           onClick={onRefresh}
           disabled={loading}
           aria-label="Refresh Rainfall Data"
-          className="p-2.5 rounded-xl glass-panel text-sky-400 hover:text-white hover:border-sky-400/50 transition-colors disabled:opacity-50"
+          className="p-2 sm:p-2.5 rounded-xl glass-panel text-sky-400 hover:text-white hover:border-sky-400/50 transition-colors disabled:opacity-50 cursor-pointer"
           title="Manual refresh"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
     </div>

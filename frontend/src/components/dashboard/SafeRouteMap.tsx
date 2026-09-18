@@ -280,41 +280,41 @@ export function SafeRouteMap({
   return (
     <div className="relative w-full rounded-2xl overflow-hidden border border-emerald-500/30 shadow-xl bg-slate-900">
       {/* Top Map Status Bar Overlay */}
-      <div className="absolute top-3 left-3 right-3 z-[500] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-        <div className="flex items-center gap-2 pointer-events-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-md text-xs">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="font-extrabold text-slate-900 dark:text-white">Live GIS Evacuation Corridor</span>
-          <span className="text-slate-400 font-mono">|</span>
-          <span className="text-emerald-700 dark:text-emerald-400 font-bold">100% Inundation-Free</span>
+      <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 z-[500] flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 pointer-events-none">
+        <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-md text-[11px] sm:text-xs">
+          <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+          <span className="font-extrabold text-slate-900 dark:text-white truncate">Evacuation Corridor</span>
+          <span className="text-slate-400 font-mono hidden sm:inline">|</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-bold hidden sm:inline">100% Inundation-Free</span>
         </div>
 
         <button
           type="button"
           onClick={handleRecenter}
-          className="pointer-events-auto px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+          className="pointer-events-auto px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-[11px] sm:text-xs font-bold flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
         >
           <Maximize2 className="w-3.5 h-3.5 text-sky-500" />
-          <span>Fit Corridor Bounds</span>
+          <span className="hidden sm:inline">Fit Corridor Bounds</span>
+          <span className="sm:hidden">Fit Map</span>
         </button>
       </div>
 
       {/* Actual Map Container */}
       <div
         ref={containerRef}
-        style={{ height: '480px', width: '100%' }}
-        className="w-full z-0"
+        className="w-full z-0 h-[360px] sm:h-[450px] lg:h-[480px]"
       />
 
       {/* Bottom Map Legend Overlay */}
-      <div className="absolute bottom-3 left-3 z-[500] pointer-events-none">
-        <div className="pointer-events-auto bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-xl text-[11px] space-y-1.5">
-          <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
-            <span className="w-3 h-1.5 bg-emerald-500 rounded-full inline-block shrink-0"></span>
-            <span className="text-slate-900 dark:text-white font-extrabold">Flood-Free Safe Evacuation Route</span>
+      <div className="absolute bottom-2.5 sm:bottom-3 left-2.5 sm:left-3 z-[500] pointer-events-none max-w-[85%] sm:max-w-none">
+        <div className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-2.5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-xl text-[10px] sm:text-[11px] space-y-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 font-bold text-slate-900 dark:text-slate-100">
+            <span className="w-2.5 sm:w-3 h-1.5 bg-emerald-500 rounded-full inline-block shrink-0"></span>
+            <span className="text-slate-900 dark:text-white font-extrabold truncate">Safe Route (Flood-Free)</span>
           </div>
-          <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-400">
-            <span className="w-3 h-1.5 bg-rose-500/40 border border-rose-500 rounded-full inline-block shrink-0"></span>
-            <span className="text-rose-800 dark:text-rose-300 font-extrabold">Submerged Hazard Zones (Actively Bypassed)</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 font-bold text-rose-700 dark:text-rose-400">
+            <span className="w-2.5 sm:w-3 h-1.5 bg-rose-500/40 border border-rose-500 rounded-full inline-block shrink-0"></span>
+            <span className="text-rose-800 dark:text-rose-300 font-extrabold truncate">Bypassed Hazards</span>
           </div>
         </div>
       </div>
