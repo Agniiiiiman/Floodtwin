@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="border-t border-sky-500/15 bg-slate-950/80 backdrop-blur-md pt-14 pb-10 text-slate-400 text-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800/80">
-          {/* Col 1: Brand & SIH */}
+          {/* Col 1: Brand & Description */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center space-x-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
@@ -24,7 +24,7 @@ export function Footer() {
               </div>
             </div>
             <p className="text-slate-400 text-xs leading-relaxed max-w-md">
-              A real-time Urban Flood Digital Twin & Early Warning System built for Smart India Hackathon. 
+              A real-time Urban Flood Digital Twin & Early Warning System. 
               Powered by Manning&apos;s hydraulic equations, Open-Meteo precipitation mesh, OSRM safe corridor routing, and citizen-assisted flood reporting.
             </p>
             <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-xs text-sky-400 font-mono">
@@ -72,17 +72,17 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: SIH Project Meta */}
+          {/* Col 3: Platform Meta */}
           <div>
             <h4 className="text-white font-semibold text-xs tracking-wider uppercase mb-4 text-sky-400">
-              Project Info
+              Platform Info
             </h4>
             <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Smart India Hackathon 2026. Street-level urban flood risk modeling and dynamic evacuation corridor routing.
+              Street-level urban hydrodynamic modeling and dynamic evacuation corridor routing.
             </p>
             <div className="flex items-center space-x-2">
-              <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-mono">
-                SIH 2026
+              <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-sky-400 font-mono">
+                Real-Time Mesh
               </span>
               <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] text-emerald-400 font-mono">
                 Hydro Engine v2.0
