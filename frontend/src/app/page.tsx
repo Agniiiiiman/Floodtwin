@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -12,19 +12,10 @@ import {
   ShieldAlert,
   Globe2,
   ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
   Sparkles,
-  Zap,
-  Sliders,
-  AlertTriangle,
   Layers,
-  Users,
-  Building2,
   Lock,
-  ChevronRight,
-  Shield,
-  Award
+  ChevronRight
 } from 'lucide-react';
 
 const subsystems = [
@@ -41,7 +32,7 @@ const subsystems = [
   {
     id: 'sim',
     title: 'Hydraulic Simulation Suite',
-    tagline: 'Manning Physics Sandbox',
+    tagline: 'Manning Physics Engine',
     description: 'Stress-test extreme cloudbursts (up to 120mm/hr), high-tide sea surges, and pipe debris blockage impacts on drainage capacity.',
     targetUrl: '/simulation',
     icon: Cpu,
@@ -117,20 +108,6 @@ export default function LandingPage() {
     }
   }, [loading, isAuthenticated, router]);
 
-  // Interactive Live Hydraulic Sandbox State
-  const [rainIntensity, setRainIntensity] = useState(50); // mm/hr
-  const [pipeBlockage, setPipeBlockage] = useState(25); // %
-
-  // Computed Hydraulic Variables
-  const runoffCoeff = 0.85;
-  const catchmentArea = 45000; // m2
-  const runoffQ = ((runoffCoeff * rainIntensity * catchmentArea) / 3600000).toFixed(2); // m3/s
-  const rawCapacity = 0.65; // m3/s
-  const effectiveCapacity = (rawCapacity * (1 - pipeBlockage / 100)).toFixed(2);
-  const utilizationPercent = Math.min(Math.round((parseFloat(runoffQ) / parseFloat(effectiveCapacity)) * 100), 250);
-  const estimatedWaterDepth = utilizationPercent > 100 ? ((utilizationPercent - 100) * 0.004 + 0.05).toFixed(2) : '0.00';
-  const isFlooded = utilizationPercent > 100;
-
   const handleFeatureAccess = (targetUrl: string) => {
     if (isAuthenticated) {
       router.push(targetUrl);
@@ -175,10 +152,10 @@ export default function LandingPage() {
         <div className="absolute bottom-10 left-1/4 w-[450px] h-[450px] bg-blue-600/15 rounded-full blur-[130px] pointer-events-none" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Top SIH Badge */}
+          {/* Top Platform Badge */}
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-8 backdrop-blur-md shadow-inner">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>Smart India Hackathon 2026 • Urban Flood Risk Digital Twin</span>
+            <span>Next-Gen Urban Flood Risk Digital Twin • Hydrodynamic Intelligence</span>
           </div>
 
           {/* Main Heading */}
@@ -366,169 +343,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. INTERACTIVE HYDRAULIC SANDBOX */}
-      <section id="sandbox" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28">
-        <div className="relative rounded-3xl p-6 sm:p-10 glass-panel border border-sky-500/30 shadow-2xl overflow-hidden bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-sky-950/30">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-6 mb-8">
-            <div>
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold uppercase font-mono tracking-wider mb-2">
-                <Sliders className="w-3.5 h-3.5 text-sky-400" />
-                <span>Interactive Live Sandbox</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-                Test the Hydraulic Manning Physics Engine
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-                Tweak precipitation rate and drain blockage to see instantaneous physics calculation of conduit overload and flood water depth.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                if (isAuthenticated) router.push('/dashboard');
-                else openAuthModal('signin');
-              }}
-              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-bold shadow-lg shadow-sky-500/25 transition-all cursor-pointer shrink-0"
-            >
-              <span>{isAuthenticated ? 'Enter Dashboard' : 'Login for Full Suite'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Controls (5 cols) */}
-            <div className="lg:col-span-5 space-y-6 bg-slate-950/70 p-6 rounded-2xl border border-slate-800">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono uppercase text-slate-400 font-bold">Input Variables</span>
-                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                  Ward A/B Pilot
-                </span>
-              </div>
-
-              {/* Rain Slider */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-300">Precipitation Intensity:</span>
-                  <span className="text-sky-400 font-mono font-bold">{rainIntensity} mm/hr</span>
-                </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="120"
-                  step="5"
-                  value={rainIntensity}
-                  onChange={(e) => setRainIntensity(Number(e.target.value))}
-                  className="w-full accent-sky-400 cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                  <span>Drizzle (5 mm/hr)</span>
-                  <span>Monsoon (50)</span>
-                  <span>Cloudburst (120 mm/hr)</span>
-                </div>
-              </div>
-
-              {/* Drain Blockage Slider */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-300">Storm Drain Debris Blockage:</span>
-                  <span className="text-amber-400 font-mono font-bold">{pipeBlockage}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="90"
-                  step="5"
-                  value={pipeBlockage}
-                  onChange={(e) => setPipeBlockage(Number(e.target.value))}
-                  className="w-full accent-amber-400 cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                  <span>Clear (0%)</span>
-                  <span>Moderate (25%)</span>
-                  <span>Heavy Choke (90%)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Live Outputs (7 cols) */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800">
-                  <div className="text-[10px] text-slate-400 font-mono uppercase">Catchment Runoff Q</div>
-                  <div className="text-xl sm:text-2xl font-black text-white mt-1">
-                    {runoffQ} <span className="text-xs font-normal text-slate-400">m³/s</span>
-                  </div>
-                  <div className="text-[10px] text-sky-400 font-mono mt-1">Rational Method: C·i·A</div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800">
-                  <div className="text-[10px] text-slate-400 font-mono uppercase">Drain Capacity</div>
-                  <div className="text-xl sm:text-2xl font-black text-white mt-1">
-                    {effectiveCapacity} <span className="text-xs font-normal text-slate-400">m³/s</span>
-                  </div>
-                  <div className="text-[10px] text-amber-400 font-mono mt-1">Manning Formula</div>
-                </div>
-
-                <div className={`p-4 rounded-xl border col-span-2 sm:col-span-1 ${
-                  isFlooded ? 'bg-rose-950/40 border-rose-500/40' : 'bg-emerald-950/40 border-emerald-500/40'
-                }`}>
-                  <div className="text-[10px] font-mono uppercase text-slate-300">Street Water Depth</div>
-                  <div className={`text-xl sm:text-2xl font-black mt-1 ${isFlooded ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {estimatedWaterDepth} <span className="text-xs font-normal text-slate-300">m</span>
-                  </div>
-                  <div className="text-[10px] font-mono mt-1">
-                    {isFlooded ? '⚠️ INUNDATED' : '✓ CLEAR DRAINAGE'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Output Banner */}
-              <div className={`p-5 rounded-2xl border transition-all ${
-                isFlooded
-                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-200'
-                  : 'bg-sky-500/10 border-sky-500/30 text-sky-200'
-              }`}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      {isFlooded ? (
-                        <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
-                      ) : (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                      )}
-                      <h4 className="text-sm font-bold text-white">
-                        {isFlooded
-                          ? `Hydraulic Surcharge Triggered (${utilizationPercent}% Pipe Load)`
-                          : `Optimal Flow State (${utilizationPercent}% Capacity Utilized)`}
-                      </h4>
-                    </div>
-                    <p className="text-xs text-slate-300">
-                      {isFlooded
-                        ? 'Surface runoff exceeds drainage section capacity. Automated OSRM safe detour calculated (1,435m bypass corridor).'
-                        : 'Subterranean conduit is maintaining non-pressurized gravity flow. Roads unobstructed.'}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => handleFeatureAccess(isFlooded ? '/safe-route' : '/digital-twin')}
-                    className={`shrink-0 px-4 py-2 rounded-xl text-xs font-semibold text-white shadow-md transition-all cursor-pointer ${
-                      isFlooded
-                        ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-500/20'
-                        : 'bg-sky-600 hover:bg-sky-500 shadow-sky-500/20'
-                    }`}
-                  >
-                    {isAuthenticated ? (isFlooded ? 'View Detour' : 'Open Twin') : 'Sign In to View'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. HOW IT WORKS ARCHITECTURE WORKFLOW */}
+      {/* 4. HOW IT WORKS ARCHITECTURE WORKFLOW */}
       <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28">
         <div className="text-center max-w-2xl mx-auto mb-14">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-mono uppercase tracking-wider mb-3">
@@ -537,7 +352,7 @@ export default function LandingPage() {
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white">How UrbanFlood Operates</h2>
           <p className="text-slate-400 text-sm mt-2">
-            An end-to-end telemetry and hydrodynamic prediction engine built for Smart India Hackathon.
+            An end-to-end telemetry and hydrodynamic prediction engine for real-time municipal flood mitigation.
           </p>
         </div>
 
@@ -563,13 +378,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. ABOUT SIH & CALL TO ACTION FOOTER */}
-      <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28">
+      {/* 5. CALL TO ACTION FOOTER */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-3xl p-8 sm:p-12 glass-panel border border-sky-500/30 overflow-hidden bg-gradient-to-r from-sky-950/60 via-slate-900 to-blue-950/60 text-center shadow-2xl">
           <div className="relative z-10 max-w-3xl mx-auto space-y-6">
             <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Smart India Hackathon 2026 Initiative</span>
+              <span>Municipal Disaster Resilience Network</span>
             </div>
 
             <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
