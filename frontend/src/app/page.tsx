@@ -100,7 +100,7 @@ const workflowSteps = [
 
 export default function LandingPage() {
   const router = useRouter();
-  const { user, isAuthenticated, loading, openAuthModal, loginAsPreset } = useAuth();
+  const { user, isAuthenticated, loading, openAuthModal } = useAuth();
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -114,11 +114,6 @@ export default function LandingPage() {
     } else {
       openAuthModal('signin');
     }
-  };
-
-  const handleQuickDemoEnter = async (presetKey: 'commander' | 'engineer' | 'citizen') => {
-    await loginAsPreset(presetKey);
-    router.push('/dashboard');
   };
 
   // If resolving auth state or already authenticated (redirecting), render a clean loader to avoid flash
@@ -211,42 +206,6 @@ export default function LandingPage() {
             >
               <span>Explore Features</span>
             </a>
-          </div>
-
-          {/* Quick 1-Click Persona Sandbox Access Banner */}
-          <div className="max-w-3xl mx-auto p-3.5 sm:p-4 rounded-2xl glass-panel border border-sky-500/25 backdrop-blur-md shadow-xl">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center space-x-2 text-center sm:text-left">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="text-[11px] sm:text-xs text-slate-300 font-medium">
-                  <strong>Instant Demo Access:</strong> Test features with 1-click roles:
-                </span>
-              </div>
-
-              <div className="flex items-center flex-wrap justify-center gap-1.5 sm:gap-2">
-                <button
-                  onClick={() => handleQuickDemoEnter('commander')}
-                  className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500 text-[11px] sm:text-xs font-semibold text-sky-300 transition-all cursor-pointer flex items-center space-x-1"
-                >
-                  <span>👨‍✈️</span>
-                  <span>Commander</span>
-                </button>
-                <button
-                  onClick={() => handleQuickDemoEnter('engineer')}
-                  className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-emerald-500/20 border border-slate-700 hover:border-emerald-500 text-[11px] sm:text-xs font-semibold text-emerald-300 transition-all cursor-pointer flex items-center space-x-1"
-                >
-                  <span>👩‍🔬</span>
-                  <span>Engineer</span>
-                </button>
-                <button
-                  onClick={() => handleQuickDemoEnter('citizen')}
-                  className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-purple-500/20 border border-slate-700 hover:border-purple-500 text-[11px] sm:text-xs font-semibold text-purple-300 transition-all cursor-pointer flex items-center space-x-1"
-                >
-                  <span>🧑‍🚒</span>
-                  <span>Citizen</span>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </section>

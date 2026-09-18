@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useAuth, PRESET_PERSONAS } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useRainfall } from '@/context/RainfallContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { EmergencyActionSystem } from '@/components/dashboard/EmergencyActionSystem';
@@ -28,7 +28,6 @@ import {
   Radio,
   Layers,
   LogOut,
-  User,
   ExternalLink
 } from 'lucide-react';
 
@@ -118,7 +117,7 @@ const mockLiveReports = [
 ];
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, logout, openAuthModal, loginAsPreset } = useAuth();
+  const { user, isAuthenticated, logout, openAuthModal } = useAuth();
   const { setRainfallIntensity } = useRainfall();
 
   // Interactive Live Hydraulic Sandbox State
@@ -212,34 +211,6 @@ export default function DashboardPage() {
                 </button>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Quick Persona Switcher for Evaluation */}
-        <div className="mt-5 pt-3.5 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
-          <div className="flex items-center space-x-2 text-slate-400">
-            <User className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-            <span className="text-[10px] sm:text-[11px] font-mono uppercase">Quick Persona Switch:</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {(['commander', 'engineer', 'citizen'] as const).map((roleKey) => {
-              const p = PRESET_PERSONAS[roleKey];
-              const isCurrent = user?.role === roleKey;
-              return (
-                <button
-                  key={roleKey}
-                  onClick={() => loginAsPreset(roleKey)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-medium border transition-all cursor-pointer flex items-center space-x-1 ${
-                    isCurrent
-                      ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <span>{p.avatar}</span>
-                  <span>{p.roleTitle}</span>
-                </button>
-              );
-            })}
           </div>
         </div>
       </div>
