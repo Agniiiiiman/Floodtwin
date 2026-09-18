@@ -29,7 +29,7 @@ import {
   PhoneForwarded
 } from 'lucide-react';
 
-export type CallStatusState = 'QUEUED' | 'CALLING' | 'RINGING' | 'CONNECTED' | 'COMPLETED' | 'BUSY' | 'NO ANSWER' | 'FAILED';
+export type CallStatusState = 'QUEUED' | 'SENDING' | 'SENT' | 'COMPLETED' | 'FAILED' | 'CALLING' | 'RINGING' | 'CONNECTED' | 'NO ANSWER' | 'BUSY';
 
 interface AgencyConfig {
   id: string;
@@ -479,33 +479,29 @@ export function EmergencyActionSystem({
     setAgencyErrors({});
   };
 
-  // Check if at least one call was accepted / connected or completed
+  // Check if at least one SMS was sent or delivered
   const hasAnyCallAccepted = selectedAgencyIds.some(
-    (id) => agencyStatuses[id] === 'CONNECTED' || agencyStatuses[id] === 'COMPLETED'
+    (id) => agencyStatuses[id] === 'SENT' || agencyStatuses[id] === 'COMPLETED'
   );
   const isAnyCompleted = selectedAgencyIds.some(
     (id) => agencyStatuses[id] === 'COMPLETED'
   );
 
-  // In DEMO mode or if ANY call was accepted, calls never show failed or unanswered
+  // In DEMO mode or if ANY SMS was sent, never show failed
   const hasFailedCalls = !isDemoMode && !hasAnyCallAccepted && selectedAgencyIds.some(
-    (id) => agencyStatuses[id] === 'FAILED' || agencyStatuses[id] === 'NO ANSWER' || agencyStatuses[id] === 'BUSY'
+    (id) => agencyStatuses[id] === 'FAILED'
   );
 
   const getStatusBadgeStyle = (status: CallStatusState) => {
     switch (status) {
       case 'QUEUED':
         return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-      case 'CALLING':
-      case 'RINGING':
+      case 'SENDING':
         return 'bg-sky-500/20 text-sky-300 border-sky-500/40 animate-pulse';
-      case 'CONNECTED':
-        return 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 font-extrabold animate-pulse';
+      case 'SENT':
+        return 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 font-extrabold';
       case 'COMPLETED':
         return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-      case 'BUSY':
-      case 'NO ANSWER':
-        return 'bg-orange-500/15 text-orange-400 border-orange-500/30';
       case 'FAILED':
         return 'bg-rose-500/20 text-rose-400 border-rose-500/40 font-bold';
       default:
@@ -542,7 +538,7 @@ export function EmergencyActionSystem({
                 </span>
                 <div>
                   <h3 className="text-lg font-bold text-white tracking-wide">FLOOD EMERGENCY VOICE CALLING</h3>
-                  <p className="text-xs text-slate-400">Automated multi-agency outbound emergency voice response</p>
+                  <p className="text-xs text-slate-400">Automated multi-agency outbound emergency voice call dispatch</p>
                 </div>
               </div>
 
@@ -583,7 +579,7 @@ export function EmergencyActionSystem({
                       <strong className="block text-amber-200 uppercase font-mono tracking-wide text-[11px]">
                         DEMO MODE ACTIVE
                       </strong>
-                      Emergency calls are simulated. No real phone calls will be placed.
+                      Voice calls are simulated. No real calls will be placed.
                     </div>
                   </div>
                 ) : (
@@ -593,7 +589,7 @@ export function EmergencyActionSystem({
                       <strong className="block text-rose-300 uppercase font-mono tracking-wide text-[11px]">
                         LIVE MODE WARNING
                       </strong>
-                      Confirming this action will place real phone calls to the selected configured contacts.
+                      Confirming this action will place real VOICE CALLS to your configured number (+917044277303).
                     </div>
                   </div>
                 )}
@@ -824,10 +820,10 @@ export function EmergencyActionSystem({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
-                      Agency Outbound Call Status ({selectedAgencyIds.length}):
+                      Agency Voice Call Status ({selectedAgencyIds.length}):
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">
-                      {isDemoMode ? 'SIMULATED TELEPHONY' : 'TWILIO LIVE CALLS'}
+                    {isDemoMode ? 'SIMULATED CALL' : 'TWILIO LIVE CALL'}
                     </span>
                   </div>
 
@@ -836,10 +832,10 @@ export function EmergencyActionSystem({
                       const rawSt = agencyStatuses[agency.id] || 'QUEUED';
                       // If any single call is accepted, reflect all agencies as CONNECTED / COMPLETED instead of NO ANSWER
                       let st: CallStatusState = rawSt;
-                      if (isDemoMode && (rawSt === 'NO ANSWER' || rawSt === 'BUSY' || rawSt === 'FAILED')) {
+                      if (isDemoMode && rawSt === 'FAILED') {
                         st = 'COMPLETED';
-                      } else if (hasAnyCallAccepted && (rawSt === 'NO ANSWER' || rawSt === 'BUSY' || rawSt === 'FAILED' || rawSt === 'RINGING' || rawSt === 'CALLING' || rawSt === 'QUEUED')) {
-                        st = isAnyCompleted ? 'COMPLETED' : 'CONNECTED';
+                      } else if (hasAnyCallAccepted && (rawSt === 'FAILED' || rawSt === 'QUEUED' || rawSt === 'SENDING')) {
+                        st = isAnyCompleted ? 'COMPLETED' : 'SENT';
                       }
                       const errMsg = agencyErrors[agency.id];
                       const badgeStyle = getStatusBadgeStyle(st);
@@ -887,7 +883,7 @@ export function EmergencyActionSystem({
                   <div className="p-3 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-xs flex items-center justify-between">
                     <div className="flex items-center space-x-2 text-rose-300">
                       <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-                      <span>One or more calls failed or went unanswered.</span>
+                      <span>One or more voice calls failed to connect.</span>
                     </div>
                     <button
                       type="button"
@@ -928,14 +924,14 @@ export function EmergencyActionSystem({
                 <h3 className="text-base font-extrabold text-white tracking-wide uppercase font-mono">
                   CONFIRM EMERGENCY RESPONSE
                 </h3>
-                <p className="text-xs text-rose-300 font-medium">Explicit outbound voice dispatch authorization</p>
+                <p className="text-xs text-rose-300 font-medium">Explicit outbound voice call dispatch authorization</p>
               </div>
             </div>
 
             {isDemoMode ? (
               <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-1">
                 <strong className="block text-amber-300 font-mono text-[11px] uppercase">DEMO MODE ACTIVE</strong>
-                <p>Emergency calls will be simulated. No real phone calls will be placed.</p>
+                Voice calls will be simulated. No real calls will be placed.
               </div>
             ) : (
               <div className="p-3.5 rounded-2xl bg-rose-500/20 border border-rose-500/50 text-xs text-rose-100 space-y-2">
@@ -943,7 +939,7 @@ export function EmergencyActionSystem({
                   ⚠️ LIVE MODE WARNING
                 </strong>
                 <p className="leading-relaxed">
-                  You are about to place <strong>REAL outbound phone calls</strong> to:
+                   You are about to place <strong>REAL VOICE CALLS</strong> to:
                 </p>
                 <ul className="list-disc list-inside space-y-1 font-semibold text-white pl-1 text-[11px]">
                   {ALL_AGENCIES.filter((a) => selectedAgencyIds.includes(a.id)).map((agency) => (
@@ -951,7 +947,7 @@ export function EmergencyActionSystem({
                   ))}
                 </ul>
                 <p className="text-[11px] text-rose-200 pt-1 font-semibold">
-                  These are real outbound calls.
+                  All voice calls will be delivered to <span className="text-white font-mono">+91 70442 77303</span>.
                 </p>
               </div>
             )}
@@ -969,8 +965,8 @@ export function EmergencyActionSystem({
                 onClick={handleConfirmAndCall}
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 hover:from-rose-500 hover:to-red-600 text-white text-xs font-extrabold shadow-lg shadow-rose-600/40 transition-all border border-rose-400/40 flex items-center space-x-2"
               >
-                <PhoneCall className="w-4 h-4" />
-                <span>CONFIRM &amp; CALL</span>
+                <Send className="w-4 h-4" />
+                <span>CONFIRM &amp; CALL NOW</span>
               </button>
             </div>
           </div>

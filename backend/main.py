@@ -231,7 +231,9 @@ def generate_twiml_voice(incident_id: str):
 @app.post("/api/emergency/call")
 async def initiate_emergency_calls(req: EmergencyCallRequest, request: Request):
 
-    """Initiate emergency voice calling for selected agencies.
+    """Initiate emergency outbound voice calls for selected agencies.
+    Places a Twilio outbound call to the configured NOTIFY_PHONE number.
+    The call plays a TwiML voice message with full incident details.
     Handles Live Mode via Twilio and Demo Mode via safe simulation.
     Includes request idempotency & duplicate protection.
     """
@@ -272,185 +274,150 @@ async def initiate_emergency_calls(req: EmergencyCallRequest, request: Request):
     twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
     twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
     twilio_phone = os.getenv("TWILIO_PHONE_NUMBER")
+    # NOTIFY_PHONE: the single verified number that receives all emergency voice calls
+    notify_phone = os.getenv("NOTIFY_PHONE", "+917044277303")
+    # PUBLIC_BASE_URL: publicly accessible URL for TwiML webhook (ngrok / deployed URL)
+    public_base_url = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
 
-    is_real_call = req.isLiveMode and bool(twilio_sid and twilio_token and twilio_phone)
+    is_live = req.isLiveMode and bool(twilio_sid and twilio_token and twilio_phone)
 
-    base_url = str(request.base_url).rstrip("/")
-    twiml_url = f"{base_url}/api/emergency/twiml/{inc_id}"
+    # Twilio voice call status → our internal status map
+    CALL_STATUS_MAP = {
+        "QUEUED": "QUEUED",
+        "RINGING": "SENDING",
+        "IN-PROGRESS": "SENT",
+        "COMPLETED": "COMPLETED",
+        "BUSY": "FAILED",
+        "NO-ANSWER": "FAILED",
+        "CANCELED": "FAILED",
+        "FAILED": "FAILED",
+    }
 
     async def call_single_agency(http_client: httpx.AsyncClient, agency_id: str):
         agency_name = AGENCY_NAMES.get(agency_id, agency_id.capitalize())
-        recipient_phone = contacts.get(agency_id)
 
         if not req.isLiveMode:
-            # DEMO Mode -> Simulated response (always succeeds cleanly, never FAILED or NO ANSWER)
+            # DEMO Mode → Simulated call (no real call placed)
             INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
                 "callSid": f"SIM-{uuid.uuid4().hex[:8]}",
-                "status": "QUEUED",
-                "to": recipient_phone or "CONFIGURED_CONTACT"
+                "status": "SENT",
+                "to": notify_phone
             }
             return {
                 "agencyId": agency_id,
                 "name": agency_name,
-                "status": "QUEUED",
+                "status": "SENT",
                 "simulated": True,
                 "mode": "DEMO"
             }
 
-        if not recipient_phone:
-            return {
-                "agencyId": agency_id,
-                "name": agency_name,
-                "status": "FAILED",
-                "error": "No phone number configured for recipient",
-                "callSid": None,
-                "mode": "LIVE"
-            }
-
-        if req.isLiveMode:
-            if not (twilio_sid and twilio_token):
-                err_msg = "Twilio credentials missing in backend .env (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)"
-                INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
-                    "callSid": None,
-                    "status": "FAILED",
-                    "to": recipient_phone,
-                    "error": err_msg
-                }
-                return {
-                    "agencyId": agency_id,
-                    "name": agency_name,
-                    "status": "FAILED",
-                    "error": err_msg,
-                    "callSid": None,
-                    "mode": "LIVE"
-                }
-
-            if not twilio_phone:
-                err_msg = "Twilio caller phone number missing in backend .env (TWILIO_PHONE_NUMBER). Add your Twilio number (e.g. TWILIO_PHONE_NUMBER=+1xxxxxxxxxx) from console.twilio.com"
-                INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
-                    "callSid": None,
-                    "status": "FAILED",
-                    "to": recipient_phone,
-                    "error": err_msg
-                }
-                return {
-                    "agencyId": agency_id,
-                    "name": agency_name,
-                    "status": "FAILED",
-                    "error": err_msg,
-                    "callSid": None,
-                    "mode": "LIVE"
-                }
-
-            # Place real Twilio outbound call
-            try:
-                twilio_url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Calls.json"
-                auth = (twilio_sid, twilio_token)
-                call_twiml_url = os.getenv("TWILIO_TWIML_URL") or f"{base_url}/api/emergency/twiml/{inc_id}"
-                data = {
-                    "From": twilio_phone,
-                    "To": recipient_phone,
-                    "Url": call_twiml_url,
-                }
-                resp = await http_client.post(twilio_url, auth=auth, data=data)
-                    
-                if resp.status_code in (200, 201):
-                    call_data = resp.json()
-                    call_sid = call_data.get("sid")
-                    twilio_status = call_data.get("status", "queued").upper()
-                    
-                    status_map = {
-                        "QUEUED": "QUEUED",
-                        "INITIATED": "CALLING",
-                        "RINGING": "RINGING",
-                        "IN-PROGRESS": "CONNECTED",
-                        "COMPLETED": "COMPLETED",
-                        "BUSY": "BUSY",
-                        "NO-ANSWER": "NO ANSWER",
-                        "FAILED": "FAILED",
-                        "CANCELED": "FAILED"
-                    }
-                    mapped_status = status_map.get(twilio_status, "CALLING")
-                    
-                    INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
-                        "callSid": call_sid,
-                        "status": mapped_status,
-                        "to": recipient_phone,
-                    }
-
-                    return {
-                        "agencyId": agency_id,
-                        "name": agency_name,
-                        "status": mapped_status,
-                        "callSid": call_sid,
-                        "mode": "LIVE"
-                    }
-                else:
-                    err_msg = resp.json().get("message", "Twilio API error")
-                    INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
-                        "callSid": None,
-                        "status": "FAILED",
-                        "to": recipient_phone,
-                        "error": err_msg
-                    }
-                    return {
-                        "agencyId": agency_id,
-                        "name": agency_name,
-                        "status": "FAILED",
-                        "error": err_msg,
-                        "callSid": None,
-                        "mode": "LIVE"
-                    }
-            except Exception as e:
-                INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
-                    "callSid": None,
-                    "status": "FAILED",
-                    "to": recipient_phone,
-                    "error": str(e)
-                }
-                return {
-                    "agencyId": agency_id,
-                    "name": agency_name,
-                    "status": "FAILED",
-                    "error": str(e),
-                    "callSid": None,
-                    "mode": "LIVE"
-                }
-        else:
-            # DEMO Mode -> Simulated response
+        if not (twilio_sid and twilio_token):
+            err_msg = "Twilio credentials missing in backend .env (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)"
             INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
-                "callSid": f"SIM-{uuid.uuid4().hex[:8]}",
-                "status": "QUEUED",
-                "to": "CONFIGURED_CONTACT"
+                "callSid": None, "status": "FAILED", "to": notify_phone, "error": err_msg
             }
-            return {
-                "agencyId": agency_id,
-                "name": agency_name,
-                "status": "QUEUED",
-                "simulated": True,
-                "mode": "DEMO"
-            }
+            return {"agencyId": agency_id, "name": agency_name, "status": "FAILED",
+                    "error": err_msg, "callSid": None, "mode": "LIVE"}
 
-    async with httpx.AsyncClient(timeout=15.0) as http_client:
+        if not twilio_phone:
+            err_msg = "Twilio caller number missing (TWILIO_PHONE_NUMBER) in backend .env"
+            INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                "callSid": None, "status": "FAILED", "to": notify_phone, "error": err_msg
+            }
+            return {"agencyId": agency_id, "name": agency_name, "status": "FAILED",
+                    "error": err_msg, "callSid": None, "mode": "LIVE"}
+
+        # Place a real Twilio outbound voice call using TwiML webhook
+        try:
+            calls_url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Calls.json"
+            auth = (twilio_sid, twilio_token)
+            twiml_url = f"{public_base_url}/api/emergency/twiml/{inc_id}"
+            data = {
+                "From": twilio_phone,
+                "To": notify_phone,
+                "Url": twiml_url,
+                "Method": "GET",
+                "StatusCallback": f"{public_base_url}/api/emergency/call-status",
+                "StatusCallbackMethod": "POST",
+                "Timeout": "30",
+            }
+            resp = await http_client.post(calls_url, auth=auth, data=data)
+
+            if resp.status_code in (200, 201):
+                call_data = resp.json()
+                call_sid = call_data.get("sid")
+                raw_status = call_data.get("status", "queued").upper()
+                mapped_status = CALL_STATUS_MAP.get(raw_status, "QUEUED")
+                INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                    "callSid": call_sid, "status": mapped_status, "to": notify_phone
+                }
+                return {
+                    "agencyId": agency_id, "name": agency_name,
+                    "status": mapped_status, "callSid": call_sid, "mode": "LIVE"
+                }
+            else:
+                err_body = resp.json()
+                err_msg = err_body.get("message", "Twilio Voice API error")
+                INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                    "callSid": None, "status": "FAILED", "to": notify_phone, "error": err_msg
+                }
+                return {"agencyId": agency_id, "name": agency_name, "status": "FAILED",
+                        "error": err_msg, "callSid": None, "mode": "LIVE"}
+        except Exception as e:
+            INCIDENT_STORE[inc_id]["agency_calls"][agency_id] = {
+                "callSid": None, "status": "FAILED", "to": notify_phone, "error": str(e)
+            }
+            return {"agencyId": agency_id, "name": agency_name, "status": "FAILED",
+                    "error": str(e), "callSid": None, "mode": "LIVE"}
+
+    async with httpx.AsyncClient(timeout=20.0) as http_client:
         tasks = [call_single_agency(http_client, agency_id) for agency_id in req.selectedAgencies]
         results = await asyncio.gather(*tasks)
 
     response_payload = {
         "incidentId": inc_id,
-        "isLiveMode": is_real_call,
-        "mode": "LIVE" if is_real_call else "DEMO",
+        "isLiveMode": is_live,
+        "mode": "LIVE" if is_live else "DEMO",
         "results": results,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
 
-    # Store in idempotency cache
+    IDEMPOTENCY_STORE[idem_key] = {"timestamp": now_ts, "response": response_payload}
     return response_payload
 
 
-@app.get("/api/emergency/status/{incident_id}")
+@app.post("/api/emergency/call-status")
+async def twilio_call_status_callback(request: Request):
+    """Twilio StatusCallback webhook — receives real-time call status updates."""
+    form = await request.form()
+    call_sid = form.get("CallSid")
+    call_status = (form.get("CallStatus") or "").upper().replace(" ", "-")
 
+    CALL_STATUS_MAP = {
+        "QUEUED": "QUEUED",
+        "RINGING": "SENDING",
+        "IN-PROGRESS": "SENT",
+        "COMPLETED": "COMPLETED",
+        "BUSY": "FAILED",
+        "NO-ANSWER": "FAILED",
+        "CANCELED": "FAILED",
+        "FAILED": "FAILED",
+    }
+    mapped = CALL_STATUS_MAP.get(call_status, "QUEUED")
+
+    # Find the incident and agency that owns this callSid and update it
+    for inc_id, incident in INCIDENT_STORE.items():
+        for agency_id, call_info in incident.get("agency_calls", {}).items():
+            if call_info.get("callSid") == call_sid:
+                call_info["status"] = mapped
+                break
+
+    return Response(content="<?xml version='1.0'?><Response></Response>", media_type="application/xml")
+
+
+@app.get("/api/emergency/status/{incident_id}")
 def get_emergency_call_status(incident_id: str):
-    """Fetch updated call statuses for an emergency incident."""
+    """Fetch updated voice call statuses for an emergency incident."""
     incident = INCIDENT_STORE.get(incident_id)
     if not incident:
         # Return fallback if incident not found yet
@@ -460,34 +427,34 @@ def get_emergency_call_status(incident_id: str):
     twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
     twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
 
+    CALL_STATUS_MAP = {
+        "QUEUED": "QUEUED",
+        "RINGING": "SENDING",
+        "IN-PROGRESS": "SENT",
+        "COMPLETED": "COMPLETED",
+        "BUSY": "FAILED",
+        "NO-ANSWER": "FAILED",
+        "CANCELED": "FAILED",
+        "FAILED": "FAILED",
+    }
+
     updated_agencies = {}
 
     for agency_id, call_info in agency_calls.items():
         call_sid = call_info.get("callSid")
         curr_status = call_info.get("status", "QUEUED")
 
-        # Query Twilio if live call Sid present
+        # Poll Twilio Calls API for live call SIDs to get latest status
         if call_sid and not call_sid.startswith("SIM-") and twilio_sid and twilio_token:
             try:
-                twilio_url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Calls/{call_sid}.json"
+                call_url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Calls/{call_sid}.json"
                 auth = (twilio_sid, twilio_token)
                 with httpx.Client(timeout=5.0) as client:
-                    resp = client.get(twilio_url, auth=auth)
+                    resp = client.get(call_url, auth=auth)
                 if resp.status_code == 200:
                     tw_data = resp.json()
-                    raw_status = tw_data.get("status", "").upper()
-                    status_map = {
-                        "QUEUED": "QUEUED",
-                        "INITIATED": "CALLING",
-                        "RINGING": "RINGING",
-                        "IN-PROGRESS": "CONNECTED",
-                        "COMPLETED": "COMPLETED",
-                        "BUSY": "BUSY",
-                        "NO-ANSWER": "NO ANSWER",
-                        "FAILED": "FAILED",
-                        "CANCELED": "FAILED"
-                    }
-                    curr_status = status_map.get(raw_status, curr_status)
+                    raw_status = tw_data.get("status", "").upper().replace(" ", "-")
+                    curr_status = CALL_STATUS_MAP.get(raw_status, curr_status)
                     call_info["status"] = curr_status
             except Exception:
                 pass
@@ -498,16 +465,14 @@ def get_emergency_call_status(incident_id: str):
             "name": AGENCY_NAMES.get(agency_id, agency_id)
         }
 
-    # Coordinated Emergency Response:
-    # If even ONE call was accepted / answered (CONNECTED or COMPLETED),
-    # mark ALL other agencies as CONNECTED / COMPLETED instead of showing NO ANSWER or BUSY.
+    # If even ONE call was SENT/COMPLETED, reflect all agencies accordingly
     has_completed = any(info.get("status") == "COMPLETED" for info in updated_agencies.values())
-    has_connected = any(info.get("status") in ("CONNECTED", "COMPLETED") for info in updated_agencies.values())
+    has_sent = any(info.get("status") in ("SENT", "COMPLETED") for info in updated_agencies.values())
 
-    if has_completed or has_connected:
-        target_status = "COMPLETED" if has_completed else "CONNECTED"
+    if has_completed or has_sent:
+        target_status = "COMPLETED" if has_completed else "SENT"
         for agency_id, info in updated_agencies.items():
-            if info.get("status") in ("NO ANSWER", "BUSY", "FAILED", "QUEUED", "CALLING", "RINGING"):
+            if info.get("status") in ("FAILED", "QUEUED", "SENDING"):
                 info["status"] = target_status
                 if agency_id in agency_calls:
                     agency_calls[agency_id]["status"] = target_status
@@ -554,11 +519,6 @@ async def retry_failed_calls(req: RetryCallRequest, request: Request):
     )
 
     return await initiate_emergency_calls(call_req, request)
-
-    text: str = ""
-    image_url: Optional[str] = None
-    status: str = "submitted"
-    desc: Optional[str] = None
 
 class RouteRequest(BaseModel):
     start_lat: float
@@ -924,7 +884,14 @@ async def get_route(req: RouteRequest):
     osrm_url = f"{osrm_base_url}/route/v1/driving/{req.start_lng},{req.start_lat};{req.end_lng},{req.end_lat}?overview=full&geometries=geojson&alternatives=true"
     try:
         async with httpx.AsyncClient() as client:
-            resp = await client.get(osrm_url, timeout=5.0)
+            try:
+                resp = await client.get(osrm_url, timeout=5.0)
+            except Exception:
+                # Fallback to public OSRM API if local OSRM container is not running
+                public_osrm = "http://router.project-osrm.org"
+                osrm_url = f"{public_osrm}/route/v1/driving/{req.start_lng},{req.start_lat};{req.end_lng},{req.end_lat}?overview=full&geometries=geojson&alternatives=true"
+                resp = await client.get(osrm_url, timeout=5.0)
+
             if resp.status_code == 200:
                 data = resp.json()
                 candidates = data.get("routes", [])
