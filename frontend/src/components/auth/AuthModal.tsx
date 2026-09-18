@@ -145,7 +145,7 @@ export function AuthModal() {
         <div className="text-center mb-6">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-mono uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
-            <span>SIH 2026 • Urban Flood Command Access</span>
+            <span>Municipal Clearance • Urban Flood Command</span>
           </div>
           <h2 className="text-2xl font-black text-white">
             {mode === 'signin' ? 'Sign In to Command Center' : 'Create Urban Flood Account'}
@@ -195,7 +195,7 @@ export function AuthModal() {
             <span className="text-[11px] font-mono uppercase text-slate-400 font-semibold tracking-wider">
               1-Click Demo Personas
             </span>
-            <span className="text-[10px] text-sky-400 font-mono">Instant Sandbox Access</span>
+            <span className="text-[10px] text-sky-400 font-mono">Instant Role Access</span>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
