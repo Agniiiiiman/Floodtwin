@@ -31,14 +31,33 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [activeSection, setActiveSection] = useState('home');
+
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+
+      // Section tracking for landing page
+      if (pathname === '/') {
+        const sections = ['how-it-works', 'features'];
+        let current = 'home';
+        for (const id of sections) {
+          const el = document.getElementById(id);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= 200) {
+              current = id;
+              break;
+            }
+          }
+        }
+        setActiveSection(current);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -51,8 +70,14 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  interface NavItem {
+    name: string;
+    href: string;
+    id?: string;
+  }
+
   // Show internal feature tools ONLY when user is logged in
-  const navLinks = isAuthenticated
+  const navLinks: NavItem[] = isAuthenticated
     ? [
         { name: 'Dashboard', href: '/dashboard' },
         { name: 'Digital Twin', href: '/digital-twin' },
@@ -62,11 +87,9 @@ export function Navbar() {
         { name: 'Citizen Reports', href: '/reports' },
       ]
     : [
-        { name: 'Home', href: '/' },
-        { name: 'Features', href: '/#features' },
-        { name: 'Sandbox', href: '/#sandbox' },
-        { name: 'How It Works', href: '/#how-it-works' },
-        { name: 'About SIH', href: '/#about' },
+        { name: 'Home', href: '/', id: 'home' },
+        { name: 'Features', href: '/#features', id: 'features' },
+        { name: 'How It Works', href: '/#how-it-works', id: 'how-it-works' },
       ];
 
   const handleLogout = () => {
@@ -102,19 +125,20 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 bg-slate-900/60 p-1.5 rounded-full border border-sky-500/20 backdrop-blur-md">
+          <nav className="hidden md:flex items-center space-x-1 lg:space-x-1.5 bg-slate-900/80 p-1.5 rounded-full border border-sky-500/25 backdrop-blur-xl shadow-lg shadow-slate-950/40">
             {navLinks.map((link) => {
-              const isActive =
-                pathname === link.href ||
-                (link.href !== '/' && !link.href.startsWith('/#') && pathname.startsWith(link.href));
+              const isActive = isAuthenticated
+                ? pathname === link.href || (link.href !== '/' && !link.href.startsWith('/#') && pathname.startsWith(link.href))
+                : (link.id ? activeSection === link.id : pathname === link.href);
+
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                  className={`px-4 py-1.5 rounded-full text-xs transition-all duration-200 ${
                     isActive
-                      ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25 font-semibold'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                      ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/30 font-semibold'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/70 font-medium'
                   }`}
                 >
                   {link.name}
@@ -236,9 +260,10 @@ export function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden mt-3 p-4 glass-panel rounded-2xl border border-sky-500/20 flex flex-col space-y-1.5 animate-fadeIn">
             {navLinks.map((link) => {
-              const isActive =
-                pathname === link.href ||
-                (link.href !== '/' && !link.href.startsWith('/#') && pathname.startsWith(link.href));
+              const isActive = isAuthenticated
+                ? pathname === link.href || (link.href !== '/' && !link.href.startsWith('/#') && pathname.startsWith(link.href))
+                : (link.id ? activeSection === link.id : pathname === link.href);
+
               return (
                 <Link
                   key={link.name}
@@ -246,7 +271,7 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-sky-500 text-white font-semibold shadow-md shadow-sky-500/25'
+                      ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold shadow-md shadow-sky-500/25'
                       : 'text-slate-200 hover:bg-sky-500/20 hover:text-sky-300'
                   }`}
                 >
