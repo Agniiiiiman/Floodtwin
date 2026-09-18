@@ -206,13 +206,13 @@ export function CitizenReportSection() {
                   key={i}
                   className={`p-3 rounded-xl bg-slate-900/70 border ${r.corroborated ? 'border-rose-500/40' : 'border-amber-500/30'} hover:border-slate-700 transition-colors`}
                 >
-                  <div className="flex items-center justify-between text-xs mb-1">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs mb-1.5">
                     <span className="font-bold text-white flex items-center space-x-1.5">
                       <span className={`w-2 h-2 rounded-full ${r.status === 'Severe' ? 'bg-rose-500' : 'bg-amber-500'}`} />
                       <span>{r.status} Severity</span>
                     </span>
-                    <span className={`text-[10px] font-semibold ${r.corroborated ? 'text-rose-300' : 'text-amber-300'}`}>
-                      {r.corroborated ? 'Confirmed by 2 reports' : `Waiting for corroboration (${r.report_count ?? 1}/2)`}
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${r.corroborated ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}`}>
+                      {r.corroborated ? 'Confirmed (≥2 pings)' : `Pending (${r.report_count ?? 1}/2)`}
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">
                       {r.lat.toFixed(3)}, {r.lng.toFixed(3)}

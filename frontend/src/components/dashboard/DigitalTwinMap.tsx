@@ -221,24 +221,24 @@ export default function DigitalTwinMap({
   };
 
   return (
-    <div className="relative w-full h-[450px] lg:h-[500px] rounded-2xl overflow-hidden glass-panel border border-sky-500/20 shadow-2xl">
+    <div className="relative w-full h-[360px] sm:h-[450px] lg:h-[500px] rounded-2xl overflow-hidden glass-panel border border-sky-500/20 shadow-2xl">
       {/* Map Canvas Container */}
       <div ref={mapContainerRef} className="w-full h-full" />
 
       {/* Top Map Action Bar */}
-      <div className="absolute top-4 left-4 right-4 z-[400] flex items-center justify-between pointer-events-none">
-        <div className="glass-panel px-3.5 py-1.5 rounded-xl border border-sky-500/30 flex items-center space-x-2 pointer-events-auto shadow-md">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs font-semibold text-white tracking-wide">
-            Ward Digital Twin Mesh Active
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-[400] flex items-center justify-between pointer-events-none gap-2">
+        <div className="glass-panel px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-sky-500/30 flex items-center space-x-1.5 sm:space-x-2 pointer-events-auto shadow-md">
+          <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          <span className="text-[11px] sm:text-xs font-semibold text-white tracking-wide truncate">
+            Ward Twin Mesh
           </span>
         </div>
 
-        <div className="flex items-center space-x-2 pointer-events-auto">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 pointer-events-auto">
           <button
             onClick={handleLocateMe}
             disabled={isLocating}
-            className="glass-panel hover:glass-panel-glow px-3 py-1.5 rounded-xl text-sky-400 hover:text-white border border-sky-500/30 text-xs font-medium flex items-center space-x-1.5 transition-all shadow-md"
+            className="glass-panel hover:glass-panel-glow p-2 sm:px-3 sm:py-1.5 rounded-xl text-sky-400 hover:text-white border border-sky-500/30 text-xs font-medium flex items-center space-x-1.5 transition-all shadow-md cursor-pointer"
             title="Center on My Location"
           >
             <Crosshair className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
@@ -247,7 +247,7 @@ export default function DigitalTwinMap({
 
           <button
             onClick={handleResetPilot}
-            className="glass-panel hover:glass-panel-glow px-3 py-1.5 rounded-xl text-slate-300 hover:text-white border border-sky-500/30 text-xs font-medium flex items-center space-x-1.5 transition-all shadow-md"
+            className="glass-panel hover:glass-panel-glow p-2 sm:px-3 sm:py-1.5 rounded-xl text-slate-300 hover:text-white border border-sky-500/30 text-xs font-medium flex items-center space-x-1.5 transition-all shadow-md cursor-pointer"
             title="Reset to Pilot Ward (South Mumbai)"
           >
             <MapPin className="w-3.5 h-3.5 text-sky-400" />
@@ -257,20 +257,20 @@ export default function DigitalTwinMap({
       </div>
 
       {/* Bottom Floating Legend */}
-      <div className="absolute bottom-4 left-4 z-[400] pointer-events-auto glass-panel p-2.5 rounded-xl border border-sky-500/20 text-[11px] hidden sm:flex items-center space-x-4">
+      <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-[400] pointer-events-auto glass-panel p-2 sm:p-2.5 rounded-xl border border-sky-500/20 text-[10px] sm:text-[11px] hidden sm:flex items-center space-x-3 sm:space-x-4">
         <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-sky-400" />
+          <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-sky-400" />
           <span className="text-slate-300">Sensor Nodes</span>
         </div>
         <div className="flex items-center space-x-1.5">
-          <span className="w-3.5 h-1 bg-sky-500 rounded" />
+          <span className="w-3 sm:w-3.5 h-1 bg-sky-500 rounded" />
           <span className="text-slate-300">Underground Trunk</span>
         </div>
         <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-rose-500/40 border border-rose-500" />
+          <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500/40 border border-rose-500" />
           <span className="text-slate-300">Surge Zone</span>
         </div>
-        <div className="border-l border-slate-700 pl-4 text-amber-300">Synthetic data</div>
+        <div className="border-l border-slate-700 pl-3 text-amber-300 font-mono">Synthetic data</div>
       </div>
     </div>
   );

@@ -68,19 +68,19 @@ export function LiveMetrics({ data, loading, onRefresh }: LiveMetricsProps) {
   return (
     <div className="space-y-4">
       {/* Top Banner Alert */}
-      <div className={`p-4 rounded-2xl border ${riskClasses.bg} ${riskClasses.border} flex items-center justify-between backdrop-blur-md`}>
-        <div className="flex items-center space-x-3">
-          <div className={`w-3.5 h-3.5 rounded-full ${riskClasses.dot} animate-pulse`} />
+      <div className={`p-3.5 sm:p-4 rounded-2xl border ${riskClasses.bg} ${riskClasses.border} flex flex-col sm:flex-row sm:items-center justify-between gap-3 backdrop-blur-md`}>
+        <div className="flex items-start sm:items-center space-x-3">
+          <div className={`w-3.5 h-3.5 rounded-full ${riskClasses.dot} animate-pulse shrink-0 mt-0.5 sm:mt-0`} />
           <div>
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm font-bold uppercase tracking-wider ${riskClasses.text}`}>
+            <div className="flex items-center flex-wrap gap-2">
+              <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${riskClasses.text}`}>
                 {risk} Flood Risk Warning
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-900/60 text-slate-300 border border-slate-700/50">
+              <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-slate-900/60 text-slate-300 border border-slate-700/50">
                 Confidence: {data?.confidence || 'High'}
               </span>
             </div>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-slate-300 mt-1">
               {data?.reason || 'Hydraulic inflow within baseline ward drainage specs.'}
             </p>
           </div>
@@ -90,7 +90,7 @@ export function LiveMetrics({ data, loading, onRefresh }: LiveMetricsProps) {
           onClick={onRefresh}
           disabled={loading}
           aria-label="Refresh telemetry"
-          className="p-2.5 rounded-xl glass-panel text-sky-400 hover:text-white hover:border-sky-400/50 transition-colors disabled:opacity-50"
+          className="self-end sm:self-auto p-2 sm:p-2.5 rounded-xl glass-panel text-sky-400 hover:text-white hover:border-sky-400/50 transition-colors disabled:opacity-50 shrink-0 cursor-pointer"
           title="Refresh forecast data"
         >
           <RotateCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -98,42 +98,42 @@ export function LiveMetrics({ data, loading, onRefresh }: LiveMetricsProps) {
       </div>
 
       {/* Grid of 3 Telemetry Gauges */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* Metric 1: Water Level Depth */}
-        <div className="glass-panel p-5 rounded-2xl relative overflow-hidden group">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-2">
-            <span>PREDICTED WATER DEPTH</span>
+        <div className="glass-panel p-4 sm:p-5 rounded-2xl relative overflow-hidden group">
+          <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-1.5 sm:mb-2">
+            <span className="text-[11px] sm:text-xs">PREDICTED WATER DEPTH</span>
             <Droplets className="w-4 h-4 text-sky-400" />
           </div>
           <div className="flex items-baseline space-x-2">
-            <span className="text-3xl font-extrabold text-white tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               {depth}
             </span>
-            <span className="text-sm font-medium text-sky-400">m</span>
+            <span className="text-xs sm:text-sm font-medium text-sky-400">m</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
-            <div className="flex items-center space-x-1">
-              <TrendingUp className="w-3 h-3 text-sky-400" />
-              <span>Manning street inundation estimate</span>
+          <div className="text-[10px] sm:text-[11px] text-slate-400 mt-2 flex items-center justify-between gap-1">
+            <div className="flex items-center space-x-1 truncate">
+              <TrendingUp className="w-3 h-3 text-sky-400 shrink-0" />
+              <span className="truncate">Manning inundation estimate</span>
             </div>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">UNCALIBRATED</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono shrink-0">UNCALIBRATED</span>
           </div>
         </div>
 
         {/* Metric 2: Network Pipe Load */}
-        <div className="glass-panel p-5 rounded-2xl relative overflow-hidden group">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-2">
-            <span>DRAINAGE LOAD UTILIZATION</span>
+        <div className="glass-panel p-4 sm:p-5 rounded-2xl relative overflow-hidden group">
+          <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-1.5 sm:mb-2">
+            <span className="text-[11px] sm:text-xs">DRAINAGE LOAD UTILIZATION</span>
             <Gauge className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="flex items-baseline space-x-2">
-            <span className="text-3xl font-extrabold text-white tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               {networkLoad}
             </span>
-            <span className="text-sm font-medium text-emerald-400">%</span>
+            <span className="text-xs sm:text-sm font-medium text-emerald-400">%</span>
           </div>
           {/* Progress Bar */}
-          <div className="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+          <div className="w-full bg-slate-800 rounded-full h-1.5 mt-2.5 sm:mt-3 overflow-hidden">
             <div
               className={`h-full transition-all duration-500 ${
                 networkLoad > 80 ? 'bg-rose-500' : networkLoad > 60 ? 'bg-amber-500' : 'bg-emerald-500'
@@ -141,26 +141,26 @@ export function LiveMetrics({ data, loading, onRefresh }: LiveMetricsProps) {
               style={{ width: `${networkLoad}%` }}
             />
           </div>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
+          <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 mt-2">
             <span>Synthetic drainage load</span>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-300 font-mono">ESTIMATED</span>
           </div>
         </div>
 
         {/* Metric 3: Live Rainfall Intensity */}
-        <div className="glass-panel p-5 rounded-2xl relative overflow-hidden group">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-2">
-            <span>CURRENT PRECIPITATION</span>
+        <div className="glass-panel p-4 sm:p-5 rounded-2xl relative overflow-hidden group">
+          <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-1.5 sm:mb-2">
+            <span className="text-[11px] sm:text-xs">CURRENT PRECIPITATION</span>
             <CloudRain className="w-4 h-4 text-blue-400" />
           </div>
           <div className="flex items-baseline space-x-2">
-            <span className="text-3xl font-extrabold text-white tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               {rainfall.toFixed(1)}
             </span>
-            <span className="text-sm font-medium text-blue-400">mm</span>
+            <span className="text-xs sm:text-sm font-medium text-blue-400">mm</span>
           </div>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-            <span>Open-Meteo Kolkata Sync</span>
+          <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 mt-2">
+            <span>Open-Meteo Sync</span>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 font-mono flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
             </span>

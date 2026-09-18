@@ -143,23 +143,23 @@ export default function LandingPage() {
   return (
     <div className="space-y-24 pb-28 overflow-hidden">
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden py-16 lg:py-24">
+      <section className="relative min-h-[85vh] sm:min-h-[90vh] flex items-center justify-center overflow-hidden py-10 sm:py-16 lg:py-24">
         {/* Animated Rain Particles */}
         <RainEffect />
 
         {/* Ambient Glows */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-sky-500/10 rounded-full blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-10 left-1/4 w-[450px] h-[450px] bg-blue-600/15 rounded-full blur-[130px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[500px] lg:w-[700px] h-[320px] sm:h-[500px] lg:h-[700px] bg-sky-500/10 rounded-full blur-[100px] sm:blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-10 left-1/4 w-[280px] sm:w-[450px] h-[280px] sm:h-[450px] bg-blue-600/15 rounded-full blur-[90px] sm:blur-[130px] pointer-events-none" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Top Platform Badge */}
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-8 backdrop-blur-md shadow-inner">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>Next-Gen Urban Flood Risk Digital Twin • Hydrodynamic Intelligence</span>
+          <div className="inline-flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-6 sm:mb-8 backdrop-blur-md shadow-inner max-w-full text-center">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+            <span className="truncate sm:whitespace-normal">Urban Flood Risk Digital Twin • Hydrodynamic Intelligence</span>
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.1] mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white max-w-5xl mx-auto leading-[1.15] sm:leading-[1.1] mb-5 sm:mb-6">
             Predict Flood Risks.{' '}
             <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
               Navigate Safely.
@@ -168,19 +168,19 @@ export default function LandingPage() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-base sm:text-lg lg:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed mb-10">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed mb-8 sm:mb-10 px-2 sm:px-0">
             Real-time hydrodynamic digital twins powered by Manning&apos;s hydraulic equations, 
             instant OSRM emergency evacuation routing, and crowdsourced citizen ground verification.
           </p>
 
           {/* Main Hero CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12 w-full max-w-md sm:max-w-none mx-auto">
             {isAuthenticated ? (
               <Link
                 href="/dashboard"
-                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-sm font-bold tracking-wide shadow-xl shadow-sky-500/30 hover:shadow-sky-500/50 hover:scale-[1.02] transition-all duration-200"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs sm:text-sm font-bold tracking-wide shadow-xl shadow-sky-500/30 hover:shadow-sky-500/50 hover:scale-[1.02] transition-all duration-200"
               >
-                <Activity className="w-5 h-5" />
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Go to Command Dashboard</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Link>
@@ -188,16 +188,16 @@ export default function LandingPage() {
               <>
                 <button
                   onClick={() => openAuthModal('signin')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-sm font-bold tracking-wide shadow-xl shadow-sky-500/30 hover:shadow-sky-500/50 hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs sm:text-sm font-bold tracking-wide shadow-xl shadow-sky-500/30 hover:shadow-sky-500/50 hover:scale-[1.02] transition-all duration-200 cursor-pointer"
                 >
-                  <Activity className="w-5 h-5" />
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Login to Command Center</span>
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </button>
 
                 <button
                   onClick={() => openAuthModal('signup')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-white border border-sky-500/40 text-sm font-semibold tracking-wide hover:scale-[1.02] transition-all duration-200 shadow-md shadow-sky-500/10 cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-white border border-sky-500/40 text-xs sm:text-sm font-semibold tracking-wide hover:scale-[1.02] transition-all duration-200 shadow-md shadow-sky-500/10 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-sky-400" />
                   <span>Create Account</span>
@@ -207,40 +207,40 @@ export default function LandingPage() {
 
             <a
               href="#features"
-              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-4 rounded-2xl glass-panel text-sky-300 hover:text-white hover:border-sky-400/50 text-sm font-semibold tracking-wide hover:scale-[1.02] transition-all duration-200"
+              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl glass-panel text-sky-300 hover:text-white hover:border-sky-400/50 text-xs sm:text-sm font-semibold tracking-wide hover:scale-[1.02] transition-all duration-200"
             >
               <span>Explore Features</span>
             </a>
           </div>
 
           {/* Quick 1-Click Persona Sandbox Access Banner */}
-          <div className="max-w-3xl mx-auto p-4 rounded-2xl glass-panel border border-sky-500/25 backdrop-blur-md shadow-xl">
+          <div className="max-w-3xl mx-auto p-3.5 sm:p-4 rounded-2xl glass-panel border border-sky-500/25 backdrop-blur-md shadow-xl">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center space-x-2 text-left">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-slate-300 font-medium">
-                  <strong>Instant Demo Access:</strong> Test features with 1-click role logins:
+              <div className="flex items-center space-x-2 text-center sm:text-left">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-[11px] sm:text-xs text-slate-300 font-medium">
+                  <strong>Instant Demo Access:</strong> Test features with 1-click roles:
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center flex-wrap justify-center gap-1.5 sm:gap-2">
                 <button
                   onClick={() => handleQuickDemoEnter('commander')}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500 text-xs font-semibold text-sky-300 transition-all cursor-pointer flex items-center space-x-1"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-sky-500/20 border border-slate-700 hover:border-sky-500 text-[11px] sm:text-xs font-semibold text-sky-300 transition-all cursor-pointer flex items-center space-x-1"
                 >
                   <span>👨‍✈️</span>
                   <span>Commander</span>
                 </button>
                 <button
                   onClick={() => handleQuickDemoEnter('engineer')}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-emerald-500/20 border border-slate-700 hover:border-emerald-500 text-xs font-semibold text-emerald-300 transition-all cursor-pointer flex items-center space-x-1"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-emerald-500/20 border border-slate-700 hover:border-emerald-500 text-[11px] sm:text-xs font-semibold text-emerald-300 transition-all cursor-pointer flex items-center space-x-1"
                 >
                   <span>👩‍🔬</span>
                   <span>Engineer</span>
                 </button>
                 <button
                   onClick={() => handleQuickDemoEnter('citizen')}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-purple-500/20 border border-slate-700 hover:border-purple-500 text-xs font-semibold text-purple-300 transition-all cursor-pointer flex items-center space-x-1"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-purple-500/20 border border-slate-700 hover:border-purple-500 text-[11px] sm:text-xs font-semibold text-purple-300 transition-all cursor-pointer flex items-center space-x-1"
                 >
                   <span>🧑‍🚒</span>
                   <span>Citizen</span>
@@ -253,29 +253,29 @@ export default function LandingPage() {
 
       {/* 2. STATS & KEY CAPABILITIES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          <div className="glass-panel p-6 rounded-3xl border border-sky-500/20 text-center relative overflow-hidden group hover:border-sky-500/40 transition-all">
-            <div className="text-3xl sm:text-4xl font-black text-white font-mono">&lt; 500ms</div>
-            <div className="text-xs text-sky-400 font-semibold mt-1 uppercase tracking-wider">Hydraulic Solve Time</div>
-            <p className="text-[11px] text-slate-400 mt-2">Manning conduit flow & rational runoff calculation</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-500/20 text-center relative overflow-hidden group hover:border-sky-500/40 transition-all">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-mono">&lt; 500ms</div>
+            <div className="text-[10px] sm:text-xs text-sky-400 font-semibold mt-1 uppercase tracking-wider">Hydraulic Solve Time</div>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 sm:mt-2">Manning conduit flow & rational runoff</p>
           </div>
 
-          <div className="glass-panel p-6 rounded-3xl border border-emerald-500/20 text-center relative overflow-hidden group hover:border-emerald-500/40 transition-all">
-            <div className="text-3xl sm:text-4xl font-black text-white font-mono">100%</div>
-            <div className="text-xs text-emerald-400 font-semibold mt-1 uppercase tracking-wider">Street-Level Granularity</div>
-            <p className="text-[11px] text-slate-400 mt-2">Precise junction, slope, and culvert mapping</p>
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-emerald-500/20 text-center relative overflow-hidden group hover:border-emerald-500/40 transition-all">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-mono">100%</div>
+            <div className="text-[10px] sm:text-xs text-emerald-400 font-semibold mt-1 uppercase tracking-wider">Street-Level Detail</div>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 sm:mt-2">Junction, slope, and culvert mapping</p>
           </div>
 
-          <div className="glass-panel p-6 rounded-3xl border border-amber-500/20 text-center relative overflow-hidden group hover:border-amber-500/40 transition-all">
-            <div className="text-3xl sm:text-4xl font-black text-white font-mono">1,435m</div>
-            <div className="text-xs text-amber-400 font-semibold mt-1 uppercase tracking-wider">Zero-Flood Detour</div>
-            <p className="text-[11px] text-slate-400 mt-2">Dynamic OSRM flood-avoidance corridor</p>
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-amber-500/20 text-center relative overflow-hidden group hover:border-amber-500/40 transition-all">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-mono">1,435m</div>
+            <div className="text-[10px] sm:text-xs text-amber-400 font-semibold mt-1 uppercase tracking-wider">Zero-Flood Detour</div>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 sm:mt-2">Dynamic OSRM avoidance corridor</p>
           </div>
 
-          <div className="glass-panel p-6 rounded-3xl border border-purple-500/20 text-center relative overflow-hidden group hover:border-purple-500/40 transition-all">
-            <div className="text-3xl sm:text-4xl font-black text-white font-mono">130+</div>
-            <div className="text-xs text-purple-400 font-semibold mt-1 uppercase tracking-wider">Global Radar Hubs</div>
-            <p className="text-[11px] text-slate-400 mt-2">Continuous Open-Meteo precipitation mesh</p>
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-purple-500/20 text-center relative overflow-hidden group hover:border-purple-500/40 transition-all">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-mono">130+</div>
+            <div className="text-[10px] sm:text-xs text-purple-400 font-semibold mt-1 uppercase tracking-wider">Global Radar Hubs</div>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 sm:mt-2">Open-Meteo precipitation mesh</p>
           </div>
         </div>
       </section>

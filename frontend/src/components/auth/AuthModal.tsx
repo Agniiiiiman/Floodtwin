@@ -119,7 +119,7 @@ export function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
       {/* Dark Blur Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity duration-300"
@@ -127,7 +127,7 @@ export function AuthModal() {
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-lg rounded-3xl bg-slate-900/95 border border-sky-500/30 p-6 sm:p-8 shadow-2xl shadow-sky-500/10 z-10 my-8 overflow-hidden">
+      <div className="relative w-full max-w-lg rounded-3xl bg-slate-900/95 border border-sky-500/30 p-5 sm:p-8 shadow-2xl shadow-sky-500/10 z-10 my-auto max-h-[92vh] overflow-y-auto">
         {/* Glow orb */}
         <div className="absolute -top-20 -right-20 w-56 h-56 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-56 h-56 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
@@ -135,22 +135,22 @@ export function AuthModal() {
         {/* Close Button */}
         <button
           onClick={closeAuthModal}
-          className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
           aria-label="Close authentication modal"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header Branding */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-mono uppercase tracking-wider mb-3">
+        <div className="text-center mb-5 sm:mb-6 pr-6 sm:pr-0">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-[10px] sm:text-xs font-mono uppercase tracking-wider mb-2.5 sm:mb-3">
             <Sparkles className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
             <span>Municipal Clearance • Urban Flood Command</span>
           </div>
-          <h2 className="text-2xl font-black text-white">
+          <h2 className="text-xl sm:text-2xl font-black text-white">
             {mode === 'signin' ? 'Sign In to Command Center' : 'Create Urban Flood Account'}
           </h2>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-1 max-w-sm mx-auto">
             {mode === 'signin'
               ? 'Access real-time Ward A/B flood digital twins, live Manning hydraulics, and evacuation routing.'
               : 'Join as a Municipal Commander, Hydro Engineer, or Ground Citizen Responder.'}
@@ -158,7 +158,7 @@ export function AuthModal() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-950 border border-slate-800 mb-6">
+        <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-950 border border-slate-800 mb-5 sm:mb-6">
           <button
             type="button"
             onClick={() => {

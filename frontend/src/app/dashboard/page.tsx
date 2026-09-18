@@ -139,22 +139,22 @@ export default function DashboardPage() {
     <AuthGuard moduleName="Command Center Dashboard">
       <div className="space-y-12 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
       {/* 1. Personalized Operational Banner */}
-      <div className="relative rounded-3xl p-6 sm:p-8 glass-panel border border-sky-500/30 overflow-hidden bg-gradient-to-r from-slate-900/90 via-slate-900/95 to-sky-950/40 shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="relative rounded-2xl sm:rounded-3xl p-4 sm:p-8 glass-panel border border-sky-500/30 overflow-hidden bg-gradient-to-r from-slate-900/90 via-slate-900/95 to-sky-950/40 shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-sky-500/10 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none" />
         
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-semibold">
+              <span className="inline-flex items-center space-x-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] sm:text-xs font-mono font-semibold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Operational Command Active</span>
               </span>
-              <span className="px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs font-mono">
+              <span className="px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-[11px] sm:text-xs font-mono truncate max-w-[280px] sm:max-w-none">
                 {user ? user.agency : 'Municipal Disaster Management Grid'}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
               {user ? (
                 <>Welcome back, <span className="text-sky-400">{user.name}</span></>
               ) : (
@@ -162,10 +162,10 @@ export default function DashboardPage() {
               )}
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl">
+            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
               {user ? (
                 <span>
-                  Role: <strong className="text-white">{user.roleTitle}</strong> • Assigned Sector: <strong className="text-sky-300">{user.ward}</strong> • {user.clearanceLevel}
+                  Role: <strong className="text-white">{user.roleTitle}</strong> • Sector: <strong className="text-sky-300">{user.ward}</strong> • {user.clearanceLevel}
                 </span>
               ) : (
                 <span>
@@ -176,37 +176,37 @@ export default function DashboardPage() {
           </div>
 
           {/* User Quick Actions */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             {user ? (
-              <div className="flex items-center gap-2 p-1.5 bg-slate-950/80 rounded-2xl border border-slate-800">
-                <div className="flex items-center space-x-2 px-3 py-1.5">
-                  <span className="text-xl">{user.avatar}</span>
+              <div className="flex items-center gap-2 p-1.5 bg-slate-950/80 rounded-2xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-start">
+                <div className="flex items-center space-x-2 px-2 sm:px-3 py-1">
+                  <span className="text-lg sm:text-xl">{user.avatar}</span>
                   <div className="text-left">
-                    <div className="text-xs font-bold text-white leading-tight">{user.name}</div>
+                    <div className="text-xs font-bold text-white leading-tight truncate max-w-[120px] sm:max-w-none">{user.name}</div>
                     <div className="text-[10px] text-sky-400 font-mono leading-tight">{user.roleTitle}</div>
                   </div>
                 </div>
 
                 <button
                   onClick={logout}
-                  className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-rose-950/40 hover:text-rose-400 text-slate-400 text-xs font-medium border border-slate-800 transition-colors flex items-center space-x-1.5 cursor-pointer"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-950/40 hover:text-rose-400 text-slate-400 text-xs font-medium border border-slate-800 transition-colors flex items-center space-x-1.5 cursor-pointer"
                   title="Sign Out"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Sign Out</span>
+                  <span className="inline">Sign Out</span>
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => openAuthModal('signin')}
-                  className="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold shadow-lg shadow-sky-500/25 transition-all cursor-pointer"
+                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold shadow-lg shadow-sky-500/25 transition-all cursor-pointer text-center"
                 >
                   Sign In
                 </button>
                 <button
                   onClick={() => openAuthModal('signup')}
-                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-bold transition-all cursor-pointer"
+                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-bold transition-all cursor-pointer text-center"
                 >
                   Register
                 </button>
@@ -216,12 +216,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Persona Switcher for Evaluation */}
-        <div className="mt-6 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="mt-5 pt-3.5 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
           <div className="flex items-center space-x-2 text-slate-400">
-            <User className="w-3.5 h-3.5 text-sky-400" />
-            <span className="text-[11px] font-mono uppercase">Quick Switch Persona:</span>
+            <User className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+            <span className="text-[10px] sm:text-[11px] font-mono uppercase">Quick Persona Switch:</span>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {(['commander', 'engineer', 'citizen'] as const).map((roleKey) => {
               const p = PRESET_PERSONAS[roleKey];
               const isCurrent = user?.role === roleKey;
@@ -229,7 +229,7 @@ export default function DashboardPage() {
                 <button
                   key={roleKey}
                   onClick={() => loginAsPreset(roleKey)}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer flex items-center space-x-1.5 ${
+                  className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-medium border transition-all cursor-pointer flex items-center space-x-1 ${
                     isCurrent
                       ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
                       : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
