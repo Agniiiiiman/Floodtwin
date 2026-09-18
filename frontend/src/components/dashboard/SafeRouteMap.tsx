@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import L from 'leaflet';
+import React, { useState, useEffect, useRef } from 'react';
 import { RouteResponse } from '@/types';
-import { Maximize2, ShieldCheck, MapPin, AlertTriangle, Compass } from 'lucide-react';
+import { Maximize2 } from 'lucide-react';
+import L from 'leaflet';
 
 interface SafeRouteMapProps {
   routeResult: RouteResponse;
@@ -13,16 +13,6 @@ interface SafeRouteMapProps {
   toPlaceName?: string;
 }
 
-// Known low-lying flood hazard zones in Mumbai for realistic visualization of bypassed hazards
-const FLOOD_HAZARD_ZONES: { name: string; coords: [number, number]; radius: number }[] = [
-  { name: 'Hindmata Low-Basin Depression', coords: [19.0080, 72.8410], radius: 450 },
-  { name: 'Sion Gandhi Market Waterlogged Basin', coords: [19.0380, 72.8600], radius: 500 },
-  { name: 'Crawford Market Underpass Conduit', coords: [18.9460, 72.8330], radius: 350 },
-  { name: 'Milan Subway Inundation Hotspot', coords: [19.0880, 72.8420], radius: 400 },
-  { name: 'Kurla LBS Marg Surcharged Drain', coords: [19.0680, 72.8750], radius: 550 },
-  { name: 'Colaba Causeway Low Point', coords: [18.9180, 72.8260], radius: 300 },
-];
-
 export default function SafeRouteMap({
   routeResult,
   origin,
@@ -30,293 +20,212 @@ export default function SafeRouteMap({
   fromPlaceName = 'Starting Point',
   toPlaceName = 'Safe Destination',
 }: SafeRouteMapProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const routeLayerRef = useRef<L.LayerGroup | null>(null);
-  const hazardsLayerRef = useRef<L.LayerGroup | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
 
-  // Initialize Map
+  const coords: [number, number][] =
+    routeResult.route?.routes?.[0]?.geometry?.coordinates?.map(
+      ([lng, lat]: [number, number]) => [lat, lng]
+    ) ?? [];
+
+  // Flood hazard zones for the map overlay
+  const HAZARD_ZONES: { name: string; coords: [number, number]; radius: number }[] = [
+    { name: 'Hindmata Depression', coords: [19.008, 72.841], radius: 180 },
+    { name: 'Sion Basin', coords: [19.038, 72.86], radius: 200 },
+    { name: 'Crawford Underpass', coords: [18.946, 72.833], radius: 140 },
+    { name: 'Milan Subway', coords: [19.088, 72.842], radius: 160 },
+    { name: 'Kurla LBS Drain', coords: [19.068, 72.875], radius: 220 },
+    { name: 'Colaba Low Point', coords: [18.918, 72.826], radius: 120 },
+  ];
+
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!mapContainerRef.current) return;
 
-    // Reset container if previously initialized
-    if (mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
     }
 
-    const container = containerRef.current as HTMLDivElement & { _leaflet_id?: number };
-    if (container._leaflet_id) {
-      delete container._leaflet_id;
+    const leafletContainer = mapContainerRef.current as HTMLDivElement & { _leaflet_id?: number };
+    if (leafletContainer._leaflet_id) {
+      delete leafletContainer._leaflet_id;
     }
 
-    try {
-      const map = L.map(containerRef.current, {
-        zoomControl: false,
-        attributionControl: false,
-      }).setView(origin, 14);
+    let center = [18.93, 72.83] as L.LatLngExpression;
+    if (coords.length > 0) {
+      center = coords[Math.floor(coords.length / 2)];
+    } else {
+      center = [(origin[0] + destination[0]) / 2, (origin[1] + destination[1]) / 2];
+    }
 
-      L.control.zoom({ position: 'bottomright' }).addTo(map);
+    const map = L.map(mapContainerRef.current, {
+      center: center,
+      zoom: 14,
+      zoomControl: false,
+    });
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      // Clean OpenStreetMap tile layer without any watermark
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors',
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap',
+      className: 'map-tiles'
+    }).addTo(map);
+
+    // Hazard Zones
+    HAZARD_ZONES.forEach(hz => {
+      L.circle(hz.coords, {
+        color: '#ef4444',
+        fillColor: '#f43f5e',
+        fillOpacity: 0.15,
+        radius: hz.radius,
+        weight: 1.5,
+        dashArray: '5, 5'
+      }).addTo(map).bindPopup(`
+        <div style="padding: 2px;">
+          <b style="color:#ef4444">⚠ ${hz.name}</b>
+        </div>
+      `);
+    });
+
+    if (coords.length > 0) {
+      // Background glow
+      L.polyline(coords, {
+        color: '#059669',
+        weight: 18,
+        opacity: 0.25,
+        lineCap: 'round',
+        lineJoin: 'round'
       }).addTo(map);
 
-      mapRef.current = map;
-      hazardsLayerRef.current = L.layerGroup().addTo(map);
-      routeLayerRef.current = L.layerGroup().addTo(map);
+      // Mid stroke
+      L.polyline(coords, {
+        color: '#10b981',
+        weight: 7,
+        opacity: 0.9,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(map);
 
-      // CRITICAL FIX FOR LEAFLET: Force resize recalculation so tiles always render
-      setTimeout(() => {
-        if (mapRef.current) {
-          mapRef.current.invalidateSize();
-        }
-      }, 200);
+      // Center dashed
+      L.polyline(coords, {
+        color: 'white',
+        weight: 2,
+        opacity: 0.9,
+        dashArray: '8 12',
+        lineCap: 'round'
+      }).addTo(map);
 
-      setTimeout(() => {
-        if (mapRef.current) {
-          mapRef.current.invalidateSize();
-        }
-      }, 600);
-    } catch (err) {
-      console.warn('Map initialization note:', err);
+      const bounds = L.latLngBounds(coords);
+      map.fitBounds(bounds, { padding: [40, 40] });
+    } else {
+      const bounds = L.latLngBounds([origin, destination]);
+      map.fitBounds(bounds, { padding: [40, 40] });
     }
+
+    // Origin marker
+    const originIcon = L.divIcon({
+      html: `
+        <div style="position:relative; width:36px; height:36px; pointer-events: none;">
+          <div style="position:absolute; width:100%; height:100%; border-radius:50%; background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%); border:3px solid white; display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:16px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">A</div>
+          <div style="position:absolute; bottom:-8px; left:12px; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid #0284c7;"></div>
+          <div style="position:absolute; top:-35px; left:50%; transform:translateX(-50%); background:rgba(15, 23, 42, 0.85); color:#7dd3fc; font-size:10px; font-weight:bold; padding:2px 8px; border-radius:4px; white-space:nowrap; border: 1px solid rgba(56, 189, 248, 0.2);">
+            📍 ${fromPlaceName.length > 22 ? fromPlaceName.slice(0, 22) + '…' : fromPlaceName}
+          </div>
+        </div>
+      `,
+      className: '',
+      iconSize: [36, 42],
+      iconAnchor: [18, 42],
+    });
+    L.marker(origin, { icon: originIcon }).addTo(map);
+
+    // Dest marker
+    const destIcon = L.divIcon({
+      html: `
+        <div style="position:relative; width:40px; height:40px; pointer-events: none;">
+          <div style="position:absolute; width:100%; height:100%; border-radius:50%; background: radial-gradient(circle, #34d399 0%, #059669 100%); border:3px solid white; display:flex; align-items:center; justify-content:center; color:white; font-size:18px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">🛡️</div>
+          <div style="position:absolute; bottom:-8px; left:14px; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid #059669;"></div>
+          <div style="position:absolute; top:-38px; left:50%; transform:translateX(-50%); background:rgba(15, 23, 42, 0.85); color:#6ee7b7; font-size:10px; font-weight:bold; padding:2px 8px; border-radius:4px; white-space:nowrap; border: 1px solid rgba(52, 211, 153, 0.2);">
+            🛡️ ${toPlaceName.length > 24 ? toPlaceName.slice(0, 24) + '…' : toPlaceName}
+          </div>
+        </div>
+      `,
+      className: '',
+      iconSize: [40, 48],
+      iconAnchor: [20, 48],
+    });
+    L.marker(destination, { icon: destIcon }).addTo(map);
+
+    mapInstanceRef.current = map;
+    setMapLoaded(true);
+
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 200);
 
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
+      clearTimeout(timer);
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
-      routeLayerRef.current = null;
-      hazardsLayerRef.current = null;
     };
-  }, []);
-
-  // Update Route and Hazards Layer
-  useEffect(() => {
-    const map = mapRef.current;
-    const routeLayer = routeLayerRef.current;
-    const hazardsLayer = hazardsLayerRef.current;
-
-    if (!map || !routeLayer) return;
-
-    routeLayer.clearLayers();
-    if (hazardsLayer) hazardsLayer.clearLayers();
-
-    // Render flood hazard avoidance zones
-    if (hazardsLayer) {
-      FLOOD_HAZARD_ZONES.forEach((hazard) => {
-        // Red striped hazard circle
-        L.circle(hazard.coords, {
-          color: '#ef4444',
-          fillColor: '#f43f5e',
-          fillOpacity: 0.22,
-          weight: 2,
-          dashArray: '5, 8',
-        })
-          .bindPopup(`
-            <div style="font-family: sans-serif; font-size: 12px; padding: 2px;">
-              <b style="color: #ef4444;">⚠️ FLOOD HAZARD EXCLUSION ZONE</b><br/>
-              <span style="color: #334155;">${hazard.name}</span><br/>
-              <span style="font-size: 10px; color: #64748b; font-weight: bold;">Status: Actively bypassed by evacuation engine</span>
-            </div>
-          `)
-          .bindTooltip(`⚠️ ${hazard.name} (Submerged / Bypassed)`, { direction: 'top' })
-          .addTo(hazardsLayer);
-      });
-    }
-
-    const coordinates = routeResult.route?.routes?.[0]?.geometry?.coordinates;
-    if (coordinates && coordinates.length > 0) {
-      const latLngs = coordinates.map(([lng, lat]: [number, number]) => [lat, lng] as [number, number]);
-
-      // 1. Broad outer green glow corridor
-      L.polyline(latLngs, {
-        color: '#059669',
-        weight: 12,
-        opacity: 0.35,
-        lineCap: 'round',
-        lineJoin: 'round',
-      }).addTo(routeLayer);
-
-      // 2. Medium emerald route stroke
-      L.polyline(latLngs, {
-        color: '#10b981',
-        weight: 6,
-        opacity: 0.85,
-        lineCap: 'round',
-        lineJoin: 'round',
-      }).addTo(routeLayer);
-
-      // 3. Central bright neon guide line
-      L.polyline(latLngs, {
-        color: '#ffffff',
-        weight: 2,
-        opacity: 0.95,
-        dashArray: '6, 10',
-      }).addTo(routeLayer);
-
-      // DEPARTURE MARKER
-      const originIcon = L.divIcon({
-        className: 'custom-origin-marker',
-        html: `
-          <div style="
-            position: relative;
-            width: 32px;
-            height: 32px;
-            background: #0284c7;
-            border: 3px solid #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 4px 14px rgba(2,132,199,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 900;
-          ">
-            A
-            <div style="
-              position: absolute;
-              bottom: -6px;
-              left: 10px;
-              width: 0;
-              height: 0;
-              border-left: 6px solid transparent;
-              border-right: 6px solid transparent;
-              border-top: 6px solid #0284c7;
-            "></div>
-          </div>
-        `,
-        iconSize: [32, 38],
-        iconAnchor: [16, 38],
-      });
-
-      L.marker(origin, { icon: originIcon })
-        .bindPopup(`
-          <div style="font-family: sans-serif; font-size: 12px; padding: 4px;">
-            <span style="background: #e0f2fe; color: #0369a1; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">
-              📍 Starting Location (Origin)
-            </span>
-            <h4 style="font-weight: 800; font-size: 13px; margin: 4px 0 2px 0; color: #0f172a;">${fromPlaceName}</h4>
-            <div style="font-family: monospace; font-size: 10px; color: #64748b;">GPS: ${origin[0].toFixed(4)}, ${origin[1].toFixed(4)}</div>
-          </div>
-        `)
-        .bindTooltip(`📍 FROM: ${fromPlaceName}`, { permanent: false, direction: 'top' })
-        .addTo(routeLayer);
-
-      // SAFE DESTINATION MARKER
-      const destIcon = L.divIcon({
-        className: 'custom-dest-marker',
-        html: `
-          <div style="
-            position: relative;
-            width: 36px;
-            height: 36px;
-            background: #10b981;
-            border: 3px solid #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 4px 16px rgba(16,185,129,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: 900;
-          ">
-            🛡️
-            <div style="
-              position: absolute;
-              bottom: -6px;
-              left: 12px;
-              width: 0;
-              height: 0;
-              border-left: 6px solid transparent;
-              border-right: 6px solid transparent;
-              border-top: 6px solid #10b981;
-            "></div>
-          </div>
-        `,
-        iconSize: [36, 42],
-        iconAnchor: [18, 42],
-      });
-
-      L.marker(destination, { icon: destIcon })
-        .bindPopup(`
-          <div style="font-family: sans-serif; font-size: 12px; padding: 4px;">
-            <span style="background: #d1fae5; color: #065f46; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">
-              🛡️ Safe Destination (Safe Haven)
-            </span>
-            <h4 style="font-weight: 800; font-size: 13px; margin: 4px 0 2px 0; color: #0f172a;">${toPlaceName}</h4>
-            <div style="font-family: monospace; font-size: 10px; color: #64748b;">GPS: ${destination[0].toFixed(4)}, ${destination[1].toFixed(4)}</div>
-          </div>
-        `)
-        .bindTooltip(`🛡️ TO: ${toPlaceName}`, { permanent: false, direction: 'top' })
-        .addTo(routeLayer);
-
-      // Auto-fit bounds with padding
-      map.fitBounds(L.latLngBounds(latLngs), { padding: [50, 50], maxZoom: 15 });
-
-      setTimeout(() => {
-        if (mapRef.current) {
-          mapRef.current.invalidateSize();
-        }
-      }, 150);
-    }
   }, [routeResult, origin, destination, fromPlaceName, toPlaceName]);
 
-  const handleRecenter = () => {
-    if (mapRef.current && routeResult.route?.routes?.[0]?.geometry?.coordinates?.length) {
-      const latLngs = routeResult.route.routes[0].geometry.coordinates.map(
-        ([lng, lat]: [number, number]) => [lat, lng] as [number, number]
-      );
-      mapRef.current.fitBounds(L.latLngBounds(latLngs), { padding: [50, 50] });
-    }
-  };
-
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden border border-emerald-500/30 shadow-xl bg-slate-900">
-      {/* Top Map Status Bar Overlay */}
-      <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 z-[500] flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 pointer-events-none">
-        <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-md text-[11px] sm:text-xs">
-          <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-          <span className="font-extrabold text-slate-900 dark:text-white truncate">Evacuation Corridor</span>
-          <span className="text-slate-400 font-mono hidden sm:inline">|</span>
+    <div className="relative w-full rounded-2xl overflow-hidden border border-emerald-500/30 shadow-2xl bg-slate-900"
+         style={{ height: '480px' }}>
+         
+      <style dangerouslySetInnerHTML={{__html: `
+        .map-tiles { filter: saturate(0.7) brightness(0.9); }
+      `}} />
+
+      {/* Map Canvas Container */}
+      <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
+
+      {/* Top status bar */}
+      <div className="absolute top-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none" style={{ zIndex: 400 }}>
+        <div className="flex items-center gap-2 pointer-events-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-md text-xs">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+          <span className="font-extrabold text-slate-900 dark:text-white">Evacuation Corridor</span>
+          <span className="text-slate-400 hidden sm:inline">|</span>
           <span className="text-emerald-700 dark:text-emerald-400 font-bold hidden sm:inline">100% Inundation-Free</span>
         </div>
-
-        <button
-          type="button"
-          onClick={handleRecenter}
-          className="pointer-events-auto px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-[11px] sm:text-xs font-bold flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+        <a
+          href={`https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${origin[0]},${origin[1]};${destination[0]},${destination[1]}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pointer-events-auto px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
         >
           <Maximize2 className="w-3.5 h-3.5 text-sky-500" />
-          <span className="hidden sm:inline">Fit Corridor Bounds</span>
-          <span className="sm:hidden">Fit Map</span>
-        </button>
+          <span>Open Full Map</span>
+        </a>
       </div>
 
-      {/* Actual Map Container */}
-      <div
-        ref={containerRef}
-        className="w-full z-0 h-[360px] sm:h-[450px] lg:h-[480px]"
-      />
-
-      {/* Bottom Map Legend Overlay */}
-      <div className="absolute bottom-2.5 sm:bottom-3 left-2.5 sm:left-3 z-[500] pointer-events-none max-w-[85%] sm:max-w-none">
-        <div className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-2.5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-xl text-[10px] sm:text-[11px] space-y-1">
-          <div className="flex items-center gap-1.5 sm:gap-2 font-bold text-slate-900 dark:text-slate-100">
-            <span className="w-2.5 sm:w-3 h-1.5 bg-emerald-500 rounded-full inline-block shrink-0"></span>
-            <span className="text-slate-900 dark:text-white font-extrabold truncate">Safe Route (Flood-Free)</span>
+      {/* Bottom legend */}
+      <div className="absolute bottom-3 left-3 pointer-events-none" style={{ zIndex: 400 }}>
+        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 shadow-xl text-[10px] sm:text-[11px] space-y-1">
+          <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
+            <span className="w-5 h-1.5 bg-emerald-500 rounded-full inline-block shrink-0"></span>
+            <span>Safe Route (Flood-Free)</span>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 font-bold text-rose-700 dark:text-rose-400">
-            <span className="w-2.5 sm:w-3 h-1.5 bg-rose-500/40 border border-rose-500 rounded-full inline-block shrink-0"></span>
-            <span className="text-rose-800 dark:text-rose-300 font-extrabold truncate">Bypassed Hazards</span>
+          <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-400">
+            <span className="w-4 h-4 bg-rose-500/25 border border-rose-500 rounded-full inline-block shrink-0"></span>
+            <span>Bypassed Hazard Zone</span>
           </div>
         </div>
       </div>
+
+      {/* Loading overlay */}
+      {!mapLoaded && (
+        <div className="absolute inset-0 bg-slate-900 flex items-center justify-center" style={{ zIndex: 500 }}>
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
+            <p className="text-emerald-400 font-bold text-sm animate-pulse">Loading Evacuation Map...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

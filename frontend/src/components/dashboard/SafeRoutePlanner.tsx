@@ -25,10 +25,9 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-const SafeRouteMap = dynamic(
-  () => import('./SafeRouteMap'),
-  { ssr: false }
-);
+const SafeRouteMap = dynamic(() => import('./SafeRouteMap'), {
+  ssr: false,
+});
 
 export interface PlaceItem {
   id: string;
@@ -142,6 +141,7 @@ export const POPULAR_ROUTES = [
 ];
 
 export function SafeRoutePlanner() {
+  const [isMounted, setIsMounted] = useState(false);
   const [fromPlaceName, setFromPlaceName] = useState('Ward A HQ - Colaba Municipal Depot');
   const [toPlaceName, setToPlaceName] = useState('CSMT Evacuation & Disaster Relief Center');
   const [startLat, setStartLat] = useState('18.9160');
@@ -189,6 +189,7 @@ export function SafeRoutePlanner() {
 
   // Auto-calculate on initial mount
   useEffect(() => {
+    setIsMounted(true);
     calculateRoute(startLat, startLng, endLat, endLng);
   }, []);
 
@@ -572,13 +573,19 @@ export function SafeRoutePlanner() {
               </span>
             </div>
 
-            <SafeRouteMap
-              routeResult={routeResult}
-              origin={[parseFloat(startLat), parseFloat(startLng)]}
-              destination={[parseFloat(endLat), parseFloat(endLng)]}
-              fromPlaceName={fromPlaceName}
-              toPlaceName={toPlaceName}
-            />
+            {isMounted ? (
+              <SafeRouteMap
+                routeResult={routeResult}
+                origin={[parseFloat(startLat), parseFloat(startLng)]}
+                destination={[parseFloat(endLat), parseFloat(endLng)]}
+                fromPlaceName={fromPlaceName}
+                toPlaceName={toPlaceName}
+              />
+            ) : (
+              <div className="w-full h-[360px] sm:h-[450px] rounded-2xl bg-slate-900 border border-emerald-500/30 flex items-center justify-center text-emerald-500 font-bold animate-pulse shadow-xl">
+                INITIALIZING MAP RENDERING ENGINE...
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-800 dark:text-slate-400 pt-1 font-mono">
               <span className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-400 font-black">
