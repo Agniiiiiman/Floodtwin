@@ -1,17 +1,19 @@
 # 🌊 FloodTwin
 
-### Real-Time Urban Flood Intelligence, Drainage Digital Twin & AI Safe Route Engine
+### Real-Time Urban Flood Intelligence, Drainage Digital Twin & AI Emergency Operations Engine
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.4-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.8-blue?style=flat-square&logo=react)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 [![Leaflet](https://img.shields.io/badge/Leaflet-1.9.4-199900?style=flat-square&logo=leaflet)](https://leafletjs.com/)
+[![SUMO](https://img.shields.io/badge/SUMO-1.27.1-orange?style=flat-square)](https://eclipse.dev/sumo/)
+[![Twilio Voice](https://img.shields.io/badge/Twilio-Automated_Voice_API-red?style=flat-square&logo=twilio)](https://www.twilio.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-> **"Predict floods before streets submerge. Protect cities through real-time drainage physics and emergency navigation."**
+> **"Predict floods before streets submerge. Protect cities through real-time drainage physics, automated multi-agency emergency dispatch, and AI safe evacuation routing."**
 
-**FloodTwin** is an end-to-end urban flood intelligence and emergency decision-support platform. It bridges the gap between environmental weather telemetry, subterranean drainage network physics, street-level inundation risk, and real-time emergency routing into a unified, high-contrast operational command interface.
+**FloodTwin** is an end-to-end urban flood intelligence and emergency decision-support platform. It bridges environmental meteorological telemetry, subterranean drainage network physics (Manning open channel equations), street-level inundation risk, automated multi-agency voice emergency dispatch, and real-time safe routing navigation into a unified operational command interface.
 
 ---
 
@@ -19,13 +21,16 @@
 
 - [🚨 Why FloodTwin?](#-why-floodtwin)
 - [🧠 System Architecture & Data Flow](#-system-architecture--data-flow)
-- [✨ 6 Core Operational Modules](#-6-core-operational-modules)
-  - [1. 🌐 Unified Operations Command (`/`)](#1--unified-operations-command-)
+- [✨ 8 Core Operational Modules](#-8-core-operational-modules)
+  - [1. 🌐 Executive Operations Command (`/dashboard` & `/`)](#1--executive-operations-command-dashboard--)
   - [2. 🚰 Subterranean Drainage Digital Twin (`/digital-twin`)](#2--subterranean-drainage-digital-twin-digital-twin)
   - [3. ⚡ What-If Hydraulic Sandbox (`/simulation`)](#3--what-if-hydraulic-sandbox-simulation)
   - [4. 🛡️ AI Emergency Safe Route Planner (`/safe-route`)](#4-️-ai-emergency-safe-route-planner-safe-route)
   - [5. 🌧️ Global Rainfall Radar & Sector Monitor (`/rainfall-map`)](#5-️-global-rainfall-radar--sector-monitor-rainfall-map)
   - [6. 📡 Citizen Incident Verification Portal (`/reports`)](#6--citizen-incident-verification-portal-reports)
+  - [7. 🚨 Automated Multi-Agency Emergency One-Call Dispatch (`/emergency`)](#7--automated-multi-agency-emergency-one-call-dispatch-emergency)
+  - [8. 🚗 SUMO Microscopic Traffic Evacuation Engine (`backend/sumo`)](#8--sumo-microscopic-traffic-evacuation-engine-backendsumo)
+- [⚖️ Data Provenance & Qualifier Matrix](#️-data-provenance--qualifier-matrix)
 - [🛠️ Technology Stack](#️-technology-stack)
 - [🔌 REST API Specification](#-rest-api-specification)
 - [🚀 Quickstart & Local Setup](#-quickstart--local-setup)
@@ -33,58 +38,48 @@
   - [1. Backend Setup (FastAPI)](#1-backend-setup-fastapi)
   - [2. Frontend Setup (Next.js 16)](#2-frontend-setup-nextjs-16)
   - [3. Docker Compose (Full Stack)](#3-docker-compose-full-stack)
+  - [4. OSRM Local Routing Engine (Optional)](#4-osrm-local-routing-engine-optional)
+  - [5. SUMO Traffic Simulation Execution](#5-sumo-traffic-simulation-execution)
 - [⚙️ Environment Variables](#️-environment-variables)
+- [🧪 Automated Testing & Validation](#-automated-testing--validation)
 - [🌓 High-Contrast Dual Theme System](#-high-contrast-dual-theme-system)
----
-
-## 🌧️ LIVE RAINFALL API
-
-### Provider & Telemetry Configuration
-
-- **Provider**: Open-Meteo (`https://api.open-meteo.com/v1/forecast`)
-- **Location**: Kolkata, West Bengal, India
-- **Latitude**: `22.5726`
-- **Longitude**: `88.3639`
-- **Timezone**: `Asia/Kolkata`
-- **Refresh Interval**: 10 minutes (`10 * 60 * 1000` ms)
-- **API Key**: Not required (Public Open API)
-- **Data Field**: `current.precipitation` (`mm`)
+- [📄 License & Disclaimer](#-license--disclaimer)
 
 ---
 
-## ⚖️ System Status: Real vs Simulated Features
+## 🌧️ LIVE METEOROLOGICAL TELEMETRY
 
-### 🟢 REAL (Live Telemetry)
-- **Live Rainfall API**: Real-time precipitation telemetry fetched directly from Open-Meteo for Kolkata, India without random number fallbacks.
-
-### 🟡 SIMULATED / PROTOTYPE (Rule-Based Physics & Demo Models)
-- **Water Level Depth**: Node depth metrics modeled via baseline hydraulic specs.
-- **Network Load**: Drainage capacity utilization percentages.
-- **What-If Simulation**: Interactive Manning pipe blockage sandbox.
-- **Flood Map Visual**: Spatial inundation heatmap.
-- **Safe Routing**: Dynamic hazard exclusion routing.
-- **Other Placeholder Components**: Demo metrics for municipal command support.
+- **Provider**: Open-Meteo Public API (`https://api.open-meteo.com/v1/forecast`)
+- **Primary Pilot Ward**: South Mumbai Wards A/B (Lat: `18.96`, Lng: `72.82`)
+- **Global Sector Coverage**: 130+ pre-calibrated major metropolitan sectors
+- **Refresh Frequency**: Polled every 60 seconds with live visual countdown timer
+- **API Key**: Not required (Public Open Hydrology & Weather Data)
+- **Data Field**: `current.precipitation` ($mm/hr$)
 
 ---
 
 ## 🔄 End-to-End Processing Pipeline
 
-Live rainfall serves as the foundational trigger for the complete urban hydrology pipeline:
+Live precipitation serves as the foundational trigger for the complete urban hydrology and emergency response pipeline:
 
 ```text
 Rainfall (Open-Meteo Live API)
    ↓
-Runoff (Hydraulic Inflow Calculation)
+Runoff Inflow Calculation (Q = C · i · A)
    ↓
-Drainage Digital Twin (SWMM Physics Engine)
+Subterranean Drainage Engine (Manning's Equation Q = (1/n) · A · R^(2/3) · S^(1/2))
    ↓
-Flood Prediction (Subterranean Overtopping Model)
+Surcharge & Street Inundation Overtopping Model
    ↓
-Street-Level Risk (Inundation Depth Tiers)
+Street-Level Hazard Tier Classification (Low / Medium / High / Critical)
    ↓
-Safe Routing (OSRM Hazard Exclusion Navigation)
+AI Safe Routing (OSRM Dynamic Hazard Polygon Exclusion)
    ↓
-Emergency Alerts (Citizen & EOC Notification Engine)
+Citizen Crowd-Report Corroboration Engine (2-Report Spatiotemporal Consensus)
+   ↓
+Emergency Dispatch Engine (Automated Twilio Multi-Agency Voice Alert Calls)
+   ↓
+SUMO Microscopic Traffic Simulation (Detour Congestion & Evacuation Flow)
 ```
 
 ---
@@ -94,18 +89,22 @@ Emergency Alerts (Citizen & EOC Notification Engine)
 Urban flooding is not merely a heavy-rainfall problem—it is a **cascading infrastructure failure**:
 
 ```
-🌧️ Heavy Precipitation (Open-Meteo Radar)
-    └── 💧 Runoff exceeds surface absorption capacity
-         └── 🚰 Subterranean drainage nodes surcharge & backflow
-              └── 🌊 Street-level water depth rises to critical thresholds (>0.40m)
-                   └── 🚗 Essential transit & emergency corridors become impassable
+🌧️ Heavy Precipitation (Cloudburst / Extreme Monsoon Burst)
+    └── 💧 Surface runoff exceeds absorption capacity
+         └── 🚰 Subterranean conduits and junction nodes surcharge & backflow
+              └── 🌊 Street-level water depth crosses critical thresholds (>0.35m)
+                   ├── 🚗 Arterial transit & evacuation corridors become impassable
+                   └── 🚨 Emergency services cannot reach trapped citizens in time
 ```
 
 Traditional municipal systems monitor rain gauges and dispatch rescue teams **reactively**. FloodTwin provides **proactive decision support**:
-1. **Hydraulic Physics Modeling**: Computes pipe capacities and nodal overflow via Manning's formula.
-2. **Predictive Street Inundation**: Identifies localized depressions and drainage proximity penalties before water ponds.
-3. **Dynamic Hazard Exclusion Routing**: Computes OSRM driving paths that proactively bypass submerged segments.
-4. **Multi-Source Corroboration**: Pairs live satellite rainfall telemetry with ground-truth citizen incident reports.
+
+1. **Hydraulic Physics Modeling**: Computes pipe conduit capacity and nodal surcharge via Manning's formula and Rational runoff equations.
+2. **Predictive Street Inundation**: Computes localized depression penalties, slope factors, and distance to subterranean nodes.
+3. **Dynamic Hazard Exclusion Routing**: Calculates OSRM driving paths that actively steer around submerged segments and provide validity windows.
+4. **Automated Multi-Agency Voice Dispatch**: Triggers concurrent, automated outbound phone calls with synthesized TwiML voice briefings to Police, Fire, Disaster Response, Electricity, and Control Rooms.
+5. **Multi-Source Corroboration**: Pairs live satellite rainfall telemetry with ground-truth citizen incident reports verified by 2-party consensus.
+6. **Microscopic Traffic Validation**: Evaluates evacuation corridor performance using native SUMO 1.27.1 traffic modeling.
 
 ---
 
@@ -123,71 +122,106 @@ Traditional municipal systems monitor rain gauges and dispatch rescue teams **re
 │  (Crowdsourced Incidents)│       │  Hydraulic Calculation Engine│       │ (GeoJSON Node Topologies)│
 └─────────────────────────┘       └──────────────┬───────────────┘       └─────────────────────────┘
                                                  │
-                   ┌─────────────────────────────┼─────────────────────────────┐
-                   ▼                             ▼                             ▼
-       ┌───────────────────────┐     ┌───────────────────────┐     ┌───────────────────────┐
-       │   Manning's Equation  │     │   OSRM Safe Routing   │     │ Spatial Corroboration │
-       │ Pipe Capacity/Overflow│     │ Hazard Area Exclusion │     │  2-Report Consensus   │
-       └───────────┬───────────┘     └───────────┬───────────┘     └───────────┬───────────┘
-                   │                             │                             │
-                   └─────────────────────────────┼─────────────────────────────┘
-                                                 │
-                                                 ▼
-                                  ┌──────────────────────────────┐
-                                  │   Next.js 16 App Router UI   │
-                                  │   Tailwind CSS v4 + Leaflet  │
-                                  └──────────────────────────────┘
-                                                 │
-         ┌───────────────┬───────────────────────┼───────────────────────┬───────────────┐
-         ▼               ▼                       ▼                       ▼               ▼
-   /digital-twin    /simulation             /safe-route            /rainfall-map     /reports
-  (Pipe Mesh &     (What-If Node          (Landmark Navigation     (130+ Global     (Verified Ground
-   Surcharge)       Blockages)             & Avoidance Engine)      Radar Grid)      Incident Feed)
+    ┌─────────────────────────┬──────────────────┼──────────────────┬─────────────────────────┐
+    ▼                         ▼                  ▼                  ▼                         ▼
+┌───────────────────────┐ ┌───────────────┐ ┌────────────────┐ ┌────────────────────────┐ ┌──────────────────────┐
+│  Manning's Equation   │ │  OSRM Safe    │ │ Corroboration  │ │ Automated Emergency    │ │ SUMO Traffic         │
+│  Capacity & Surcharge │ │  Routing API  │ │ Consensus (2x) │ │ Multi-Agency Voice Call│ │ Evacuation Simulation│
+└───────────┬───────────┘ └───────┬───────┘ └───────┬────────┘ └───────────┬────────────┘ └──────────┬───────────┘
+            │                     │                 │                      │                         │
+            └─────────────────────┴─────────────────┼──────────────────────┴─────────────────────────┘
+                                                    │
+                                                    ▼
+                                     ┌──────────────────────────────┐
+                                     │   Next.js 16 App Router UI   │
+                                     │   Tailwind CSS v4 + Leaflet  │
+                                     └──────────────────────────────┘
+                                                    │
+        ┌───────────────┬───────────────┬───────────┴───┬───────────────┬───────────────┬───────────────┐
+        ▼               ▼               ▼               ▼               ▼               ▼               ▼
+   /dashboard     /digital-twin    /simulation     /safe-route    /rainfall-map     /reports       /emergency
+  (Executive      (Pipe Mesh &     (What-If Node  (Hazard-Free    (130+ Global     (Verified Ground (Automated Voice
+   Overview)       Surcharge)       Blockages)     Corridors)      Radar Grid)      Incident Feed)   Dispatch Console)
 ```
 
 ---
 
-## ✨ 6 Core Operational Modules
+## ✨ 8 Core Operational Modules
 
-### 1. 🌐 Unified Operations Command (`/`)
-- Real-time sensor mesh status summary across active pilot wards (e.g. South Mumbai Wards A/B).
-- Immediate telemetry indicators for average precipitation, high-risk junction alerts, and flood depth tier.
-- Quick navigation gateways to all simulation and operational dispatch subsystems.
+### 1. 🌐 Executive Operations Command (`/dashboard` & `/`)
+- **Real-Time Operational Briefing**: High-contrast summary answering: *Where is the risk? Why is it occurring? Which roads to avoid? What is the blockage impact?*
+- **Live System Mode Indicators**: Provenance badges (`LIVE`, `SYNTHETIC FALLBACK`, `OFFLINE`) ensuring transparency.
+- **Subsystem Hub**: Direct navigation gateways to all simulation, dispatch, and monitoring subsystems.
 
 ### 2. 🚰 Subterranean Drainage Digital Twin (`/digital-twin`)
-- High-density subterranean pipe and junction node interactive network graph.
-- Real-time hydraulic load utilization percentages ($Q / Q_{\text{capacity}}$).
-- Identifies critical bottleneck junctions (`J-103 Harbor Basin`, `J-104 Subway Outflow`) under surcharge stress.
+- **Interactive Pipe & Node Mesh**: Visualizes subterranean stormwater conduits, junction depths, and invert elevations.
+- **Hydraulic Load Utilization**: Dynamic calculation of conduit capacity load ($Q / Q_{\text{capacity}} \times 100\%$) with surcharge warnings.
+- **Critical Node Profiling**: Pinpoints vulnerable junctions under heavy stormwater influx.
 
 ### 3. ⚡ What-If Hydraulic Sandbox (`/simulation`)
-- Stress-test urban resilience by simulating single or multi-point infrastructure failures:
-  - `NORMAL`: Standard operating capacity.
-  - `50% CAPACITY`: Partial blockage (silt/debris accumulation).
-  - `BLOCKED`: Complete conduit failure (95% capacity reduction).
-  - `SEVERE RAINFALL`: Extreme storm event (80 mm/hr burst).
-- Live recalculation of upstream backflow and street surcharge using Manning's equation.
+- **Interactive Failure Scenarios**:
+  - `NORMAL`: Standard design conduit capacity.
+  - `50% CAPACITY`: Partial conduit blockage due to silt or debris buildup.
+  - `BLOCKED`: Conduit failure (95% capacity reduction).
+  - `SEVERE RAINFALL`: Extreme monsoon cloudburst ($80\,\text{mm/hr}$).
+- **Instant Recalculation**: Live recalculation of upstream backflow and surface overtopping risk.
 
 ### 4. 🛡️ AI Emergency Safe Route Planner (`/safe-route`)
-- **Place-to-Place Navigation**: Choose from preset prominent Mumbai landmarks (Gateway of India, Colaba Causeway, Nariman Point, Marine Drive, Chhatrapati Shivaji Terminus, Dadar, etc.) or select custom coordinates.
-- **Submerged Hazard Avoidance**: Automatically calculates high-risk and critical flood segments and excludes them from the OSRM path solver.
-- **Route Comparison Metrics**: Side-by-side comparison of standard shortest routes versus flood-safe detour corridors, including travel time, safety validity window (e.g., safe for 30 mins), and avoided hazard zones.
-- **Clean Interactive Map**: Crisp OpenStreetMap Leaflet visualization with custom start/end pins, detour polyline geometry, and hazard radius overlays.
+- **Dynamic Hazard Avoidance**: Excludes submerged road segments and junction overflow zones from navigation solutions.
+- **Preset Landmarks & Custom Coordinates**: Navigate between prominent hubs (Gateway of India, Colaba, Nariman Point, Marine Drive, CST, Dadar) or pinpoint custom origin/destination markers.
+- **Route Comparison Metrics**: Side-by-side comparison of standard shortest paths versus flood-safe detour corridors, including travel time deltas and route validity time windows.
+- **Graceful OSRM Fallback**: Honest HTTP 503 handling when local routing containers are offline.
 
 ### 5. 🌧️ Global Rainfall Radar & Sector Monitor (`/rainfall-map`)
-- Live precipitation tracking across 130+ global sectors sampled every 60 seconds with an active countdown ticker.
-- Categorized intensity tiers:
+- **130+ Metropolitan Sectors**: Real-time precipitation monitoring sampled every 60 seconds with an active countdown ticker.
+- **Precipitation Intensity Tiers**:
   - 🟢 **None**: `0.0 mm/hr`
   - 🔵 **Light**: `0.1 – 1.0 mm/hr`
   - 🟡 **Moderate**: `1.0 – 5.0 mm/hr`
   - 🟠 **Heavy**: `5.0 – 15.0 mm/hr`
   - 🔴 **Very Heavy**: `15.0 – 30.0 mm/hr`
   - 🟣 **Extreme**: `> 30.0 mm/hr`
-- Multi-layer map visualizer (Standard OSM, Satellite view, Topographic terrain) with instant sector search and filter sidebar.
+- **Multi-Layer Map Controls**: Toggle between standard OpenStreetMap, Satellite imagery, and Topographic terrain layers.
 
 ### 6. 📡 Citizen Incident Verification Portal (`/reports`)
-- Crowdsourced flood incident submission portal allowing citizens to report ground-level water logging, severity, and photo verification.
-- **Consensus Corroboration Engine**: Automatically corroborates reports when $\ge 2$ independent reports are filed within a **50-meter radius** and **30-minute time window**.
-- Built-in client rate limiting and deduplication.
+- **Crowdsourced Incident Submission**: Citizens report street flooding, estimated depth, severity, and photo URLs.
+- **2-Report Consensus Engine**: Automatically corroborates reports when $\ge 2$ independent submissions occur within a **50-meter radius** and **30-minute time window**.
+- **Rate-Limiting & Deduplication**: Built-in IP rate limiting (1 report per 30 seconds per client).
+
+### 7. 🚨 Automated Multi-Agency Emergency One-Call Dispatch (`/emergency`)
+- **Automated Outbound Voice Dispatch**: Integrates with Twilio Voice API to initiate automated phone calls to emergency response agencies.
+- **Agency Matrix**:
+  - 👮 **Police Department**: Traffic diversion and perimeter control.
+  - 🚒 **Fire & Emergency Services**: High-capacity dewatering pumps and swift water rescue.
+  - 🛡️ **Disaster Response Force (NDRF / SDRF)**: Mass citizen evacuation and disaster mobilization.
+  - ⚡ **Electricity Utility**: Power grid shutdown in waterlogged sectors to prevent electrocution hazards.
+  - 🏢 **Emergency Control Room**: Central coordination and municipal escalation.
+- **TwiML Voice Briefing**: Generates structured voice synthesis reciting severity, affected ward, coordinates, estimated water depth, and action directives.
+- **Idempotency & Automatic Retries**: Full call status callback handling (`queued`, `initiated`, `ringing`, `in-progress`, `completed`, `busy`, `failed`, `no-answer`) with one-click automatic retries.
+
+### 8. 🚗 SUMO Microscopic Traffic Evacuation Engine (`backend/sumo`)
+- **Microscopic Traffic Simulation**: Simulates vehicular movement, deceleration, and route re-planning using Eclipse SUMO 1.27.1 on the pilot road network.
+- **Empirical Flood Impact Metrics**:
+  - **Travel Time**: Baseline `93.22 s` $\rightarrow$ Flooded Detour `132.63 s` (+42.3%).
+  - **Congestion Time Loss**: Baseline `5.39 s` $\rightarrow$ Flooded Detour `10.55 s` (+95.7%).
+  - **Affected Edges**: `3` (`street_segment_02` closed; dynamic bypass activated).
+
+---
+
+## ⚖️ Data Provenance & Qualifier Matrix
+
+FloodTwin maintains absolute transparency regarding live telemetry vs. calibrated simulations:
+
+| Layer / Feature | Data Source | Provenance Status | Calibration Note |
+| :--- | :--- | :--- | :--- |
+| **Precipitation** | Open-Meteo REST API | 🟢 **LIVE** | Real-time global satellite/radar precipitation telemetry. |
+| **Drainage Network** | GeoJSON Subterranean Graph | 🟡 **LOCAL PILOT** | South Mumbai Ward A/B pilot conduits and junctions. |
+| **Hydraulic Flow ($Q$)** | Manning's Open Channel Formula | 🟡 **PHYSICS MODEL** | $Q = \frac{1}{n} A R^{2/3} S^{1/2}$ computed on conduit geometry. |
+| **Street Risk Tiers** | Elevation + Drainage Proximity | 🟡 **RULE-BASED MODEL** | Local depression penalties and surcharge propagation. |
+| **Safe Routing** | OSRM Container / Fallback | 🟢 **ROUTING ENGINE** | Real graph routing with hazard polygon exclusion. |
+| **Citizen Reports** | In-Memory & REST Store | 🟢 **LIVE USER INPUT** | Rate-limited with 2-party spatiotemporal consensus. |
+| **Emergency Voice** | Twilio REST Voice API | 🟢 **LIVE DISPATCH** | Real outbound voice calls with dynamic TwiML synthesis. |
+| **Traffic Dynamics** | Eclipse SUMO 1.27.1 | 🟢 **NATIVE SIMULATION** | Microscopic vehicular evacuation and detour metrics. |
 
 ---
 
@@ -195,12 +229,14 @@ Traditional municipal systems monitor rain gauges and dispatch rescue teams **re
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend Framework** | [Next.js 16](https://nextjs.org/) (App Router, Turbopack) & [React 19](https://react.dev/) |
-| **Styling & Design** | [Tailwind CSS v4](https://tailwindcss.com/), CSS Custom Properties (Theme Engine), Lucide React |
-| **Geospatial Mapping** | [Leaflet.js 1.9.4](https://leafletjs.com/), OpenStreetMap, React Leaflet wrapper patterns |
+| **Frontend Framework** | [Next.js 16.3.4](https://nextjs.org/) (App Router, Turbopack) & [React 19.2.8](https://react.dev/) |
+| **Styling & Design** | [Tailwind CSS v4](https://tailwindcss.com/), CSS Custom Properties (Dual Theme Engine), Lucide React |
+| **Geospatial Mapping** | [Leaflet.js 1.9.4](https://leafletjs.com/), OpenStreetMap, React Leaflet wrappers |
+| **Authentication** | [Firebase Authentication](https://firebase.google.com/) (Auth Context & Guards) |
 | **Backend Framework** | [FastAPI](https://fastapi.tiangolo.com/) (Python 3.11+), [Uvicorn](https://www.uvicorn.org/), [Pydantic v2](https://docs.pydantic.dev/) |
 | **HTTP & Async I/O** | [HTTPX](https://www.python-httpx.org/) (Async Open-Meteo & OSRM requests) |
-| **Hydraulic Physics** | Manning's Open Channel Flow Formula ($Q = \frac{1}{n} A R^{2/3} S^{1/2}$) |
+| **Telephony & Voice Dispatch** | [Twilio Python SDK](https://www.twilio.com/) (Voice Calls, TwiML Audio Briefings, Status Callbacks) |
+| **Traffic Simulation** | [Eclipse SUMO 1.27.1](https://eclipse.dev/sumo/) (`sumolib`, `traci`) |
 | **Routing Engine** | [OSRM](http://project-osrm.org/) (Open Source Routing Machine) / Dockerized local instance |
 | **Containerization** | Docker & Docker Compose |
 
@@ -208,33 +244,32 @@ Traditional municipal systems monitor rain gauges and dispatch rescue teams **re
 
 ## 🔌 REST API Specification
 
-The FastAPI backend exposes the following endpoints (default base URL: `http://localhost:8000`):
+Default Backend URL: `http://localhost:8000` (Interactive Swagger Docs: `http://localhost:8000/docs`)
+
+### Core Hydrology & Routing Endpoints
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/health` | Returns backend health status and system calibration metadata. |
-| `GET` | `/api/forecast?lat={lat}&lng={lng}` | Fetches real-time precipitation from Open-Meteo and computes water depth risk. |
+| `GET` | `/api/health` | Returns backend health status and system calibration mode. |
+| `GET` | `/api/forecast?lat={lat}&lng={lng}` | Fetches live precipitation and calculates hydraulic depth risk. |
 | `GET` | `/api/forecast/ward/{ward_id}` | Returns hydrological forecast for a designated municipal ward. |
-| `GET` | `/api/drainage/{ward_id}` | Returns the GeoJSON network of subterranean drainage conduits and junctions. |
-| `GET` | `/api/street-risk/{ward_id}` | Computes hydraulic utilization, slope, and elevation risk for street segments. |
-| `POST` | `/api/drainage/what-if` | Simulates node blockage scenarios and returns surcharge propagation. |
+| `GET` | `/api/drainage/{ward_id}` | Returns GeoJSON subterranean drainage network (pipes & junctions). |
+| `GET` | `/api/street-risk/{ward_id}` | Computes hydraulic utilization, slope, and elevation risk for streets. |
+| `POST` | `/api/drainage/what-if` | Simulates pipe blockage scenarios and returns surcharge propagation. |
 | `POST` | `/api/route` | Computes flood-safe driving routes with live hazardous street avoidance. |
-| `POST` | `/api/report` | Submits a citizen flood report and evaluates local corroboration consensus. |
-| `GET` | `/api/reports` | Returns all active incident reports with corroboration status. |
+| `POST` | `/api/report` | Submits a citizen flood incident and evaluates local corroboration consensus. |
+| `GET` | `/api/reports` | Returns all active citizen incident reports with corroboration status. |
 
-### Example Safe Route Request
+### Emergency Dispatch & Telephony Endpoints
 
-```bash
-curl -X POST "http://localhost:8000/api/route" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "start_lat": 18.9220,
-       "start_lng": 72.8347,
-       "end_lat": 18.9400,
-       "end_lng": 72.8350,
-       "rainfall_mm_hr": 25.0
-     }'
-```
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/emergency/incident` | Creates a tracked emergency incident and generates agency call records. |
+| `POST` | `/api/emergency/call` | Triggers live Twilio outbound calls to selected response agencies. |
+| `GET` | `/api/emergency/status/{incident_id}` | Fetches real-time status of all dispatched calls for an incident. |
+| `POST` | `/api/emergency/call-status` | Twilio webhook receiver updating call state (`ringing`, `in-progress`, `completed`, `failed`). |
+| `POST` | `/api/emergency/retry` | Re-initiates failed or busy agency calls for an existing incident. |
+| `GET` | `/api/emergency/twiml/{incident_id}` | Generates dynamic TwiML XML voice briefing for audio synthesis. |
 
 ---
 
@@ -244,6 +279,8 @@ curl -X POST "http://localhost:8000/api/route" \
 - **Node.js**: `v20.x` or higher
 - **Python**: `v3.11` or higher
 - **Git**
+- *(Optional)* **Docker Desktop**: For running local OSRM routing containers.
+- *(Optional)* **Eclipse SUMO**: For running native microscopic traffic simulations.
 
 ---
 
@@ -253,81 +290,131 @@ curl -X POST "http://localhost:8000/api/route" \
 # Navigate to the backend directory
 cd backend
 
-# Create a virtual environment
+# Create and activate a virtual environment
 python -m venv venv
 
-# Activate the virtual environment
 # Windows (PowerShell):
 .\venv\Scripts\Activate.ps1
 # macOS / Linux:
 # source venv/bin/activate
 
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 
 # Run the FastAPI development server
 uvicorn main:app --reload --port 8000
 ```
 
-The API will be accessible at `http://localhost:8000` and the interactive OpenAPI documentation at `http://localhost:8000/docs`.
+The API will be available at `http://localhost:8000` and interactive docs at `http://localhost:8000/docs`.
 
 ---
 
 ### 2. Frontend Setup (Next.js 16)
 
 ```bash
-# Open a new terminal and navigate to the frontend directory
+# In a new terminal, navigate to the frontend directory
 cd frontend
 
-# Install Node modules
+# Install dependencies
 npm install
 
-# Start the Next.js development server with Turbopack
+# Start the Next.js development server
 npm run dev
 ```
 
-The web application will be accessible at `http://localhost:3000`.
+Open `http://localhost:3000` in your browser.
 
 ---
 
 ### 3. Docker Compose (Full Stack)
 
-To spin up both the FastAPI backend and Next.js frontend with a single command:
+To spin up both the FastAPI backend and Next.js frontend with Docker:
 
 ```bash
-docker-compose up --build
+docker compose up --build
+```
+
+---
+
+### 4. OSRM Local Routing Engine (Optional)
+
+To enable live OSRM routing in Docker:
+
+```powershell
+.\backend\setup_osrm.ps1
+```
+
+*If OSRM is not running, the safe-route interface gracefully displays the service status.*
+
+---
+
+### 5. SUMO Traffic Simulation Execution
+
+To run the microscopic evacuation simulation and extract baseline vs. flooded performance:
+
+```powershell
+python backend/sumo/run_sumo_simulation.py
 ```
 
 ---
 
 ## ⚙️ Environment Variables
 
-Copy `.env.example` to create your local `.env` files if required:
+Copy `.env.example` to `.env` in the project root:
 
 ```env
-# Frontend Environment
+# ==========================================
+# Frontend Configuration
+# ==========================================
 NEXT_PUBLIC_API_URL=http://localhost:8000
 
-# Backend Environment
+# ==========================================
+# Backend & Routing Configuration
+# ==========================================
 FRONTEND_URL=http://localhost:3000
 BACKEND_PORT=8000
 OSRM_BACKEND_URL=http://localhost:5000
+
+# ==========================================
+# Twilio Emergency Voice Dispatch (Optional)
+# ==========================================
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_FROM_PHONE=+1234567890
+
+# Pre-configured Emergency Contact Numbers (E.164 format)
+POLICE_PHONE=+917044277303
+FIRE_EMERGENCY_PHONE=+918585045232
+DISASTER_RESPONSE_PHONE=+917439549556
+ELECTRICITY_UTILITY_PHONE=+918282019555
+EMERGENCY_CONTROL_ROOM_PHONE=+918900471168
 ```
 
-> **Note**: Open-Meteo weather requests work out-of-the-box without requiring an API key.
+---
+
+## 🧪 Automated Testing & Validation
+
+Run the test suite across backend hydrology physics, emergency endpoints, and SUMO models:
+
+```bash
+# Run backend pytest suite
+python -m pytest backend/test_main.py backend/test_sumo.py -v
+
+# Run frontend build verification
+cd frontend
+npm run build
+```
 
 ---
 
 ## 🌓 High-Contrast Dual Theme System
 
-FloodTwin is designed for maximum legibility under high-stress emergency operational scenarios:
+FloodTwin supports dual operational display modes calibrated for emergency decision-making:
 
-| Mode | Theme Aesthetic | Intended Context |
+| Mode | Visual Palette | Intended Context |
 | :--- | :--- | :--- |
-| 🌙 **Dark EOC Mode** | Deep navy `#0a0f1d`, glowing cyan accents, high-contrast badges | Emergency Operations Centers, low-light control rooms |
-| ☀️ **Light Municipal Mode** | Clean slate white `#ffffff`, deep `#0f172a` text, high-contrast borders | Municipal offices, desktop management, daylight field operations |
-
-Theme preferences are persisted in `localStorage` and synchronized across all operational pages.
+| 🌙 **Dark EOC Mode** | Deep navy `#0a0f1d`, glowing cyan accents, high-contrast badges | Emergency Operations Centers, low-light dispatch rooms |
+| ☀️ **Light Municipal Mode** | Slate white `#ffffff`, deep `#0f172a` text, crisp high-contrast borders | Municipal offices, desktop management, daylight field operations |
 
 ---
 
