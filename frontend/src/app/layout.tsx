@@ -8,6 +8,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { RainEnvironment } from '@/components/environment/RainEnvironment';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { EmergencyFloatingButton } from '@/components/layout/EmergencyFloatingButton';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -59,6 +60,8 @@ export default function RootLayout({
                 <Footer />
               </div>
               <AuthModal />
+              {/* Global Floating Emergency Button */}
+              <EmergencyFloatingButton />
             </AuthProvider>
           </RainfallProvider>
         </ThemeProvider>
