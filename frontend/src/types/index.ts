@@ -104,6 +104,7 @@ export interface DrainageFeature {
   };
   properties: {
     id: string;
+    name?: string;
     type: 'manhole' | 'pipe' | 'sensor' | 'outfall';
     capacity: number;
     source?: 'synthetic' | 'real' | 'estimated';

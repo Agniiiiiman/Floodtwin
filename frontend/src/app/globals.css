@@ -403,6 +403,75 @@ header {
   animation: radarSweep 4s linear infinite;
 }
 
+/* Animated Drainage Water Flow into Sea */
+@keyframes waterFlowAnim {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.water-flow-line {
+  stroke-dasharray: 8, 14;
+  animation: waterFlowAnim 1.4s linear infinite;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.9));
+}
+
+@keyframes seaOutfallRipple {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.sea-outfall-ripple {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  border: 2.5px solid #38bdf8;
+  animation: seaOutfallRipple 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  pointer-events: none;
+}
+
+.sea-outfall-ripple-delayed {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  border: 2px solid #0284c7;
+  animation: seaOutfallRipple 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  animation-delay: 0.9s;
+  pointer-events: none;
+}
+
+.sea-outfall-label {
+  background: rgba(3, 105, 161, 0.95) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  border: 1.5px solid #38bdf8 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.6) !important;
+  padding: 4px 9px !important;
+  letter-spacing: 0.03em !important;
+  white-space: nowrap !important;
+}
+
+.sea-outfall-label::before {
+  border-top-color: rgba(3, 105, 161, 0.95) !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

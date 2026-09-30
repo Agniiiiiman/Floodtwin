@@ -67,45 +67,48 @@ export async function getWardDrainage(wardId: string = 'pilot_ward'): Promise<Dr
       features: [
         {
           type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [72.82, 18.96],
-          },
-          properties: {
-            id: 'node_1',
-            type: 'manhole',
-            capacity: 100,
-            status: 'normal',
-            current_load: 42,
-          },
+          geometry: { type: 'Point', coordinates: [72.82, 18.96] },
+          properties: { id: 'node_01', type: 'manhole', capacity: 4.0, capacity_unit: 'm3/s', status: 'normal', current_load: 1.8 },
         },
         {
           type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [72.822, 18.961],
-          },
-          properties: {
-            id: 'node_2',
-            type: 'manhole',
-            capacity: 150,
-            status: 'normal',
-            current_load: 68,
-          },
+          geometry: { type: 'Point', coordinates: [72.822, 18.961] },
+          properties: { id: 'node_02', type: 'manhole', capacity: 3.5, capacity_unit: 'm3/s', status: 'normal', current_load: 2.1 },
         },
         {
           type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [72.825, 18.958],
-          },
-          properties: {
-            id: 'node_3',
-            type: 'sensor',
-            capacity: 200,
-            status: 'congested',
-            current_load: 85,
-          },
+          geometry: { type: 'Point', coordinates: [72.8245, 18.9595] },
+          properties: { id: 'node_03', type: 'manhole', capacity: 4.0, capacity_unit: 'm3/s', status: 'congested', current_load: 3.8 },
+        },
+        {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [72.827, 18.958] },
+          properties: { id: 'node_04', type: 'manhole', capacity: 5.2, capacity_unit: 'm3/s', status: 'normal', current_load: 2.7 },
+        },
+        {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [72.83, 18.956] },
+          properties: { id: 'node_05', type: 'manhole', capacity: 6.0, capacity_unit: 'm3/s', status: 'normal', current_load: 3.0 },
+        },
+        {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [72.8355, 18.954] },
+          properties: { id: 'node_06', type: 'manhole', capacity: 7.5, capacity_unit: 'm3/s', status: 'normal', current_load: 3.5 },
+        },
+        {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [72.842, 18.9525] },
+          properties: { id: 'node_07', type: 'manhole', capacity: 9.0, capacity_unit: 'm3/s', status: 'normal', current_load: 4.2 },
+        },
+        {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [72.8485, 18.9515] },
+          properties: { id: 'node_08', type: 'manhole', capacity: 12.0, capacity_unit: 'm3/s', status: 'normal', current_load: 4.8 },
+        },
+        {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [72.858, 18.9485] },
+          properties: { id: 'node_09', type: 'outfall', capacity: 16.0, capacity_unit: 'm3/s', status: 'normal', current_load: 5.4, name: 'Arabian Sea Marine Outfall' },
         },
         {
           type: 'Feature',
@@ -114,15 +117,21 @@ export async function getWardDrainage(wardId: string = 'pilot_ward'): Promise<Dr
             coordinates: [
               [72.82, 18.96],
               [72.822, 18.961],
-              [72.825, 18.958],
+              [72.8245, 18.9595],
+              [72.827, 18.958],
+              [72.83, 18.956],
+              [72.8355, 18.954],
+              [72.842, 18.9525],
+              [72.8485, 18.9515],
+              [72.858, 18.9485],
             ],
           },
           properties: {
-            id: 'pipe_trunk_1',
+            id: 'pipe_trunk_main',
             type: 'pipe',
-            capacity: 120,
+            capacity: 16.0,
             status: 'normal',
-            current_load: 54,
+            current_load: 5.4,
           },
         },
       ],

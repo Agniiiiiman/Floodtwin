@@ -32,7 +32,27 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [72.8300, 18.9560] },
-      "properties": { "id": "node_05", "type": "outfall", "source": "synthetic", "capacity": 6.0, "capacity_unit": "m3/s", "elevation_m": 4.4, "slope_percent": 0.4, "status": "normal", "current_load": 3.0 }
+      "properties": { "id": "node_05", "type": "manhole", "source": "synthetic", "capacity": 6.0, "capacity_unit": "m3/s", "elevation_m": 4.4, "slope_percent": 0.4, "status": "normal", "current_load": 3.0, "name": "Masjid Bunder Sluice" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [72.8355, 18.9540] },
+      "properties": { "id": "node_06", "type": "manhole", "source": "synthetic", "capacity": 7.5, "capacity_unit": "m3/s", "elevation_m": 3.2, "slope_percent": 0.4, "status": "normal", "current_load": 3.5, "name": "Carnac Coastal Conduit (Zone Boundary Exit)" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [72.8420, 18.9525] },
+      "properties": { "id": "node_07", "type": "manhole", "source": "synthetic", "capacity": 9.0, "capacity_unit": "m3/s", "elevation_m": 1.8, "slope_percent": 0.35, "status": "normal", "current_load": 4.2, "name": "Indira Docks Shoreline Seawall" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [72.8485, 18.9515] },
+      "properties": { "id": "node_08", "type": "manhole", "source": "synthetic", "capacity": 12.0, "capacity_unit": "m3/s", "elevation_m": 0.5, "slope_percent": 0.3, "status": "normal", "current_load": 4.8, "name": "Victoria Dock Tidal Flume" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [72.8580, 18.9485] },
+      "properties": { "id": "node_09", "type": "outfall", "source": "synthetic", "capacity": 16.0, "capacity_unit": "m3/s", "elevation_m": 0.0, "slope_percent": 0.25, "status": "normal", "current_load": 5.4, "name": "Arabian Sea Deepwater Marine Outfall" }
     },
     {
       "type": "Feature",
@@ -53,6 +73,26 @@
       "type": "Feature",
       "geometry": { "type": "LineString", "coordinates": [[72.8270, 18.9580], [72.8300, 18.9560]] },
       "properties": { "id": "pipe_04", "type": "pipe", "source": "synthetic", "capacity": 5.2, "capacity_unit": "m3/s", "diameter_mm": 1500, "slope_percent": 0.5, "manning_n": 0.013, "from_node": "node_04", "to_node": "node_05", "status": "normal", "road_alignment": "OSM-aligned synthetic outfall segment" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8300, 18.9560], [72.8355, 18.9540]] },
+      "properties": { "id": "pipe_05", "type": "pipe", "source": "synthetic", "capacity": 7.5, "capacity_unit": "m3/s", "diameter_mm": 1800, "slope_percent": 0.4, "manning_n": 0.013, "from_node": "node_05", "to_node": "node_06", "status": "normal", "road_alignment": "Impact Zone Perimeter Escape Trunk" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8355, 18.9540], [72.8420, 18.9525]] },
+      "properties": { "id": "pipe_06", "type": "pipe", "source": "synthetic", "capacity": 9.0, "capacity_unit": "m3/s", "diameter_mm": 2000, "slope_percent": 0.35, "manning_n": 0.013, "from_node": "node_06", "to_node": "node_07", "status": "normal", "road_alignment": "P. D'Mello Coastal Discharge Canal" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8420, 18.9525], [72.8485, 18.9515]] },
+      "properties": { "id": "pipe_07", "type": "pipe", "source": "synthetic", "capacity": 12.0, "capacity_unit": "m3/s", "diameter_mm": 2200, "slope_percent": 0.3, "manning_n": 0.013, "from_node": "node_07", "to_node": "node_08", "status": "normal", "road_alignment": "Dock Basin Marine Conduit" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[72.8485, 18.9515], [72.8580, 18.9485]] },
+      "properties": { "id": "pipe_08", "type": "pipe", "source": "synthetic", "capacity": 16.0, "capacity_unit": "m3/s", "diameter_mm": 2600, "slope_percent": 0.25, "manning_n": 0.013, "from_node": "node_08", "to_node": "node_09", "status": "normal", "road_alignment": "Arabian Sea Deepwater Gravity Outfall Channel" }
     }
   ]
 }

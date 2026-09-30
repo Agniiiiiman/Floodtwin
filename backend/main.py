@@ -842,7 +842,7 @@ def get_reports():
 
 @app.get("/api/drainage/{ward_id}")
 def get_drainage(ward_id: str):
-    return pilot_drainage
+    return load_drainage_data()
 
 
 @app.get("/api/street-risk/{ward_id}")
