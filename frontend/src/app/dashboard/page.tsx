@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRainfall } from '@/context/RainfallContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { EmergencyActionSystem } from '@/components/dashboard/EmergencyActionSystem';
 import {
   Activity,
   Cpu,
@@ -494,10 +493,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* 5. FLOOD EMERGENCY FLOATING ACTION SYSTEM */}
-      <EmergencyActionSystem />
-
-      {/* 6. 10-Second Executive Operational Briefing */}
+      {/* 5. 10-Second Executive Operational Briefing */}
       <section className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-500/30 shadow-xl space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
           <div>
