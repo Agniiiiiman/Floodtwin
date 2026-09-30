@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { RainfallProvider } from '@/context/RainfallContext';
@@ -10,9 +10,9 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { EmergencyFloatingButton } from '@/components/layout/EmergencyFloatingButton';
 
-const inter = Inter({
+const playfair = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-playfair',
   display: 'swap',
 });
 
@@ -36,8 +36,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${playfair.variable} ${playfair.className}`} suppressHydrationWarning>
       <head>
+        {/* Playfair Display font preconnect and stylesheet */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+          rel="stylesheet"
+        />
         {/* Leaflet CSS */}
         <link
           rel="stylesheet"
@@ -46,7 +53,7 @@ export default function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body className="antialiased min-h-screen flex flex-col selection:bg-sky-500 selection:text-white relative bg-slate-950">
+      <body className={`${playfair.className} antialiased min-h-screen flex flex-col selection:bg-sky-500 selection:text-white relative bg-slate-950`}>
         <ThemeProvider>
           <RainfallProvider>
             <AuthProvider>
