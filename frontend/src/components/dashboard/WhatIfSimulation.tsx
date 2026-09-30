@@ -107,7 +107,10 @@ export function WhatIfSimulation() {
               setRainIntensity(val);
               setRainfallIntensity(val);
             }}
-            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
+            style={{
+              background: `linear-gradient(to right, #0284c7 0%, #38bdf8 ${((rainIntensity - 0) / 120) * 100}%, #1e293b ${((rainIntensity - 0) / 120) * 100}%, #1e293b 100%)`,
+            }}
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-sky-400 shadow-inner"
           />
           <div className="flex justify-between text-[10px] text-slate-400 mt-1">
             <span>Light rain (5 mm/hr)</span>
@@ -128,7 +131,10 @@ export function WhatIfSimulation() {
             step="5"
             value={blockage}
             onChange={(e) => setBlockage(Number(e.target.value))}
-            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
+            style={{
+              background: `linear-gradient(to right, #d97706 0%, #f59e0b ${((blockage - 0) / 90) * 100}%, #1e293b ${((blockage - 0) / 90) * 100}%, #1e293b 100%)`,
+            }}
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-amber-500 shadow-inner"
           />
           <div className="flex justify-between text-[10px] text-slate-400 mt-1">
             <span>Clean Trunks (0%)</span>

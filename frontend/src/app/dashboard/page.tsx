@@ -355,7 +355,10 @@ export default function DashboardPage() {
                     setRainIntensity(val);
                     setRainfallIntensity(val);
                   }}
-                  className="w-full accent-sky-400 cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #0284c7 0%, #38bdf8 ${((rainIntensity - 5) / (120 - 5)) * 100}%, #1e293b ${((rainIntensity - 5) / (120 - 5)) * 100}%, #1e293b 100%)`,
+                  }}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-sky-400 shadow-inner"
                 />
                 <div className="flex justify-between text-[10px] text-slate-500 font-mono">
                   <span>Drizzle (5 mm/hr)</span>
@@ -377,7 +380,10 @@ export default function DashboardPage() {
                   step="5"
                   value={pipeBlockage}
                   onChange={(e) => setPipeBlockage(Number(e.target.value))}
-                  className="w-full accent-amber-400 cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #d97706 0%, #f59e0b ${((pipeBlockage - 0) / 90) * 100}%, #1e293b ${((pipeBlockage - 0) / 90) * 100}%, #1e293b 100%)`,
+                  }}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-amber-400 shadow-inner"
                 />
                 <div className="flex justify-between text-[10px] text-slate-500 font-mono">
                   <span>Clear (0%)</span>

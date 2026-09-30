@@ -222,7 +222,7 @@ header {
   color: #64748b !important;
 }
 
-[data-theme="light"] input[type="range"] {
+[data-theme="light"] input[type="range"]:not([style*="gradient"]) {
   background-color: #cbd5e1 !important;
 }
 
